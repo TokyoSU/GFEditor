@@ -57,7 +57,6 @@ namespace GFEditor.Editor
             m_dropChestImage.Add(new CSItemImg { Filename = "G00008", Image = Image.Load(Constants.G00008Img) });
             m_dropChestImage.Add(new CSItemImg { Filename = "G00009", Image = Image.Load(Constants.G00009Img) });
             m_dropChestImage.Add(new CSItemImg { Filename = "G00010", Image = Image.Load(Constants.G00010Img) });
-            m_dropChestImage.Add(new CSItemImg { Filename = "G00020", Image = Image.Load(Constants.G00020Img) });
             Console.WriteLine("Loaded drop chest image.");
         }
 
