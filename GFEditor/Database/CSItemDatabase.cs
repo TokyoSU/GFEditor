@@ -1,6 +1,7 @@
 ﻿using GFEditor.Structs;
 using GFEditor.Utils;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -35,9 +36,56 @@ namespace GFEditor.Database
             return m_Database.Where(item => !string.IsNullOrWhiteSpace(item.UsedSoundName)).Select(item => item.UsedSoundName).ToList();
         }
 
+        public static int FindMissingIndex()
+        {
+            // Check for the begin (0 -> 9000~) since it could be missing.
+            for (int i = 1; i < m_Database.Count - 1; i++) // ID start at 1
+            {
+                var item = m_Database.FirstOrDefault();
+                if (item != null && i < item.Index) // First item is probably in the 9000+ which is really big, so we can use index less than 9000!
+                    return i;
+            }
+
+            // Now check for gaps between consecutive indices
+            for (int i = 0; i < m_Database.Count - 1; i++)
+            {
+                int currentIndex = m_Database[i + 0].Index;
+                int nextIndex    = m_Database[i + 1].Index;
+                // If there's a gap between current and next index
+                if (nextIndex > currentIndex + 1)
+                    return currentIndex + 1;
+            }
+
+            return -1;
+        }
+
         public static void CreateNewItem()
         {
+            var item = new CSItem()
+            {
+                Index = 0,
+                Name = "NewItem",
+                UsedSoundName = string.Empty,
+                ModelFilename = "G00005",
+                ModelId = string.Empty, // Default
+                RestrictEventPosition = string.Empty,
+                Tip = string.Empty
+            };
 
+            int missingIndex = FindMissingIndex();
+            if (missingIndex == -1)
+            {
+                Console.WriteLine("There is no gaps in item, adding new one.");
+                item.Index = m_Database.Count;
+                m_Database.Add(item);
+            }
+            else
+            {
+                item.Index = missingIndex;
+                m_Database.Add(item);
+            }
+
+            m_Database.Sort();
         }
 
         public static void Load()

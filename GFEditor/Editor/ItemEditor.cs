@@ -139,6 +139,7 @@ namespace GFEditor.Editor
 
         private void PopulateItemList()
         {
+            ItemList.Items.Clear();
             var indexList = CSItemDatabase.GetIndexList();
             foreach (var index in indexList)
                 ItemList.Items.Add(index);
@@ -873,7 +874,9 @@ namespace GFEditor.Editor
 
         private void AddNewItemBtn_Click(object sender, EventArgs e)
         {
-
+            CSItemDatabase.CreateNewItem();
+            PopulateItemList();
+            ItemList.SelectedIndex = 0; // Reset index.
         }
     }
 }
