@@ -2,7 +2,9 @@ This project only have the item editor, but later on, i'm planning to do every f
 Only compatible with 076 because of how the ini files are done (and the structure of the project).
 ### Take in account this tool is still wip and there could be some bug !
 
-SDK Required: https://dotnet.microsoft.com/en-us/download/dotnet/9.0
+SDK Required:
+- Windows X64: https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-9.0.1-windows-x64-installer
+- Windows X86: https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-9.0.1-windows-x86-installer
 
 ## Item Editor
 ![Capture d'écran 2025-02-05 203502](https://github.com/user-attachments/assets/eb72181c-1ca5-4db3-ae01-d05521318fd0)
