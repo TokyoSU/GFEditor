@@ -1,23 +1,18 @@
-﻿using Newtonsoft.Json;
-using System.IO;
-
-namespace GFEditor.Utils
+﻿namespace GFEditor.Utils
 {
     public static class SaveHelper
     {
         public static void SaveJson(string filePath, object value)
         {
-            using (var file = File.CreateText(filePath))
+            using var file = File.CreateText(filePath);
+            var serializer = new JsonSerializer
             {
-                var serializer = new JsonSerializer
-                {
-                    Formatting = Formatting.Indented,
-                    NullValueHandling = NullValueHandling.Ignore,
-                    MissingMemberHandling = MissingMemberHandling.Ignore,
-                    DefaultValueHandling = DefaultValueHandling.Ignore,
-                };
-                serializer.Serialize(file, value);
-            }
+                Formatting = Formatting.Indented,
+                NullValueHandling = NullValueHandling.Ignore,
+                MissingMemberHandling = MissingMemberHandling.Ignore,
+                DefaultValueHandling = DefaultValueHandling.Ignore,
+            };
+            serializer.Serialize(file, value);
         }
     }
 }

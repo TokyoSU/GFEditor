@@ -1,26 +1,16 @@
-﻿using GFEditor.Utils;
-using GFEditor.Structs;
-using SixLabors.ImageSharp;
-using System;
-using System.Collections.Generic;
-using System.Windows.Forms;
-using System.IO;
-using System.Linq;
-using NAudio.Wave;
-using GFEditor.Enums;
-using GFEditor.Database;
+﻿
 
 namespace GFEditor.Editor
 {
     public partial class ItemEditor : Form
     {
-        private readonly List<CSItemImg> m_itemsImage = new List<CSItemImg>();
-        private readonly List<CSItemImg> m_dropChestImage = new List<CSItemImg>();
-        private readonly List<SoundPlayer> m_soundData = new List<SoundPlayer>();
-        private readonly ItemClassPanel m_classPanel = new ItemClassPanel();
-        private readonly ItemOpPanel m_itemPanel = new ItemOpPanel();
-        private readonly ItemTooltip m_tooltipPanel = new ItemTooltip();
-        private CSItem m_currentItem = null;
+        private readonly List<CSItemImg> m_itemsImage = [];
+        private readonly List<CSItemImg> m_dropChestImage = [];
+        private readonly List<SoundPlayer> m_soundData = [];
+        private readonly ItemClassPanel m_classPanel = new();
+        private readonly ItemOpPanel m_itemPanel = new();
+        private readonly ItemTooltip m_tooltipPanel = new();
+        private CSItem? m_currentItem = null;
 
         public ItemEditor()
         {
@@ -46,21 +36,21 @@ namespace GFEditor.Editor
 
         private void InitializeDropChest()
         {
-            m_dropChestImage.Add(new CSItemImg { Filename = "None", Image = Image.Load(Constants.NoChestDropImg) });
-            m_dropChestImage.Add(new CSItemImg { Filename = "G00001", Image = Image.Load(Constants.G00001Img) });
-            m_dropChestImage.Add(new CSItemImg { Filename = "G00002", Image = Image.Load(Constants.G00002Img) });
-            m_dropChestImage.Add(new CSItemImg { Filename = "G00003", Image = Image.Load(Constants.G00003Img) });
-            m_dropChestImage.Add(new CSItemImg { Filename = "G00004", Image = Image.Load(Constants.G00004Img) });
-            m_dropChestImage.Add(new CSItemImg { Filename = "G00005", Image = Image.Load(Constants.G00005Img) });
-            m_dropChestImage.Add(new CSItemImg { Filename = "G00006", Image = Image.Load(Constants.G00006Img) });
-            m_dropChestImage.Add(new CSItemImg { Filename = "G00007", Image = Image.Load(Constants.G00007Img) });
-            m_dropChestImage.Add(new CSItemImg { Filename = "G00008", Image = Image.Load(Constants.G00008Img) });
-            m_dropChestImage.Add(new CSItemImg { Filename = "G00009", Image = Image.Load(Constants.G00009Img) });
-            m_dropChestImage.Add(new CSItemImg { Filename = "G00010", Image = Image.Load(Constants.G00010Img) });
+            m_dropChestImage.Add(new CSItemImg { Filename = "None", Image = SLImage.Load(Constants.NoChestDropImg) });
+            m_dropChestImage.Add(new CSItemImg { Filename = "G00001", Image = SLImage.Load(Constants.G00001Img) });
+            m_dropChestImage.Add(new CSItemImg { Filename = "G00002", Image = SLImage.Load(Constants.G00002Img) });
+            m_dropChestImage.Add(new CSItemImg { Filename = "G00003", Image = SLImage.Load(Constants.G00003Img) });
+            m_dropChestImage.Add(new CSItemImg { Filename = "G00004", Image = SLImage.Load(Constants.G00004Img) });
+            m_dropChestImage.Add(new CSItemImg { Filename = "G00005", Image = SLImage.Load(Constants.G00005Img) });
+            m_dropChestImage.Add(new CSItemImg { Filename = "G00006", Image = SLImage.Load(Constants.G00006Img) });
+            m_dropChestImage.Add(new CSItemImg { Filename = "G00007", Image = SLImage.Load(Constants.G00007Img) });
+            m_dropChestImage.Add(new CSItemImg { Filename = "G00008", Image = SLImage.Load(Constants.G00008Img) });
+            m_dropChestImage.Add(new CSItemImg { Filename = "G00009", Image = SLImage.Load(Constants.G00009Img) });
+            m_dropChestImage.Add(new CSItemImg { Filename = "G00010", Image = SLImage.Load(Constants.G00010Img) });
             Console.WriteLine("Loaded drop chest image.");
         }
 
-        private CSItem GetCurrentItem()
+        private CSItem? GetCurrentItem()
         {
             if (int.TryParse(ItemList.Items[ItemList.SelectedIndex].ToString(), out var itemIndex))
             {
@@ -78,20 +68,23 @@ namespace GFEditor.Editor
         private void InitializeItems()
         {
             var iconFiles = Directory.GetFiles(Constants.AssetItemPath);
+
             m_itemsImage.Add(new CSItemImg()
             {
                 Filename = "None",
-                Image = Image.Load(Constants.AssetItemPath + "NoItem.png"),
+                Image = SLImage.Load(Constants.AssetItemPath + "NoItem.png"),
             });
+
             foreach (var iconFile in iconFiles)
             {
                 var newImg = new CSItemImg
                 {
                     Filename = Path.GetFileNameWithoutExtension(iconFile),
-                    Image = Image.Load(iconFile)
+                    Image = SLImage.Load(iconFile)
                 };
                 m_itemsImage.Add(newImg);
             }
+
             Console.WriteLine("Loaded items icon image.");
         }
 
@@ -101,6 +94,7 @@ namespace GFEditor.Editor
             {
                 ItemImgList.Items.Add(item.Filename);
             });
+
             Console.WriteLine("Populated items image list.");
         }
 
@@ -113,6 +107,7 @@ namespace GFEditor.Editor
             // Check again if there is any sound files.
             soundFiles = Directory.GetFiles(Constants.AssetSoundPath);
             m_soundData.Add(new SoundPlayer() { Name = "None", File = null, Player = null }); // No sound
+
             foreach (var soundPath in soundFiles)
             {
                 var snd = new SoundPlayer()
@@ -124,6 +119,7 @@ namespace GFEditor.Editor
                 snd.Init();
                 m_soundData.Add(snd);
             }
+
             Console.WriteLine("Loaded sounds.");
         }
 
@@ -139,69 +135,77 @@ namespace GFEditor.Editor
         private void PopulateItemList()
         {
             ItemList.Items.Clear();
+            
             var indexList = CSItemDatabase.GetIndexList();
-            foreach (var index in indexList)
-                ItemList.Items.Add(index);
-            Console.WriteLine("[ItemEditor] Populated items list.");
+            if (indexList != null)
+            {
+                foreach (var index in indexList)
+                    ItemList.Items.Add(index);
+                Console.WriteLine("[ItemEditor] Populated items list.");
+            }
+            else
+            {
+                Console.WriteLine("[ItemEditor] Error populating the items list, index list is null !");
+            }
         }
 
         private void PopulateItemPriceType()
         {
-            PriceTypeBox.Items.AddRange(Enum.GetNames(typeof(MerchantCoinsEnum)));
+            PriceTypeBox.Items.AddRange(Enum.GetNames<MerchantCoinType>());
             PriceTypeBox.Items.RemoveAt(8); // Remove nothing.
         }
 
         private void PopulateItemAuctionType()
         {
-            AuctionTypeBox.Items.AddRange(Enum.GetNames(typeof(AuctionTypeEnum)));
+            AuctionTypeBox.Items.AddRange(Enum.GetNames<AuctionType>());
         }
 
         private void PopulateItemTimeLimitType()
         {
-            TimeLimitTypeBox.Items.AddRange(Enum.GetNames(typeof(TimeLimitTypeEnum)));
+            TimeLimitTypeBox.Items.AddRange(Enum.GetNames<TimeLimitType>());
         }
 
         private void PopulateItemEnchantTimeType()
         {
-            EnchantTimeTypeBox.Items.AddRange(Enum.GetNames(typeof(TimeTypeEnum)));
+            EnchantTimeTypeBox.Items.AddRange(Enum.GetNames<TimeType>());
         }
 
         private void PopulateItemSpecialType()
         {
-            SpecialTypeBox.Items.AddRange(Enum.GetNames(typeof(ItemSpecialTypeEnum)));
+            SpecialTypeBox.Items.AddRange(Enum.GetNames<SpecialType>());
         }
 
         private void PopulateItemAttributeType()
         {
-            AttributeTypeBox.Items.AddRange(Enum.GetNames(typeof(AttributeTypeEnum)));
+            AttributeTypeBox.Items.AddRange(Enum.GetNames<AttributeType>());
         }
 
         private void PopulateItemQualityType()
         {
-            ItemQualityBox.Items.AddRange(Enum.GetNames(typeof(ItemQualityEnum)));
+            ItemQualityBox.Items.AddRange(Enum.GetNames<QualityType>());
         }
 
         private void PopulateReputationType()
         {
-            RestrictReputationBox.Items.AddRange(Enum.GetNames(typeof(ReputationEnum)));
+            RestrictReputationBox.Items.AddRange(Enum.GetNames<ReputationType>());
         }
 
         private void PopulateItemTargetType()
         {
-            TargetBox.Items.AddRange(Enum.GetNames(typeof(ItemTargetEnum)));
+            TargetBox.Items.AddRange(Enum.GetNames<TargetType>());
             TargetBox.Items.RemoveAt(1); // Remove nothing.
         }
 
         private void PopulateItemType()
         {
-            var itemTypeList = Enum.GetNames(typeof(ItemTypeEnum)).ToList();
+            var itemTypeList = Enum.GetNames<ItemType>().ToList();
             itemTypeList.RemoveRange(64, 9);
             ItemTypeBox.Items.AddRange(itemTypeList.ToArray());
         }
 
         private void PopulateEquipType()
         {
-            EquipTypeBox.Items.AddRange(Enum.GetNames(typeof(EquipTypeEnum)));
+            EquipTypeBox.Items.AddRange(Enum.GetNames<EquipType>());
             EquipTypeBox.Items.RemoveAt(EquipTypeBox.Items.Count - 1); // Remove last which is 'Max', that's not an equip type.
         }
 
@@ -219,12 +223,12 @@ namespace GFEditor.Editor
             UsedSndList.SelectIndexByName(item.UsedSoundName);
             EnhanceEffIDTxt.Text = item.EnchanceEffectId.ToString();
             NameTxt.Text = item.Name.ToString();
-            ItemTypeBox.SelectIndexByEnum((ItemTypeEnum)item.ItemType);
-            EquipTypeBox.SelectIndexByEnum((EquipTypeEnum)item.EquipType);
+            ItemTypeBox.SelectIndexByEnum((ItemType)item.ItemType);
+            EquipTypeBox.SelectIndexByEnum((EquipType)item.EquipType);
             m_itemPanel.SetItem(item); m_itemPanel.Update();
             if (item.Target == 1)
                 item.Target = 0;
-            TargetBox.SelectIndexByEnum((ItemTargetEnum)item.Target);
+            TargetBox.SelectIndexByEnum((TargetType)item.Target);
 
             // Gender selection.
             switch (item.RestrictGender)
@@ -239,10 +243,10 @@ namespace GFEditor.Editor
             RebirthUD.Value = item.RebirthCount;
             RebirthScoreUD.Value = item.RebirthScore;
             RebirthMaxScoreUD.Value = item.RebirthMaxScore;
-            RestrictReputationBox.SelectIndexByEnum((ReputationEnum)item.RestrictReputation);
+            RestrictReputationBox.SelectIndexByEnum((ReputationType)item.RestrictReputation);
             RestrictReputationCountUD.Value = item.RestrictReputationCount;
             m_classPanel.SetItem(item); m_classPanel.Update();
-            ItemQualityBox.SelectIndexByEnum((ItemQualityEnum)item.ItemQuality);
+            ItemQualityBox.SelectIndexByEnum((QualityType)item.ItemQuality);
             ItemGroupUD.Value = item.ItemGroup;
             CastingTimeUD.Value = item.CastingTime;
             CooldownTimeUD.Value = item.CoolDownTime;
@@ -273,11 +277,11 @@ namespace GFEditor.Editor
             MagicalPenetrationUD.Value = item.MagicalPenetration;
             PhysicalPenetrationDefUD.Value = item.PhysicalPenetrationDefence;
             MagicalPenetrationDefUD.Value = item.MagicalPenetrationDefence;
-            AttributeTypeBox.SelectIndexByEnum((AttributeTypeEnum)item.Attribute);
+            AttributeTypeBox.SelectIndexByEnum((AttributeType)item.Attribute);
             AttributeDamageUD.Value = item.AttributeDamage;
             AttributeRateUD.Value = item.AttributeRate;
             AttributeResistanceUD.Value = item.AttributeResist;
-            SpecialTypeBox.SelectIndexByEnum((ItemSpecialTypeEnum)item.SpecialType);
+            SpecialTypeBox.SelectIndexByEnum((SpecialType)item.SpecialType);
             SpecialRateUD.Value = item.SpecialRate;
             SpecialDmgUD.Value = item.SpecialDamage;
             DropRateUD.Value = item.DropRate;
@@ -291,22 +295,22 @@ namespace GFEditor.Editor
             ExpertLevelUD.Value = item.ExpertLevel;
             ExpertEnchantIndexUD.Value = item.ExpertEnchantIndex;
             ElfSkillIndexUD.Value = item.ElfSkillIndex;
-            EnchantTimeTypeBox.SelectIndexByEnum((TimeTypeEnum)item.EnchantTimeType);
+            EnchantTimeTypeBox.SelectIndexByEnum((TimeType)item.EnchantTimeType);
             EnchantDurationUD.Value = item.EnchantDuration;
-            TimeLimitTypeBox.SelectIndexByEnum((TimeLimitTypeEnum)item.LimitType);
+            TimeLimitTypeBox.SelectIndexByEnum((TimeLimitType)item.LimitType);
             TimeLimitUD.Value = item.DueDateTime;
             BackpackSizeUD.Value = item.BackpackSize;
             SocketMaxUD.Value = item.SocketMax;
             SocketRateUD.Value = item.SocketRate;
             MaxDurabilityUD.Value = item.MaxDurability;
             MaxStackUD.Value = item.MaxStack;
-            PriceTypeBox.SelectIndexByEnum((MerchantCoinsEnum)item.ShopPriceType);
+            PriceTypeBox.SelectIndexByEnum((MerchantCoinType)item.ShopPriceType);
             PriceUD.Value = item.Price;
             RestrictEventPosTxt.Text = item.RestrictEventPosition;
             MissionIndexUD.Value = item.MissionIndex;
             BlockRateUD.Value = item.BlockRate;
             LogLevelUD.Value = item.LogLevel;
-            AuctionTypeBox.SelectIndexByEnum((AuctionTypeEnum)item.AuctionType);
+            AuctionTypeBox.SelectIndexByEnum((AuctionType)item.AuctionType);
             ExtraData1UD.Value = item.ExtraData01;
             ExtraData2UD.Value = item.ExtraData02;
             ExtraData3UD.Value = item.ExtraData03;
@@ -319,8 +323,8 @@ namespace GFEditor.Editor
 
         private void ItemEditor_Load(object sender, EventArgs e)
         {
-            ChestDropImg.Image = ImageConverter.ToNetImage(m_dropChestImage[0].Image.ToArray()); // It create a new file, this will need to be disposed off later.
-            ItemIconImg.Image = ImageConverter.ToNetImage(m_itemsImage[0].Image.ToArray()); // Same free it later.
+            ChestDropImg.Image = GFImageConverter.ToNetImage(m_dropChestImage[0].Image.ToArray()); // It create a new file, this will need to be disposed off later.
+            ItemIconImg.Image = GFImageConverter.ToNetImage(m_itemsImage[0].Image.ToArray()); // Same free it later.
             DropChestBox.SelectedIndex = 0;
             ItemImgList.SelectedIndex = 0;
             ItemList.SelectedIndex = 0;
@@ -357,7 +361,7 @@ namespace GFEditor.Editor
         private void DropChestBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             ChestDropImg.Image?.Dispose(); // Dispose it to avoid memory leak !
-            ChestDropImg.Image = ImageConverter.ToNetImage(m_dropChestImage[DropChestBox.SelectedIndex].Image.ToArray());
+            ChestDropImg.Image = GFImageConverter.ToNetImage(m_dropChestImage[DropChestBox.SelectedIndex].Image.ToArray());
             if (m_currentItem != null)
                 m_currentItem.ModelFilename = m_dropChestImage[DropChestBox.SelectedIndex].Filename;
         }
@@ -365,12 +369,24 @@ namespace GFEditor.Editor
         private void ItemImgList_SelectedIndexChanged(object sender, EventArgs e)
         {
             ItemIconImg.Image?.Dispose();
-            var iconFile = ItemImgList.Items[ItemImgList.SelectedIndex].ToString().ToLower();
+            var obj = ItemImgList.Items[ItemImgList.SelectedIndex];
+            if (obj == null)
+            {
+                Console.WriteLine("Failed to update selected index image list, returned ItemImgList.Items[ItemImgList.SelectedIndex] is null !");
+                return;
+            }
+            var iconName = obj.ToString();
+            if (string.IsNullOrEmpty(iconName))
+            {
+                Console.WriteLine("Failed to update selected index image list, returned obj.ToString() is null !");
+                return;
+            }
+            var iconFile = iconName.ToLower();
             var icon = m_itemsImage.Find(it => it.Filename.Contains(iconFile));
             if (icon != null)
-                ItemIconImg.Image = ImageConverter.ToNetImage(icon.Image.ToArray());
+                ItemIconImg.Image = GFImageConverter.ToNetImage(icon.Image.ToArray());
             else
-                ItemIconImg.Image = ImageConverter.ToNetImage(m_itemsImage[0].Image.ToArray());
+                ItemIconImg.Image = GFImageConverter.ToNetImage(m_itemsImage[0].Image.ToArray());
         }
 
         private void ItemList_SelectedIndexChanged(object sender, EventArgs e)
@@ -384,14 +400,25 @@ namespace GFEditor.Editor
         {
             if (UsedSndList.SelectedIndex <= 0) // Avoid 0 because its "None"
                 return;
-            var soundName = UsedSndList.Items[UsedSndList.SelectedIndex].ToString();
-            var sound = m_soundData.Find(s => s.Name.ToUpper() == soundName.ToUpper());
+            var obj = ItemImgList.Items[ItemImgList.SelectedIndex];
+            if (obj == null)
+            {
+                Console.WriteLine("Failed to test sound, returned ItemImgList.Items[ItemImgList.SelectedIndex] is null !");
+                return;
+            }
+            var soundName = obj.ToString();
+            if (string.IsNullOrEmpty(soundName))
+            {
+                Console.WriteLine("Failed to test sound, returned obj.ToString() is null !");
+                return;
+            }
+            var sound = m_soundData.Find(s => s.Name.Equals(soundName, StringComparison.CurrentCultureIgnoreCase));
             sound?.Play();
         }
 
         private void EquipTypeBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var selectedEnumValue = Enum.GetValues(typeof(EquipTypeEnum)).Cast<EquipTypeEnum>().ElementAtOrDefault(EquipTypeBox.SelectedIndex); // Get enum value by index
+            var selectedEnumValue = Enum.GetValues<EquipType>().ElementAtOrDefault(EquipTypeBox.SelectedIndex); // Get enum value by index
             if (m_currentItem != null)
                 m_currentItem.EquipType = (int)selectedEnumValue;
         }
@@ -403,7 +430,7 @@ namespace GFEditor.Editor
 
         private void ItemTypeBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var selectedEnumValue = Enum.GetValues(typeof(ItemTypeEnum)).Cast<ItemTypeEnum>().ElementAtOrDefault(ItemTypeBox.SelectedIndex); // Get enum value by index
+            var selectedEnumValue = Enum.GetValues<ItemType>().ElementAtOrDefault(ItemTypeBox.SelectedIndex); // Get enum value by index
             if (m_currentItem != null)
                 m_currentItem.ItemType = (int)selectedEnumValue;
         }
@@ -427,7 +454,7 @@ namespace GFEditor.Editor
 
         private void TargetBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var selectedEnumValue = Enum.GetValues(typeof(ReputationEnum)).Cast<ReputationEnum>().ElementAtOrDefault(TargetBox.SelectedIndex);
+            var selectedEnumValue = Enum.GetValues<ReputationType>().ElementAtOrDefault(TargetBox.SelectedIndex);
             if (m_currentItem != null)
                 m_currentItem.Target = (int)selectedEnumValue;
         }
@@ -464,7 +491,7 @@ namespace GFEditor.Editor
 
         private void RestrictReputationBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var selectedEnumValue = Enum.GetValues(typeof(ReputationEnum)).Cast<ReputationEnum>().ElementAtOrDefault(RestrictReputationBox.SelectedIndex); // Get enum value by index
+            var selectedEnumValue = Enum.GetValues<ReputationType>().ElementAtOrDefault(RestrictReputationBox.SelectedIndex); // Get enum value by index
             if (m_currentItem != null)
                 m_currentItem.RestrictReputation = (int)selectedEnumValue;
         }
@@ -477,7 +504,7 @@ namespace GFEditor.Editor
 
         private void ItemQualityBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var selectedEnumValue = Enum.GetValues(typeof(ItemQualityEnum)).Cast<ItemQualityEnum>().ElementAtOrDefault(ItemQualityBox.SelectedIndex); // Get enum value by index
+            var selectedEnumValue = Enum.GetValues<QualityType>().ElementAtOrDefault(ItemQualityBox.SelectedIndex); // Get enum value by index
             if (m_currentItem != null)
                 m_currentItem.ItemQuality = (int)selectedEnumValue;
         }
@@ -676,7 +703,7 @@ namespace GFEditor.Editor
 
         private void AttributeTypeBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var selectedEnumValue = Enum.GetValues(typeof(AttributeTypeEnum)).Cast<AttributeTypeEnum>().ElementAtOrDefault(AttributeTypeBox.SelectedIndex); // Get enum value by index
+            var selectedEnumValue = Enum.GetValues<AttributeType>().ElementAtOrDefault(AttributeTypeBox.SelectedIndex); // Get enum value by index
             if (m_currentItem != null)
                 m_currentItem.Attribute = (int)selectedEnumValue;
         }
@@ -701,7 +728,7 @@ namespace GFEditor.Editor
 
         private void SpecialTypeBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var selectedEnumValue = Enum.GetValues(typeof(ItemSpecialTypeEnum)).Cast<ItemSpecialTypeEnum>().ElementAtOrDefault(SpecialTypeBox.SelectedIndex); // Get enum value by index
+            var selectedEnumValue = Enum.GetValues<SpecialType>().ElementAtOrDefault(SpecialTypeBox.SelectedIndex); // Get enum value by index
             if (m_currentItem != null)
                 m_currentItem.SpecialType = (int)selectedEnumValue;
         }
@@ -762,7 +789,7 @@ namespace GFEditor.Editor
 
         private void EnchantTimeTypeUD_ValueChanged(object sender, EventArgs e)
         {
-            var selectedEnumValue = Enum.GetValues(typeof(TimeTypeEnum)).Cast<TimeTypeEnum>().ElementAtOrDefault(EnchantTimeTypeBox.SelectedIndex); // Get enum value by index
+            var selectedEnumValue = Enum.GetValues<TimeType>().ElementAtOrDefault(EnchantTimeTypeBox.SelectedIndex); // Get enum value by index
             if (m_currentItem != null)
                 m_currentItem.EnchantTimeType = (int)selectedEnumValue;
         }
@@ -775,7 +802,7 @@ namespace GFEditor.Editor
 
         private void TimeLimitTypeBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var selectedEnumValue = Enum.GetValues(typeof(TimeLimitTypeEnum)).Cast<TimeLimitTypeEnum>().ElementAtOrDefault(TimeLimitTypeBox.SelectedIndex); // Get enum value by index
+            var selectedEnumValue = Enum.GetValues<TimeLimitType>().ElementAtOrDefault(TimeLimitTypeBox.SelectedIndex); // Get enum value by index
             if (m_currentItem != null)
                 m_currentItem.LimitType = (int)selectedEnumValue;
         }
@@ -818,7 +845,7 @@ namespace GFEditor.Editor
 
         private void AuctionTypeUD_ValueChanged(object sender, EventArgs e)
         {
-            var selectedEnumValue = Enum.GetValues(typeof(AuctionTypeEnum)).Cast<AuctionTypeEnum>().ElementAtOrDefault(AuctionTypeBox.SelectedIndex); // Get enum value by index
+            var selectedEnumValue = Enum.GetValues<AuctionType>().ElementAtOrDefault(AuctionTypeBox.SelectedIndex); // Get enum value by index
             if (m_currentItem != null)
                 m_currentItem.AuctionType = (int)selectedEnumValue;
         }
@@ -855,7 +882,7 @@ namespace GFEditor.Editor
 
         private void PriceTypeBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var selectedEnumValue = Enum.GetValues(typeof(MerchantCoinsEnum)).Cast<MerchantCoinsEnum>().ElementAtOrDefault(PriceTypeBox.SelectedIndex); // Get enum value by index
+            var selectedEnumValue = Enum.GetValues<MerchantCoinType>().ElementAtOrDefault(PriceTypeBox.SelectedIndex); // Get enum value by index
             if (m_currentItem != null)
                 m_currentItem.ShopPriceType = (int)selectedEnumValue;
         }
@@ -873,9 +900,11 @@ namespace GFEditor.Editor
 
         private void AddNewItemBtn_Click(object sender, EventArgs e)
         {
-            CSItemDatabase.CreateNewItem();
-            PopulateItemList();
-            ItemList.SelectedIndex = 0; // Reset index.
+            if (CSItemDatabase.CreateNewItem())
+            {
+                PopulateItemList();
+                ItemList.SelectedIndex = 0; // Reset index.
+            }
         }
     }
 }

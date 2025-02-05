@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Windows.Forms;
-
-namespace GFEditor.Utils
+﻿namespace GFEditor.Utils
 {
     public static class EnumerableExtensions
     {
         public static void ForEach<T>(this IEnumerable<T> source, Action<T, int> action)
         {
-            if (source == null) throw new ArgumentNullException(nameof(source));
-            if (action == null) throw new ArgumentNullException(nameof(action));
-
+            ArgumentNullException.ThrowIfNull(source);
+            ArgumentNullException.ThrowIfNull(action);
             int index = 0;
             foreach (var item in source)
             {
@@ -19,11 +14,10 @@ namespace GFEditor.Utils
             }
         }
 
-        public static void ForEach(this ComboBox.ObjectCollection source, Action<string, int> action)
+        public static void ForEach(this ComboBox.ObjectCollection source, Action<string?, int> action)
         {
-            if (source == null) throw new ArgumentNullException(nameof(source));
-            if (action == null) throw new ArgumentNullException(nameof(action));
-
+            ArgumentNullException.ThrowIfNull(source);
+            ArgumentNullException.ThrowIfNull(action);
             int index = 0;
             foreach (var item in source)
             {

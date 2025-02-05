@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using System;
-using System.Windows.Forms;
-
-namespace GFEditor.Utils
+﻿namespace GFEditor.Utils
 {
     public static class ComboBoxExtensions
     {
@@ -12,8 +8,11 @@ namespace GFEditor.Utils
             {
                 box.Items.ForEach((fileName, index) =>
                 {
-                    if (name.ToLower() == fileName.ToLower())
-                        box.SelectedIndex = index;
+                    if (!string.IsNullOrEmpty(fileName))
+                    {
+                        if (name.Equals(fileName, StringComparison.CurrentCultureIgnoreCase))
+                            box.SelectedIndex = index;
+                    }
                 });
             }
             else
@@ -28,8 +27,11 @@ namespace GFEditor.Utils
             {
                 box.Items.ForEach((enumName, index) =>
                 {
-                    if (value.ToString().ToLower().Equals(enumName.ToLower()))
-                        box.SelectedIndex = index;
+                    if (!string.IsNullOrEmpty(enumName))
+                    {
+                        if (value.ToString().ToLower().Equals(enumName.ToLower()))
+                            box.SelectedIndex = index;
+                    }
                 });
             }
             else

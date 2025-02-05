@@ -1,13 +1,10 @@
-﻿using NAudio.Wave;
-using System.IO;
-
-namespace GFEditor.Utils
+﻿namespace GFEditor.Utils
 {
     public class SoundPlayer
     {
-        public string Name;
-        public AudioFileReader File;
-        public WaveOutEvent Player;
+        public required string Name;
+        public AudioFileReader? File;
+        public WaveOutEvent? Player;
 
         public void Init()
         {
@@ -16,7 +13,7 @@ namespace GFEditor.Utils
             Player.PlaybackStopped += Player_PlaybackStopped;
         }
 
-        private void Player_PlaybackStopped(object sender, StoppedEventArgs e)
+        private void Player_PlaybackStopped(object? sender, StoppedEventArgs e)
         {
             Player?.Stop();
         }

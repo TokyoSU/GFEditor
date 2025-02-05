@@ -1,9 +1,4 @@
-﻿using GFEditor.Database;
-using System;
-using System.IO;
-using System.Windows.Forms;
-
-namespace GFEditor.Utils
+﻿namespace GFEditor.Utils
 {
     public static class SoundHelper
     {
@@ -14,6 +9,7 @@ namespace GFEditor.Utils
         public static void CopyRequiredUsedSounds()
         {
             var soundList = CSItemDatabase.GetUsedSoundNameList();
+            if (soundList == null) return;
             if (soundList.Count <= 0)
             {
                 Console.WriteLine($"No used sound name in item database found, failed to copy sound to: {Constants.AssetSoundPath}");

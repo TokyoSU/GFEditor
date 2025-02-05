@@ -1,12 +1,8 @@
-﻿using GFEditor.Enums;
-using GFEditor.Structs;
-using System.Windows.Forms;
-
-namespace GFEditor.Utils
+﻿namespace GFEditor.Utils
 {
     public static class ItemExtensions
     {
-        public static void SetOpFlags(this CSItem item, CheckBox box, ItemOpFlags flags)
+        public static void SetOpFlags(this CSItem item, CheckBox box, OpFlags flags)
         {
             if (item == null || box == null) return;
             if (box.Checked)
@@ -15,7 +11,7 @@ namespace GFEditor.Utils
                 item.OpFlags &= ~(uint)flags;
         }
 
-        public static void SetClassFlags(this CSItem item, CheckBox box, ClassTypeEnum flags)
+        public static void SetClassFlags(this CSItem item, CheckBox box, ClassType flags)
         {
             if (item == null || box == null) return;
             if (box.Checked)

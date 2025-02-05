@@ -1,62 +1,61 @@
-﻿using GFEditor.Database;
-using GFEditor.Enums;
-using GFEditor.Structs;
-using System;
-using System.Drawing;
-using System.Windows.Forms;
-
-namespace GFEditor.Editor
+﻿namespace GFEditor.Editor
 {
     public partial class ItemTooltip : Form
     {
-        private CSItem m_Item;
+        private CSItem? m_Item;
 
         public ItemTooltip()
         {
             InitializeComponent();
             ControlBox = false;
             TooltipTxt.Font = new Font("Arial Unicode MS", TooltipTxt.Font.Size);
-            TooltipTxt.BackColor = Color.SaddleBrown;
+            TooltipTxt.BackColor = SColor.SaddleBrown;
         }
 
-        private void TranslateCommand(string value)
+        private bool TranslateCommand(string value)
         {
-            TTextIndex textIndex;
+            if (m_Item == null)
+            {
+                Console.WriteLine("Failed to translate command, item is null, was it assigned beforehand ?");
+                return false;
+            }
+
+            TTextIndex? textIndex;
             switch (value)
             {
                 case "#9#":
-                    switch ((ItemQualityEnum)m_Item.ItemQuality)
+                    switch ((QualityType)m_Item.ItemQuality)
                     {
-                        case ItemQualityEnum.Gray:
-                            TooltipTxt.SelectionColor = Color.Gray;
+                        case QualityType.Gray:
+                            TooltipTxt.SelectionColor = SColor.Gray;
                             break;
-                        case ItemQualityEnum.White:
-                            TooltipTxt.SelectionColor = Color.White;
+                        case QualityType.White:
+                            TooltipTxt.SelectionColor = SColor.White;
                             break;
-                        case ItemQualityEnum.Green:
-                            TooltipTxt.SelectionColor = Color.Green;
+                        case QualityType.Green:
+                            TooltipTxt.SelectionColor = SColor.Green;
                             break;
-                        case ItemQualityEnum.Blue:
-                            TooltipTxt.SelectionColor = Color.Blue;
+                        case QualityType.Blue:
+                            TooltipTxt.SelectionColor = SColor.Blue;
                             break;
-                        case ItemQualityEnum.Orange:
-                            TooltipTxt.SelectionColor = Color.Orange;
+                        case QualityType.Orange:
+                            TooltipTxt.SelectionColor = SColor.Orange;
                             break;
-                        case ItemQualityEnum.Gold:
-                            TooltipTxt.SelectionColor = Color.Gold;
+                        case QualityType.Gold:
+                            TooltipTxt.SelectionColor = SColor.Gold;
                             break;
-                        case ItemQualityEnum.Purple:
-                            TooltipTxt.SelectionColor = Color.Purple;
+                        case QualityType.Purple:
+                            TooltipTxt.SelectionColor = SColor.Purple;
                             break;
-                        case ItemQualityEnum.Red:
-                            TooltipTxt.SelectionColor = Color.Red;
+                        case QualityType.Red:
+                            TooltipTxt.SelectionColor = SColor.Red;
                             break;
                     }
                     TooltipTxt.AppendText(m_Item.Name + "\n");
                     break;
 
                 case "#12#":
-                    TooltipTxt.SelectionColor = Color.White;
+                    TooltipTxt.SelectionColor = SColor.White;
                     textIndex = TTextIndexDatabase.GetByIndex(72);
                     if (textIndex != null)
                         TooltipTxt.AppendText(textIndex.Value + "\n");
@@ -65,7 +64,7 @@ namespace GFEditor.Editor
                     break;
 
                 case "#79#": // Reverse bound.
-                    TooltipTxt.SelectionColor = Color.AliceBlue;
+                    TooltipTxt.SelectionColor = SColor.AliceBlue;
                     textIndex = TTextIndexDatabase.GetByIndex(11971);
                     if (textIndex != null)
                         TooltipTxt.AppendText(textIndex.Value + "\n");
@@ -73,20 +72,20 @@ namespace GFEditor.Editor
                         TooltipTxt.AppendText("You can reverse this item's bound status. (Not from T_TextIndex)\n");
                     break;
                 case "#82#": // Unknown
-                    TooltipTxt.SelectionColor = Color.White;
+                    TooltipTxt.SelectionColor = SColor.White;
                     TooltipTxt.AppendText("{Unknown Parameters}\n");
                     break;
                 case "#83#": // Star for Holy Equipment. (Graphics)
                     if (m_Item.IsHoly())
                     {
-                        TooltipTxt.SelectionColor = Color.Red;
+                        TooltipTxt.SelectionColor = SColor.Red;
                         TooltipTxt.AppendText("✩✩✩✩✩\n"); // No text for star.
                     }
                     break;
                 case "#84#": // Eligible for Holy Equipment Enchant.
                     if (m_Item.IsHoly())
                     {
-                        TooltipTxt.SelectionColor = Color.AliceBlue;
+                        TooltipTxt.SelectionColor = SColor.AliceBlue;
                         textIndex = TTextIndexDatabase.GetByIndex(16563);
                         if (textIndex != null)
                             TooltipTxt.AppendText(textIndex.Value + "\n"); // 16563 is for the correct text.
@@ -95,15 +94,18 @@ namespace GFEditor.Editor
                     } 
                     break;
                 default:
-                    TooltipTxt.SelectionColor = Color.White;
+                    TooltipTxt.SelectionColor = SColor.White;
                     TooltipTxt.AppendText(value + "\n");
                     break;
             }
+
+            return true;
         }
 
         private void MakeTooltip()
         {
             TooltipTxt.Clear(); // Remove previous text if any.
+
             // First, get the tooltip format in the translation file (T_TextIndex)
             var tooltipText = TTextIndexDatabase.GetByStringInText("#9#");
             if (tooltipText != null)
@@ -111,7 +113,8 @@ namespace GFEditor.Editor
                 var list = tooltipText.Value.Split('\n');
                 foreach (var str in list)
                 {
-                    TranslateCommand(str);
+                    if (!TranslateCommand(str)) // false = no_item, avoid spamming logs with the same info...
+                        break;
                 }
             }
             else

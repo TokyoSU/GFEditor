@@ -1,17 +1,15 @@
-﻿using Newtonsoft.Json;
-using System;
-
-namespace GFEditor.Structs
+﻿namespace GFEditor.Structs
 {
     public class TTextIndex : IComparable<TTextIndex>
     {
         [JsonProperty]
         public int Index;
         [JsonProperty]
-        public string Value;
+        public required string Value;
 
-        public int CompareTo(TTextIndex other)
+        public int CompareTo(TTextIndex? other)
         {
+            if (other == null) return 1;
             if (Index < other.Index) return -1;
             if (Index > other.Index) return 1;
             return 0;

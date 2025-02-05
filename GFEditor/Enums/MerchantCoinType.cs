@@ -1,6 +1,6 @@
 ﻿namespace GFEditor.Enums
 {
-    public enum MerchantCoinsEnum: int
+    public enum MerchantCoinType: byte
     {
         None = 0,
         Gold = 1,

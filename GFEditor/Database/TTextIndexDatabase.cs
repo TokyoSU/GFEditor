@@ -1,21 +1,12 @@
-﻿using GFEditor.Structs;
-using GFEditor.Utils;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-
-namespace GFEditor.Database
+﻿namespace GFEditor.Database
 {
     public static class TTextIndexDatabase
     {
-        private static List<TTextIndex> m_Database = new List<TTextIndex>();
+        private static List<TTextIndex>? m_Database = [];
 
         public static void Load()
         {
-            m_Database.Clear(); // Clear previous database if we try to load again.
+            m_Database?.Clear(); // Clear previous database if we try to load again.
 
             if (!File.Exists(Constants.AssetJTTextIndex))
             {
@@ -29,38 +20,49 @@ namespace GFEditor.Database
 
         private static void LoadIni()
         {
-            var wholeFile = File.ReadAllText(Constants.AssetOrigTTextIndex, StringConverter.Big5);
+            var wholeFile = File.ReadAllText(Constants.AssetOrigTTextIndex, StringConverter.GetChinese());
             var lines = wholeFile.Split('|').ToList();
             for (int index = 0; index < lines.Count - 1; index += 2)
             {
-                m_Database.Add(new TTextIndex()
+                m_Database?.Add(new TTextIndex()
                 {
                     Index = lines.GetInt(index + 0),
                     Value = lines[index + 1]
                 });
             }
-            m_Database.Sort();
+            m_Database?.Sort();
         }
 
         public static void Save()
         {
             // Save new ini file:
             var stringBuilder = new StringBuilder();
-            foreach (var item in m_Database)
-                stringBuilder.AppendLine(item.ToString());
+            if (m_Database != null)
+            {
+                foreach (var item in m_Database)
+                {
+                    if (item != null)
+                        stringBuilder.AppendLine(item.ToString());
+                }
+            }
             using (var fileStream = new FileStream(Constants.AssetTTextIndex, FileMode.Create))
-            using (var writer = new StreamWriter(fileStream, StringConverter.Big5))
+            using (var writer = new StreamWriter(fileStream, StringConverter.GetChinese()))
                 writer.Write(stringBuilder.ToString());
 
-            SaveHelper.SaveJson(Constants.AssetJTTextIndex, m_Database);
+            if (m_Database != null) SaveHelper.SaveJson(Constants.AssetJTTextIndex, m_Database);
         }
 
-        public static TTextIndex GetByIndex(int index)
+        public static TTextIndex? GetByIndex(int index)
         {
             if (index < 1)
             {
                 Console.WriteLine($"Failed to find index: {index}, Out of range, Min: {DATA_GetMinIndex()}, Max: {DATA_GetMaxIndex()}");
                 return null; // NOTE: Index start at 1 not 0 !
+            }
+            if (m_Database == null)
+            {
+                Console.WriteLine($"Failed to find index: {index} in the TTextIndex::Index database, database is null, was it loaded ?");
+                return null;
             }
             var result = m_Database.Find(e => e.Index == index);
             if (result != null) return result;
@@ -68,8 +70,13 @@ namespace GFEditor.Database
             return null;
         }
 
-        public static TTextIndex GetByStringInText(string text)
+        public static TTextIndex? GetByStringInText(string text)
         {
+            if (m_Database == null)
+            {
+                Console.WriteLine($"Failed to find string: {text} in the TTextIndex::Value database, database is null, was it loaded ?");
+                return null;
+            }
             for (int i = 0; i < m_Database.Count; i++)
             {
                 var value = m_Database[i];
@@ -82,6 +89,11 @@ namespace GFEditor.Database
 
         private static int DATA_GetMinIndex()
         {
+            if (m_Database == null)
+            {
+                Console.WriteLine("Failed to get minimum index of TextIndex database, database is null, was it loaded ?");
+                return 0;
+            }
             int min = int.MaxValue;
             m_Database.ForEach(e =>
             {
@@ -93,6 +105,11 @@ namespace GFEditor.Database
 
         private static int DATA_GetMaxIndex()
         {
+            if (m_Database == null)
+            {
+                Console.WriteLine("Failed to get minimum index of TextIndex database, database is null, was it loaded ?");
+                return 0;
+            }
             int max = 0;
             m_Database.ForEach(e =>
             {

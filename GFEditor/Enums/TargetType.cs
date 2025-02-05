@@ -1,6 +1,6 @@
 ﻿namespace GFEditor.Enums
 {
-    public enum ItemTargetEnum: int
+    public enum TargetType: byte
     {
         None = 0,
         NotUsed = 1,

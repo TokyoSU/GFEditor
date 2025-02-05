@@ -1,6 +1,6 @@
 ﻿namespace GFEditor.Enums
 {
-    public enum AttributeTypeEnum: int
+    public enum AttributeType: byte
     {
         None = 0,
         Holy = 1,

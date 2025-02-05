@@ -1,6 +1,6 @@
 ﻿namespace GFEditor.Enums
 {
-    public enum ReputationEnum: int
+    public enum ReputationType: byte
     {
         None = 0,
         Kaslow_Royal_Famity = 1,

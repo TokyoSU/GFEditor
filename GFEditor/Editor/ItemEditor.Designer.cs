@@ -2525,8 +2525,7 @@
             "G00007",
             "G00008",
             "G00009",
-            "G00010",
-            "G00020"});
+            "G00010"});
             this.DropChestBox.Location = new System.Drawing.Point(556, 15);
             this.DropChestBox.MaxDropDownItems = 11;
             this.DropChestBox.Name = "DropChestBox";

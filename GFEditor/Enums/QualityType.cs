@@ -1,6 +1,6 @@
 ﻿namespace GFEditor.Enums
 {
-    public enum ItemQualityEnum: int
+    public enum QualityType: byte
     {
         White = 0,
         Gray = 1,

@@ -1,43 +1,54 @@
-﻿using GFEditor.Structs;
-using GFEditor.Utils;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-
-namespace GFEditor.Database
+﻿namespace GFEditor.Database
 {
     public class ItemDatabaseHolder
     {
         [JsonProperty]
-        public List<CSItem> Items = new List<CSItem>();
+        public List<CSItem> Items = [];
     }
 
     public static class CSItemDatabase
     {
-        private static List<CSItem> m_Database = new List<CSItem>();
-        private static readonly List<CSItem> m_DatabaseServer = new List<CSItem>();
+        private static List<CSItem>? m_Database = [];
+        private static readonly List<CSItem>? m_DatabaseServer = [];
 
-        public static CSItem GetItemByIndex(int index)
+        public static CSItem? GetItemByIndex(int index)
         {
+            if (m_Database == null)
+            {
+                Console.WriteLine($"Failed to get item by index: {index}, database is null, was it loaded ?");
+                return null;
+            }
             return m_Database.Find(x => x.Index == index);
         }
 
-        public static List<int> GetIndexList()
+        public static List<int>? GetIndexList()
         {
+            if (m_Database == null)
+            {
+                Console.WriteLine("Failed to get item index list, database is null, was it loaded ?");
+                return null;
+            }
             return m_Database.Select(item => item.Index).ToList();
         }
 
-        public static List<string> GetUsedSoundNameList()
+        public static List<string>? GetUsedSoundNameList()
         {
+            if (m_Database == null)
+            {
+                Console.WriteLine("Failed to get used sound names list, database is null, was it loaded ?");
+                return null;
+            }
             return m_Database.Where(item => !string.IsNullOrWhiteSpace(item.UsedSoundName)).Select(item => item.UsedSoundName).ToList();
         }
 
         public static int FindMissingIndex()
         {
+            if (m_Database == null)
+            {
+                Console.WriteLine("Failed to find missing index, database is null, was it loaded ?");
+                return 0;
+            }
+
             // Check for the begin (0 -> 9000~) since it could be missing.
             for (int i = 1; i < m_Database.Count - 1; i++) // ID start at 1
             {
@@ -59,12 +70,19 @@ namespace GFEditor.Database
             return -1;
         }
 
-        public static void CreateNewItem()
+        public static bool CreateNewItem()
         {
+            if (m_Database == null)
+            {
+                Console.WriteLine("Failed to create new item, database is null, was it loaded beforehand ?");
+                return false;
+            }
+
             var item = new CSItem()
             {
                 Index = 0,
                 Name = "NewItem",
+                IconFilename = string.Empty,
                 UsedSoundName = string.Empty,
                 ModelFilename = "G00005",
                 ModelId = string.Empty, // Default
@@ -86,12 +104,13 @@ namespace GFEditor.Database
             }
 
             m_Database.Sort();
+            return true;
         }
 
         public static void Load()
         {
-            m_Database.Clear();
-            m_DatabaseServer.Clear();
+            m_Database?.Clear();
+            m_DatabaseServer?.Clear();
 
             if (!File.Exists(Constants.AssetJItemPath))
             {
@@ -104,25 +123,37 @@ namespace GFEditor.Database
                 m_Database = JsonConvert.DeserializeObject<List<CSItem>>(File.ReadAllText(Constants.AssetJItemPath, Encoding.UTF8)); // Already contains server data.
             }
 
-            m_DatabaseServer.Clear(); // No need for server anymore since it was combined.
+            m_DatabaseServer?.Clear(); // No need for server anymore since it was combined.
         }
 
         public static void Save()
         {
+            if (m_Database == null)
+            {
+                Console.WriteLine("Failed to save items database, database is null, was it loaded ?");
+                return;
+            }
+
             // Save client
             var build = new StringBuilder();
             build.AppendLine("|V.16|93|"); // TODO: Unhardcoded this, load it through the client/server ini file !
             foreach (var item in m_Database)
                 build.AppendLine(item.ToString());
-            File.WriteAllText(Constants.AssetCItemPath, build.ToString(), StringConverter.Big5);
-            File.WriteAllText(Constants.AssetSItemPath, build.ToString(), StringConverter.Big5); // Client and server is the same.
+            File.WriteAllText(Constants.AssetCItemPath, build.ToString(), StringConverter.GetChinese());
+            File.WriteAllText(Constants.AssetSItemPath, build.ToString(), StringConverter.GetChinese()); // Client and server is the same.
 
             SaveHelper.SaveJson(Constants.AssetJItemPath, m_Database);
         }
 
         private static void LoadIni()
         {
-            var wholeFile = File.ReadAllText(Constants.AssetOrigCItemPath, StringConverter.Big5);
+            if (m_Database == null)
+            {
+                Console.WriteLine("Failed to load items database, database is null, was it initialized beforehand ?");
+                return;
+            }
+
+            var wholeFile = File.ReadAllText(Constants.AssetOrigCItemPath, StringConverter.GetChinese());
             var lines = wholeFile.Split('|').ToList();
             for (int index = 3; index < lines.Count - 3; index += 93)
                 m_Database.Add(Read(lines, index));
@@ -131,7 +162,13 @@ namespace GFEditor.Database
 
         private static void LoadIniServer()
         {
-            var wholeFile = File.ReadAllText(Constants.AssetOrigSItemPath, StringConverter.Big5);
+            if (m_DatabaseServer == null)
+            {
+                Console.WriteLine("Failed to load items server database, database is null, was it initialized beforehand ?");
+                return;
+            }
+
+            var wholeFile = File.ReadAllText(Constants.AssetOrigSItemPath, StringConverter.GetChinese());
             var lines = wholeFile.Split('|').ToList();
             for (int index = 3; index < lines.Count - 3; index += 93)
                 m_DatabaseServer.Add(Read(lines, index));
@@ -164,6 +201,17 @@ namespace GFEditor.Database
 
         private static void CombineBoth()
         {
+            if (m_Database == null)
+            {
+                Console.WriteLine("Failed to combine items database, database is null, was it initialized beforehand ?");
+                return;
+            }
+            if (m_DatabaseServer == null)
+            {
+                Console.WriteLine("Failed to combine items server database, server database is null, was it initialized beforehand ?");
+                return;
+            }
+
             m_Database.ForEach(item =>
             {
                 var matchingItem = m_DatabaseServer.FirstOrDefault(servItem => servItem.Index == item.Index);

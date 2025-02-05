@@ -1,9 +1,7 @@
-﻿using System;
-
-namespace GFEditor.Enums
+﻿namespace GFEditor.Enums
 {
     [Flags]
-    public enum ClassTypeEnum : ulong
+    public enum ClassType : ulong
     {
         None = 0x0,
         Novice = 0x1,

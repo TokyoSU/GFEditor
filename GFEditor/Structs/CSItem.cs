@@ -1,11 +1,4 @@
-﻿using GFEditor.Enums;
-using Newtonsoft.Json;
-using System;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-
-namespace GFEditor.Structs
+﻿namespace GFEditor.Structs
 {
     /// <summary>
     /// 92 entries. (Starting from 0)
@@ -15,11 +8,11 @@ namespace GFEditor.Structs
         [JsonProperty]
         public int Index;
         [JsonProperty]
-        public string IconFilename;
+        public required string IconFilename;
         [JsonProperty]
-        public string ModelId; // Item model
+        public required string ModelId; // Item model
         [JsonProperty]
-        public string ModelFilename; // Chest model
+        public required string ModelFilename; // Chest model
         [JsonProperty]
         public int WeaponEffectId;
         [JsonProperty]
@@ -27,11 +20,11 @@ namespace GFEditor.Structs
         [JsonProperty]
         public int UsedEffectId;
         [JsonProperty]
-        public string UsedSoundName;
+        public required string UsedSoundName;
         [JsonProperty]
         public int EnchanceEffectId;
         [JsonProperty]
-        public string Name;
+        public required string Name;
         [JsonProperty]
         public int ItemType;
         [JsonProperty]
@@ -181,7 +174,7 @@ namespace GFEditor.Structs
         [JsonProperty]
         public int Price; // GG/SS/CC gold, silver, copper. or count if other than gold.
         [JsonProperty]
-        public string RestrictEventPosition; // NOTE: RestrictEventPosId is a position of X and Y separated by ';'
+        public required string RestrictEventPosition; // NOTE: RestrictEventPosId is a position of X and Y separated by ';'
         [JsonProperty]
         public int MissionIndex;
         [JsonProperty]
@@ -197,18 +190,19 @@ namespace GFEditor.Structs
         [JsonProperty]
         public int ExtraData03;
         [JsonProperty]
-        public string Tip;
+        public required string Tip;
 
         /// <summary>
         /// Is red equipment ?
         /// </summary>
         public bool IsHoly()
         {
-            return (ItemTypeEnum)ItemType == ItemTypeEnum.HolyItem;
+            return (ItemType)ItemType == Enums.ItemType.HolyItem;
         }
 
-        public int CompareTo(CSItem other)
+        public int CompareTo(CSItem? other)
         {
+            if (other == null) return 1;
             if (Index < other.Index) return -1;
             if (Index > other.Index) return 1;
             return 0;

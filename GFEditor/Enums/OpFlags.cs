@@ -1,9 +1,7 @@
-﻿using System;
-
-namespace GFEditor.Enums
+﻿namespace GFEditor.Enums
 {
     [Flags]
-    public enum ItemOpFlags : uint
+    public enum OpFlags : uint
     {
         None = 0x0,
         CanUse = 0x1,

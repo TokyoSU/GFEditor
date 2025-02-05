@@ -1,6 +1,6 @@
 ﻿namespace GFEditor.Enums
 {
-    public enum AuctionTypeEnum: int
+    public enum AuctionType: byte
     {
         None = 0,
         Weapon_OneHandSword = 1,

@@ -1,14 +1,16 @@
-﻿using System.Text;
-
-namespace GFEditor.Utils
+﻿namespace GFEditor.Utils
 {
     public static class StringConverter
     {
-        public static readonly Encoding Big5 = Encoding.GetEncoding("Big5");
+        /// <summary>
+        /// Register code page encodings, required for big5 encoding type.
+        /// </summary>
+        public static void Initialize() => Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        public static Encoding GetChinese() => Encoding.GetEncoding("big5");
 
         public static byte[] ToStringBig5(this string str)
         {
-            return Big5.GetBytes(str);
+            return GetChinese().GetBytes(str);
         }
 
 

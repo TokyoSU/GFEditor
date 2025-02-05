@@ -1,12 +1,4 @@
-﻿using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Jpeg;
-using SixLabors.ImageSharp.Formats;
-using System.Drawing.Imaging;
-using System.IO;
-using SLImage = SixLabors.ImageSharp.Image;
-using WLImage = global::System.Drawing.Image;
-
-namespace GFEditor.Utils
+﻿namespace GFEditor.Utils
 {
     public static class ImageConverter
     {
@@ -17,11 +9,9 @@ namespace GFEditor.Utils
         /// <returns>An byte array containing the JPG format Image</returns>
         public static byte[] ToArray(this SLImage imageIn)
         {
-            using (MemoryStream ms = new MemoryStream())
-            {
-                imageIn.Save(ms, JpegFormat.Instance);
-                return ms.ToArray();
-            }
+            using var ms = new MemoryStream();
+            imageIn.Save(ms, JpegFormat.Instance);
+            return ms.ToArray();
         }
 
         /// <summary>
@@ -32,11 +22,9 @@ namespace GFEditor.Utils
         /// <returns>An byte array containing the JPG format Image</returns>
         public static byte[] ToArray(this SLImage imageIn, IImageFormat fmt)
         {
-            using (MemoryStream ms = new MemoryStream())
-            {
-                imageIn.Save(ms, fmt);
-                return ms.ToArray();
-            }
+            using var ms = new MemoryStream();
+            imageIn.Save(ms, fmt);
+            return ms.ToArray();
         }
 
         /// <summary>
@@ -57,11 +45,9 @@ namespace GFEditor.Utils
         /// <returns>An array of bytes</returns>
         public static byte[] ToArray(this WLImage imageIn, ImageFormat fmt)
         {
-            using (MemoryStream ms = new MemoryStream())
-            {
-                imageIn.Save(ms, fmt);
-                return ms.ToArray();
-            }
+            using var ms = new MemoryStream();
+            imageIn.Save(ms, fmt);
+            return ms.ToArray();
         }
 
         /// <summary>
@@ -71,14 +57,14 @@ namespace GFEditor.Utils
         /// <returns>The reconstructed Image</returns>
         public static SLImage ToImage(this byte[] byteArrayIn)
         {
-            using (MemoryStream ms = new MemoryStream(byteArrayIn))
-                return SLImage.Load(ms);
+            using var ms = new MemoryStream(byteArrayIn);
+            return SLImage.Load(ms);
         }
 
         public static WLImage ToNetImage(this byte[] byteArrayIn)
         {
-            using (MemoryStream ms = new MemoryStream(byteArrayIn))
-                return WLImage.FromStream(ms);
+            using var ms = new MemoryStream(byteArrayIn);
+            return WLImage.FromStream(ms);
         }
     }
 }

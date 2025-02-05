@@ -1,11 +1,9 @@
-﻿using SixLabors.ImageSharp;
-
-namespace GFEditor.Structs
+﻿namespace GFEditor.Structs
 {
     public class CSItemImg
     {
-        public string Filename;
-        public Image Image;
+        public required string Filename;
+        public required SLImage Image;
     }
 
 }

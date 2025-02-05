@@ -1,6 +1,6 @@
 ﻿namespace GFEditor.Enums
 {
-    public enum ItemSpecialTypeEnum: int
+    public enum SpecialType: byte
     {
         None = 0,
         Beast = 1,

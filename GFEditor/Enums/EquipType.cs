@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace GFEditor.Enums
+﻿namespace GFEditor.Enums
 {
-    public enum EquipTypeEnum: int
+    public enum EquipType: byte
     {
         None = 0,
         Head = 1,

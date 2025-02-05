@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace GFEditor.Enums
+﻿namespace GFEditor.Enums
 {
-    public enum ItemTypeEnum: int
+    public enum ItemType: short
     {
         None = 0,
         Head = 1,

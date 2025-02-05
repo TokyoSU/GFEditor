@@ -1,11 +1,12 @@
-﻿using GFEditor.Database;
-using GFEditor.Editor;
-using System;
-
-namespace GFEditor
+﻿namespace GFEditor
 {
-    public class Program
+    public static class Program
     {
+        private static void InitializeLibraries()
+        {
+            StringConverter.Initialize();
+        }
+
         private static void LoadAllDatabase()
         {
             // Client/Server
@@ -29,10 +30,10 @@ namespace GFEditor
             TTextIndexDatabase.Save();
         }
 
-        [STAThread] // Required cause Form dont support multithreading except through the BackgroundWorker.
-        private static void Main(string[] args)
+        [STAThread]
+        private static void Main()
         {
-            Console.Title = "GFEditor";
+            InitializeLibraries();
             LoadAllDatabase();
             new ItemEditor().ShowDialog(); // TODO: Change with a global panel.
             SaveAllDatabase();
