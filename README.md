@@ -3,8 +3,8 @@ Only compatible with 076 because of how the ini files are done (and the structur
 ### Take in account this tool is still wip and there could be some bug !
 
 ## Item Editor
-![itemeditor](https://github.com/user-attachments/assets/44c2ec85-9bf9-47e3-9609-eac3f7e9470b)
-![Capture d'écran 2025-02-03 115413](https://github.com/user-attachments/assets/2a43fd3d-9da0-4296-a7f9-479906bc769f)
-![Capture d'écran 2025-02-03 115427](https://github.com/user-attachments/assets/b4a053bb-2930-42f1-aa2a-990a98f5a495)
+![Capture d'écran 2025-02-05 203502](https://github.com/user-attachments/assets/eb72181c-1ca5-4db3-ae01-d05521318fd0)
+![Capture d'écran 2025-02-05 203515](https://github.com/user-attachments/assets/d2edd3ec-2cd5-48f2-8c39-0c798ae81a9c)
+![Capture d'écran 2025-02-05 203509](https://github.com/user-attachments/assets/45ca1272-7cc3-4f2a-b929-d2dc424b20ab)
 ### The tooltip is still WIP:
-![Capture d'écran 2025-02-03 115439](https://github.com/user-attachments/assets/99bd9b49-f3c9-4810-abd2-a0cadb337840)
+![Capture d'écran 2025-02-05 203523](https://github.com/user-attachments/assets/91ef2552-cb87-4b8f-a0e9-b1f5ce3bbbd9)
