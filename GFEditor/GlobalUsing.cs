@@ -1,18 +1,18 @@
-﻿global using System;
-global using System.Linq;
-global using System.Text;
+﻿global using System.Text;
 global using System.Reflection;
 global using System.Globalization;
 global using System.Drawing.Imaging;
-global using System.Collections.Generic;
-global using System.Threading.Tasks;
-global using System.Windows.Forms;
 
+global using GFEditor.Forms;
 global using GFEditor.Editor;
 global using GFEditor.Utils;
-global using GFEditor.Structs;
 global using GFEditor.Enums;
 global using GFEditor.Database;
+global using GFEditor.Database.ClientServer;
+global using GFEditor.Database.Translate;
+global using GFEditor.Structs.ClientServer;
+global using GFEditor.Structs.Editor;
+global using GFEditor.Structs.Translate;
 
 global using SixLabors.ImageSharp;
 global using SixLabors.ImageSharp.Formats.Jpeg;

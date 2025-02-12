@@ -3,12 +3,12 @@
     public enum AuctionType: byte
     {
         None = 0,
-        Weapon_OneHandSword = 1,
-        Weapon_OneHandHammer = 2,
-        Weapon_OneHandAxe = 3,
-        Weapon_TwoHandSword = 4,
-        Weapon_TwoHandHammer = 5,
-        Weapon_TwoHandAxe = 6,
+        Weapon_Sword = 1,
+        Weapon_Mace = 2,
+        Weapon_Axe = 3,
+        Weapon_Claymore = 4,
+        Weapon_WarHammer = 5,
+        Weapon_BattleAxe = 6,
         Weapon_Bow = 7,
         Weapon_Firearm = 8,
         Weapon_Relic = 9,

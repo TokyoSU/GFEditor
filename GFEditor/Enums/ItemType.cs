@@ -66,7 +66,6 @@
         PostCard = 61,
         Souvenir = 62,
         OptionalLuckyBag = 63,
-
         CombineRate = 8001,
         StrengthenRate = 8002,
         CookRate = 8003,
@@ -75,7 +74,6 @@
         RideCombinePoint = 8006,
         OpenUIStart = 9001,
         OpenUIEnd = 9999,
-
         Max = 10000
     }
 }

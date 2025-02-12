@@ -1,11 +1,14 @@
-﻿namespace GFEditor.Editor
+﻿using GFEditor.Structs.ClientServer;
+
+namespace GFEditor.Editor
 {
-    public partial class ItemOpPanel : Form
+    public partial class UI_ItemOpFlags : Form
     {
-        private CSItem? m_Item;
+        private static readonly Logger m_Log = LogManager.GetCurrentClassLogger();
+        private Item? m_Item;
         private readonly Dictionary<OpFlags, CheckBox> m_opCheckBoxDict;
         
-        public ItemOpPanel()
+        public UI_ItemOpFlags()
         {
             InitializeComponent();
             ControlBox = false;
@@ -49,7 +52,7 @@
         {
             if (m_Item == null)
             {
-                Console.WriteLine("Failed to populate item opflags, item is null, was it assigned beforehand ?");
+                m_Log.Info("Failed to populate item opflags, item is null, was it assigned beforehand ?");
                 return;
             }
             var flag = (OpFlags)m_Item.OpFlags;
@@ -62,7 +65,7 @@
             }
         }
 
-        public void SetItem(CSItem item)
+        public void SetItem(Item item)
         {
             m_Item = item;
             if (m_Item != null) PopulateOpFlags();

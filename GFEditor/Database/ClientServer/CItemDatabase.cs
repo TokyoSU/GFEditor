@@ -1,53 +1,43 @@
-﻿namespace GFEditor.Database
+﻿using GFEditor.Structs.ClientServer;
+
+namespace GFEditor.Database.ClientServer
 {
-    public class ItemDatabaseHolder
+    public static class CItemDatabase
     {
-        [JsonProperty]
-        public List<CSItem> Items = [];
-    }
+        private static readonly Logger m_Log = LogManager.GetCurrentClassLogger();
+        private static readonly string m_ClientFilePath = Constants.Parameters.ClientPath + "\\C_Item.ini";
+        private static readonly string m_ServerFilePath = Constants.Parameters.ServerPath + "\\S_Item.ini";
+        private static List<Item>? m_Database = [];
+        private static readonly List<Item>? m_DatabaseServer = [];
+        private static UI_Loader? m_Loader = null;
 
-    public static class CSItemDatabase
-    {
-        private static List<CSItem>? m_Database = [];
-        private static readonly List<CSItem>? m_DatabaseServer = [];
-
-        public static CSItem? GetItemByIndex(int index)
+        public static void SetLoader(UI_Loader? loader)
         {
-            if (m_Database == null)
-            {
-                Console.WriteLine($"Failed to get item by index: {index}, database is null, was it loaded ?");
-                return null;
-            }
+            m_Loader = loader;
+            m_Loader?.IncreaseClassMax();
+        }
+
+        public static Item? GetItemByIndex(int index)
+        {
+            if (m_Database == null) throw new AccessViolationException($"Failed to get item by index: {index}, database is null, was it loaded ?");
             return m_Database.Find(x => x.Index == index);
         }
 
         public static List<int>? GetIndexList()
         {
-            if (m_Database == null)
-            {
-                Console.WriteLine("Failed to get item index list, database is null, was it loaded ?");
-                return null;
-            }
+            if (m_Database == null) throw new AccessViolationException("Failed to get item index list, database is null, was it loaded ?");
             return m_Database.Select(item => item.Index).ToList();
         }
 
         public static List<string>? GetUsedSoundNameList()
         {
-            if (m_Database == null)
-            {
-                Console.WriteLine("Failed to get used sound names list, database is null, was it loaded ?");
-                return null;
-            }
+            if (m_Database == null) throw new AccessViolationException("Failed to get used sound names list, database is null, was it loaded ?");
             return m_Database.Where(item => !string.IsNullOrWhiteSpace(item.UsedSoundName)).Select(item => item.UsedSoundName).ToList();
         }
 
         public static int FindMissingIndex()
         {
-            if (m_Database == null)
-            {
-                Console.WriteLine("Failed to find missing index, database is null, was it loaded ?");
-                return 0;
-            }
+            if (m_Database == null) throw new AccessViolationException("Failed to find missing index, database is null, was it loaded ?");
 
             // Check for the begin (0 -> 9000~) since it could be missing.
             for (int i = 1; i < m_Database.Count - 1; i++) // ID start at 1
@@ -61,7 +51,7 @@
             for (int i = 0; i < m_Database.Count - 1; i++)
             {
                 int currentIndex = m_Database[i + 0].Index;
-                int nextIndex    = m_Database[i + 1].Index;
+                int nextIndex = m_Database[i + 1].Index;
                 // If there's a gap between current and next index
                 if (nextIndex > currentIndex + 1)
                     return currentIndex + 1;
@@ -70,15 +60,16 @@
             return -1;
         }
 
-        public static bool CreateNewItem()
+        /// <summary>
+        /// Create a new item.
+        /// </summary>
+        /// <param name="index">Return the index when a new item is added.</param>
+        /// <returns>True if success, false if not.</returns>
+        /// <exception cref="AccessViolationException">Thrown if m_Database is null.</exception>
+        public static bool CreateNewItem(out int index)
         {
-            if (m_Database == null)
-            {
-                Console.WriteLine("Failed to create new item, database is null, was it loaded beforehand ?");
-                return false;
-            }
-
-            var item = new CSItem()
+            if (m_Database == null) throw new AccessViolationException("Failed to create new item, database is null, was it initialized beforehand ?");
+            var item = new Item()
             {
                 Index = 0,
                 Name = "NewItem",
@@ -90,16 +81,16 @@
                 Tip = string.Empty
             };
 
-            int missingIndex = FindMissingIndex();
-            if (missingIndex == -1)
+            index = FindMissingIndex();
+            if (index == -1)
             {
-                Console.WriteLine("There is no gaps in item, adding new one.");
+                m_Log.Info("There is no gaps between item, adding new one.");
                 item.Index = m_Database.Count;
                 m_Database.Add(item);
             }
             else
             {
-                item.Index = missingIndex;
+                item.Index = index;
                 m_Database.Add(item);
             }
 
@@ -111,6 +102,7 @@
         {
             m_Database?.Clear();
             m_DatabaseServer?.Clear();
+            m_Loader?.SetClassProgress("Items");
 
             if (!File.Exists(Constants.AssetJItemPath))
             {
@@ -120,7 +112,9 @@
             }
             else
             {
-                m_Database = JsonConvert.DeserializeObject<List<CSItem>>(File.ReadAllText(Constants.AssetJItemPath, Encoding.UTF8)); // Already contains server data.
+                m_Loader?.SetCurProgress("Loading json database for items...", 50);
+                m_Database = JsonConvert.DeserializeObject<List<Item>>(File.ReadAllText(Constants.AssetJItemPath, Encoding.UTF8)); // Already contains server data.
+                m_Loader?.SetCurProgress("Loaded json database for items.", 100);
             }
 
             m_DatabaseServer?.Clear(); // No need for server anymore since it was combined.
@@ -128,56 +122,64 @@
 
         public static void Save()
         {
-            if (m_Database == null)
-            {
-                Console.WriteLine("Failed to save items database, database is null, was it loaded ?");
-                return;
-            }
-
-            // Save client
+            if (m_Database == null) throw new AccessViolationException("Failed to save items database, database is null, was it initialized beforehand ?");
             var build = new StringBuilder();
             build.AppendLine("|V.16|93|"); // TODO: Unhardcoded this, load it through the client/server ini file !
             foreach (var item in m_Database)
                 build.AppendLine(item.ToString());
-            File.WriteAllText(Constants.AssetCItemPath, build.ToString(), StringConverter.GetChinese());
-            File.WriteAllText(Constants.AssetSItemPath, build.ToString(), StringConverter.GetChinese()); // Client and server is the same.
-
+            File.WriteAllText(m_ClientFilePath, build.ToString(), StringConverter.GetChinese());
+            File.WriteAllText(m_ServerFilePath, build.ToString(), StringConverter.GetChinese()); // Client and server is the same.
             SaveHelper.SaveJson(Constants.AssetJItemPath, m_Database);
         }
 
         private static void LoadIni()
         {
-            if (m_Database == null)
-            {
-                Console.WriteLine("Failed to load items database, database is null, was it initialized beforehand ?");
-                return;
-            }
-
-            var wholeFile = File.ReadAllText(Constants.AssetOrigCItemPath, StringConverter.GetChinese());
+            if (m_Database == null) throw new AccessViolationException("Failed to load ini items database, database is null, was it initialized beforehand ?");
+            var wholeFile = File.ReadAllText(m_ClientFilePath, StringConverter.GetChinese());
             var lines = wholeFile.Split('|').ToList();
+
+            m_Loader?.SetCurProgress("Loading client and server files for items.", 0);
+
+            m_Loader?.EnableItem(true);
+            m_Loader?.SetItemProgress(string.Empty, 0);
+            m_Loader?.SetItemMaxProgress(lines.Count - 3);
             for (int index = 3; index < lines.Count - 3; index += 93)
+            {
+                m_Loader?.SetItemProgress("Loading item index: " + lines.GetInt(index + 0), index);
                 m_Database.Add(Read(lines, index));
+            }
             m_Database.Sort(); // Sort based on Index.
+            m_Loader?.SetItemMaxProgress(100);
+            m_Loader?.EnableItem(false);
+
+            m_Loader?.SetCurProgress("Loaded client ini files for items.", 25);
         }
 
         private static void LoadIniServer()
         {
-            if (m_DatabaseServer == null)
-            {
-                Console.WriteLine("Failed to load items server database, database is null, was it initialized beforehand ?");
-                return;
-            }
-
-            var wholeFile = File.ReadAllText(Constants.AssetOrigSItemPath, StringConverter.GetChinese());
+            if (m_DatabaseServer == null) throw new AccessViolationException("Failed to load items server database, server database is null, was it initialized beforehand ?");
+            var wholeFile = File.ReadAllText(m_ServerFilePath, StringConverter.GetChinese());
             var lines = wholeFile.Split('|').ToList();
+
+            m_Loader?.SetCurProgress("Loading server ini files for items.", 50);
+            m_Loader?.EnableItem(true);
+            m_Loader?.SetItemProgress(string.Empty, 0);
+            m_Loader?.SetItemMaxProgress(lines.Count - 3);
             for (int index = 3; index < lines.Count - 3; index += 93)
+            {
+                m_Loader?.SetItemProgress("Loading server item index: " + lines.GetInt(index + 0), index);
                 m_DatabaseServer.Add(Read(lines, index));
+            }
             m_DatabaseServer.Sort(); // Sort based on Index.
+            m_Loader?.SetItemMaxProgress(100);
+            m_Loader?.EnableItem(false);
+
+            m_Loader?.SetCurProgress("Loaded server ini files for items.", 75);
         }
 
-        private static void CombineItem(CSItem item, CSItem servItem)
+        private static void CombineItem(Item item, Item servItem)
         {
-            var fields = typeof(CSItem).GetFields(BindingFlags.Public | BindingFlags.Instance);
+            var fields = typeof(Item).GetFields(BindingFlags.Public | BindingFlags.Instance);
             foreach (var field in fields)
             {
                 var clientValue = field.GetValue(item);
@@ -201,28 +203,33 @@
 
         private static void CombineBoth()
         {
-            if (m_Database == null)
-            {
-                Console.WriteLine("Failed to combine items database, database is null, was it initialized beforehand ?");
-                return;
-            }
-            if (m_DatabaseServer == null)
-            {
-                Console.WriteLine("Failed to combine items server database, server database is null, was it initialized beforehand ?");
-                return;
-            }
+            if (m_Database == null) throw new AccessViolationException("Failed to combine items database, database is null, was it initialized beforehand ?");
+            if (m_DatabaseServer == null) throw new AccessViolationException("Failed to combine items server database, server database is null, was it initialized beforehand ?");
+            int index = 0;
 
+            m_Loader?.SetCurProgress("Combining client and server item data...", 75);
+
+            m_Loader?.EnableItem(true);
+            m_Loader?.SetItemProgress(string.Empty, 0);
+            m_Loader?.SetItemMaxProgress(m_Database.Count);
             m_Database.ForEach(item =>
             {
                 var matchingItem = m_DatabaseServer.FirstOrDefault(servItem => servItem.Index == item.Index);
                 if (matchingItem != null)
+                {
+                    m_Loader?.SetItemProgress("Combining index: " + matchingItem.Index, index++);
                     CombineItem(item, matchingItem);
+                }
             });
+            m_Loader?.SetItemMaxProgress(100);
+            m_Loader?.EnableItem(false);
+
+            m_Loader?.SetCurProgress("Combined client and server item data.", 100);
         }
 
-        private static CSItem Read(List<string> lines, int index)
+        private static Item Read(List<string> lines, int index)
         {
-            return new CSItem()
+            return new Item()
             {
                 Index = lines.GetInt(index + 0),
                 IconFilename = lines[index + 1],
@@ -265,7 +272,7 @@
                 AttackRange = lines.GetInt(index + 38),
                 AttackSpeed = lines.GetInt(index + 39),
                 Attack = lines.GetInt(index + 40),
-                RangeAttack = lines.GetInt(index + 41),
+                RangedAttack = lines.GetInt(index + 41),
                 PhysicoDefence = lines.GetInt(index + 42),
                 MagicDamage = lines.GetInt(index + 43),
                 MagicDefence = lines.GetInt(index + 44),

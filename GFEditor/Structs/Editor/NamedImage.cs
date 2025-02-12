@@ -1,9 +1,8 @@
-﻿namespace GFEditor.Structs
+﻿namespace GFEditor.Structs.Editor
 {
-    public class CSItemImg
+    public class NamedImage
     {
         public required string Filename;
         public required SLImage Image;
     }
-
 }

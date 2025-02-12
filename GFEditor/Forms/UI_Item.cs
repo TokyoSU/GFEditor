@@ -2,27 +2,30 @@
 
 namespace GFEditor.Editor
 {
-    public partial class ItemEditor : Form
+    public partial class UI_Item : Form
     {
-        private readonly List<CSItemImg> m_itemsImage = [];
-        private readonly List<CSItemImg> m_dropChestImage = [];
-        private readonly List<SoundPlayer> m_soundData = [];
-        private readonly ItemClassPanel m_classPanel = new();
-        private readonly ItemOpPanel m_itemPanel = new();
-        private readonly ItemTooltip m_tooltipPanel = new();
-        private CSItem? m_currentItem = null;
+        private static readonly Logger m_Log = LogManager.GetCurrentClassLogger();
+        private readonly UI_ItemClass m_classPanel = new();
+        private readonly UI_ItemOpFlags m_itemPanel = new();
+        private readonly UI_ItemTooltip m_tooltipPanel = new();
+        private Item? m_currentItem = null;
 
-        public ItemEditor()
+        public UI_Item()
         {
+            // Required for form.
             InitializeComponent();
-            InitializeDropChest();
-            InitializeItems();
-            LoadSounds();
+            ControlBox = false;
+        }
+
+        private void ItemForm_Shown(object sender, EventArgs e)
+        {
+            // Populating combobox and dropdown list.
+            PopulateDropChestList();
             PopulateItemImageList();
+            PopulateSoundList();
             PopulateItemList();
-            PopulateSndList();
             PopulateItemType();
-            PopulateEquipType();
+            PopulateItemEquipType();
             PopulateItemTargetType();
             PopulateReputationType();
             PopulateItemQualityType();
@@ -32,202 +35,173 @@ namespace GFEditor.Editor
             PopulateItemTimeLimitType();
             PopulateItemAuctionType();
             PopulateItemPriceType();
+            PopulateDefaultValues();
         }
 
-        private void InitializeDropChest()
-        {
-            m_dropChestImage.Add(new CSItemImg { Filename = "None", Image = SLImage.Load(Constants.NoChestDropImg) });
-            m_dropChestImage.Add(new CSItemImg { Filename = "G00001", Image = SLImage.Load(Constants.G00001Img) });
-            m_dropChestImage.Add(new CSItemImg { Filename = "G00002", Image = SLImage.Load(Constants.G00002Img) });
-            m_dropChestImage.Add(new CSItemImg { Filename = "G00003", Image = SLImage.Load(Constants.G00003Img) });
-            m_dropChestImage.Add(new CSItemImg { Filename = "G00004", Image = SLImage.Load(Constants.G00004Img) });
-            m_dropChestImage.Add(new CSItemImg { Filename = "G00005", Image = SLImage.Load(Constants.G00005Img) });
-            m_dropChestImage.Add(new CSItemImg { Filename = "G00006", Image = SLImage.Load(Constants.G00006Img) });
-            m_dropChestImage.Add(new CSItemImg { Filename = "G00007", Image = SLImage.Load(Constants.G00007Img) });
-            m_dropChestImage.Add(new CSItemImg { Filename = "G00008", Image = SLImage.Load(Constants.G00008Img) });
-            m_dropChestImage.Add(new CSItemImg { Filename = "G00009", Image = SLImage.Load(Constants.G00009Img) });
-            m_dropChestImage.Add(new CSItemImg { Filename = "G00010", Image = SLImage.Load(Constants.G00010Img) });
-            Console.WriteLine("Loaded drop chest image.");
-        }
-
-        private CSItem? GetCurrentItem()
+        private Item? GetCurrentItem()
         {
             if (int.TryParse(ItemList.Items[ItemList.SelectedIndex].ToString(), out var itemIndex))
             {
-                var foundItem = CSItemDatabase.GetItemByIndex(itemIndex);
+                var foundItem = CItemDatabase.GetItemByIndex(itemIndex);
                 if (foundItem != null)
                     return foundItem;
             }
-            else
-            {
-                Console.WriteLine("Failed to populate item property, ItemList.Items[ItemList.SelectedIndex] was not integer !");
-            }
+            else throw new InvalidCastException("Failed to populate item property, ItemList.Items[ItemList.SelectedIndex] was not integer !");
             return null;
-        }
-
-        private void InitializeItems()
-        {
-            var iconFiles = Directory.GetFiles(Constants.AssetItemPath);
-
-            m_itemsImage.Add(new CSItemImg()
-            {
-                Filename = "None",
-                Image = SLImage.Load(Constants.AssetItemPath + "NoItem.png"),
-            });
-
-            foreach (var iconFile in iconFiles)
-            {
-                var newImg = new CSItemImg
-                {
-                    Filename = Path.GetFileNameWithoutExtension(iconFile),
-                    Image = SLImage.Load(iconFile)
-                };
-                m_itemsImage.Add(newImg);
-            }
-
-            Console.WriteLine("Loaded items icon image.");
-        }
-
-        private void PopulateItemImageList()
-        {
-            m_itemsImage.ForEach(item =>
-            {
-                ItemImgList.Items.Add(item.Filename);
-            });
-
-            Console.WriteLine("Populated items image list.");
-        }
-
-        private void LoadSounds()
-        {
-            var soundFiles = Directory.GetFiles(Constants.AssetSoundPath);
-            if (soundFiles.Length <= 0) // if no sound found, copy it.
-                SoundHelper.CopyRequiredUsedSounds();
-
-            // Check again if there is any sound files.
-            soundFiles = Directory.GetFiles(Constants.AssetSoundPath);
-            m_soundData.Add(new SoundPlayer() { Name = "None", File = null, Player = null }); // No sound
-
-            foreach (var soundPath in soundFiles)
-            {
-                var snd = new SoundPlayer()
-                {
-                    Name = Path.GetFileNameWithoutExtension(soundPath),
-                    File = new AudioFileReader(soundPath),
-                    Player = new WaveOutEvent()
-                };
-                snd.Init();
-                m_soundData.Add(snd);
-            }
-
-            Console.WriteLine("Loaded sounds.");
-        }
-
-        private void PopulateSndList()
-        {
-            m_soundData.ForEach(item =>
-            {
-                UsedSndList.Items.Add(item.Name);
-            });
-            Console.WriteLine("[ItemEditor] Populated sound list.");
         }
 
         private void PopulateItemList()
         {
             ItemList.Items.Clear();
-            
-            var indexList = CSItemDatabase.GetIndexList();
+
+            var indexList = CItemDatabase.GetIndexList();
             if (indexList != null)
             {
-                foreach (var index in indexList)
-                    ItemList.Items.Add(index);
-                Console.WriteLine("[ItemEditor] Populated items list.");
+                ItemList.Items.AddRange([.. indexList]);
+                m_Log.Info("Populated items list.");
             }
             else
             {
-                Console.WriteLine("[ItemEditor] Error populating the items list, index list is null !");
+                throw new Exception("Error populating the items list, index list is null, did the item database was loaded ?");
             }
+        }
+
+        private void PopulateSoundList()
+        {
+            BasicAssetDatabase.PopulateSoundsList(UsedSndList);
+        }
+
+        private void PopulateItemImageList()
+        {
+            BasicAssetDatabase.PopulateItemImagesList(ItemImgList);
+        }
+
+        private void PopulateDropChestList()
+        {
+            BasicAssetDatabase.PopulateDropChestList(DropChestBox);
         }
 
         private void PopulateItemPriceType()
         {
+            PriceTypeBox.Items.Clear();
             PriceTypeBox.Items.AddRange(Enum.GetNames<MerchantCoinType>());
             PriceTypeBox.Items.RemoveAt(8); // Remove nothing.
+            m_Log.Info("Populated item price type.");
         }
 
         private void PopulateItemAuctionType()
         {
+            AuctionTypeBox.Items.Clear();
             AuctionTypeBox.Items.AddRange(Enum.GetNames<AuctionType>());
+            m_Log.Info("Populated item auction type.");
         }
 
         private void PopulateItemTimeLimitType()
         {
+            TimeLimitTypeBox.Items.Clear();
             TimeLimitTypeBox.Items.AddRange(Enum.GetNames<TimeLimitType>());
+            m_Log.Info("Populated item time limit type.");
         }
 
         private void PopulateItemEnchantTimeType()
         {
+            EnchantTimeTypeBox.Items.Clear();
             EnchantTimeTypeBox.Items.AddRange(Enum.GetNames<TimeType>());
+            m_Log.Info("Populated enchant time type.");
         }
 
         private void PopulateItemSpecialType()
         {
-            SpecialTypeBox.Items.AddRange(Enum.GetNames<SpecialType>());
+            SpecialTypeBox.Items.Clear();
+            SpecialTypeBox.Items.AddRange(Enum.GetNames<MonsterType>());
+            m_Log.Info("Populated item special type.");
         }
 
         private void PopulateItemAttributeType()
         {
+            AttributeTypeBox.Items.Clear();
             AttributeTypeBox.Items.AddRange(Enum.GetNames<AttributeType>());
+            m_Log.Info("Populated item attribute type.");
         }
 
         private void PopulateItemQualityType()
         {
+            ItemQualityBox.Items.Clear();
             ItemQualityBox.Items.AddRange(Enum.GetNames<QualityType>());
+            m_Log.Info("Populated item quality type.");
         }
 
         private void PopulateReputationType()
         {
+            RestrictReputationBox.Items.Clear();
             RestrictReputationBox.Items.AddRange(Enum.GetNames<ReputationType>());
+            m_Log.Info("Populated item reputation type.");
         }
 
         private void PopulateItemTargetType()
         {
+            TargetBox.Items.Clear();
             TargetBox.Items.AddRange(Enum.GetNames<TargetType>());
             TargetBox.Items.RemoveAt(1); // Remove nothing.
+            m_Log.Info("Populated item target type.");
         }
 
         private void PopulateItemType()
         {
             var itemTypeList = Enum.GetNames<ItemType>().ToList();
-            itemTypeList.RemoveRange(64, 9);
-            ItemTypeBox.Items.AddRange(itemTypeList.ToArray());
+            itemTypeList.RemoveRange(64, 9); // Remove everything after OptionalLuckyBag.
+            ItemTypeBox.Items.Clear();
+            ItemTypeBox.Items.AddRange([.. itemTypeList]);
+            m_Log.Info("Populated item type.");
         }
 
-        private void PopulateEquipType()
+        private void PopulateItemEquipType()
         {
+            EquipTypeBox.Items.Clear();
             EquipTypeBox.Items.AddRange(Enum.GetNames<EquipType>());
             EquipTypeBox.Items.RemoveAt(EquipTypeBox.Items.Count - 1); // Remove last which is 'Max', that's not an equip type.
+            m_Log.Info("Populated item equip type.");
         }
 
-        private void PopulateItemProperty(CSItem item)
+        private void PopulateDefaultValues()
+        {
+            ChestDropImg.Image = GFImageConverter.ToNetImage(BasicAssetDatabase.GetChestDropByIndex(0).Image.ToArray()); // It create a new file, this will need to be disposed off later.
+            ItemIconImg.Image = GFImageConverter.ToNetImage(BasicAssetDatabase.GetItemImageByIndex(0).Image.ToArray()); // Same free it later.
+            DropChestBox.SelectedIndex = 0;
+            ItemImgList.SelectedIndex = 0;
+            ItemList.SelectedIndex = 0;
+            UsedSndList.SelectedIndex = 0;
+            EquipTypeBox.SelectedIndex = 0;
+            TargetBox.SelectedIndex = 0;
+            RestrictReputationBox.SelectedIndex = 0;
+            ItemQualityBox.SelectedIndex = 0;
+            AttributeTypeBox.SelectedIndex = 0;
+            SpecialTypeBox.SelectedIndex = 0;
+            EnchantTimeTypeBox.SelectedIndex = 0;
+            TimeLimitTypeBox.SelectedIndex = 0;
+            AuctionTypeBox.SelectedIndex = 0;
+        }
+
+        private void PopulateItemProperty(Item item)
         {
             m_currentItem = item;
+
+            m_itemPanel.SetItem(item);
+            m_itemPanel.Update();
+            m_classPanel.SetItem(item);
+            m_classPanel.Update();
 
             ItemIndexTxt.Text = item.Index.ToString();
             ItemImgList.SelectIndexByName(item.IconFilename);
             ModelIDTxt.Text = string.IsNullOrEmpty(item.ModelId) ? "None" : item.ModelId;
             DropChestBox.SelectIndexByName(item.ModelFilename);
-            WeaponEffIDTxt.Text = item.WeaponEffectId.ToString();
-            FlyEffIDTxt.Text = item.FlyEffectId.ToString();
-            UsedEffIDTxt.Text = item.UsedEffectId.ToString();
+            WeaponEffectIdUD.Value = item.WeaponEffectId;
+            FlyEffectIdUD.Value = item.FlyEffectId;
+            UsedEffectIdUD.Value = item.UsedEffectId;
             UsedSndList.SelectIndexByName(item.UsedSoundName);
-            EnhanceEffIDTxt.Text = item.EnchanceEffectId.ToString();
-            NameTxt.Text = item.Name.ToString();
+            EnchanceEffectIdUD.Value = item.EnchanceEffectId;
             ItemTypeBox.SelectIndexByEnum((ItemType)item.ItemType);
             EquipTypeBox.SelectIndexByEnum((EquipType)item.EquipType);
-            m_itemPanel.SetItem(item); m_itemPanel.Update();
-            if (item.Target == 1)
-                item.Target = 0;
             TargetBox.SelectIndexByEnum((TargetType)item.Target);
 
             // Gender selection.
@@ -245,7 +219,6 @@ namespace GFEditor.Editor
             RebirthMaxScoreUD.Value = item.RebirthMaxScore;
             RestrictReputationBox.SelectIndexByEnum((ReputationType)item.RestrictReputation);
             RestrictReputationCountUD.Value = item.RestrictReputationCount;
-            m_classPanel.SetItem(item); m_classPanel.Update();
             ItemQualityBox.SelectIndexByEnum((QualityType)item.ItemQuality);
             ItemGroupUD.Value = item.ItemGroup;
             CastingTimeUD.Value = item.CastingTime;
@@ -263,7 +236,7 @@ namespace GFEditor.Editor
             AttackRangeUD.Value = item.AttackRange;
             AttackSpeedUD.Value = item.AttackSpeed;
             AttackUD.Value = item.Attack;
-            RangedAttackUD.Value = item.RangeAttack;
+            RangedAttackUD.Value = item.RangedAttack;
             PhysicalDefUD.Value = item.PhysicoDefence;
             MagicAttackUD.Value = item.MagicDamage;
             MagicalDefUD.Value = item.MagicDefence;
@@ -281,7 +254,7 @@ namespace GFEditor.Editor
             AttributeDamageUD.Value = item.AttributeDamage;
             AttributeRateUD.Value = item.AttributeRate;
             AttributeResistanceUD.Value = item.AttributeResist;
-            SpecialTypeBox.SelectIndexByEnum((SpecialType)item.SpecialType);
+            SpecialTypeBox.SelectIndexByEnum((MonsterType)item.SpecialType);
             SpecialRateUD.Value = item.SpecialRate;
             SpecialDmgUD.Value = item.SpecialDamage;
             DropRateUD.Value = item.DropRate;
@@ -314,79 +287,61 @@ namespace GFEditor.Editor
             ExtraData1UD.Value = item.ExtraData01;
             ExtraData2UD.Value = item.ExtraData02;
             ExtraData3UD.Value = item.ExtraData03;
-            TipTxt.Text = item.Tip;
+
+            if (Constants.Parameters.TranslateAutoOnLoad)
+            {
+                var itemText = TItemDatabase.GetByIndex(item.Index);
+                if (itemText != null)
+                {
+                    NameTxt.Text = itemText.Name;
+                    TipTxt.Text = itemText.Description;
+                }
+            }
+            else
+            {
+                NameTxt.Text = item.Name.ToString();
+                TipTxt.Text = item.Tip;
+            }
 
             // Update tooltip if the item changed.
             m_tooltipPanel.SetItem(item);
             m_tooltipPanel.Update();
         }
 
-        private void ItemEditor_Load(object sender, EventArgs e)
+        private void UIItem_Load(object sender, EventArgs e)
         {
-            ChestDropImg.Image = GFImageConverter.ToNetImage(m_dropChestImage[0].Image.ToArray()); // It create a new file, this will need to be disposed off later.
-            ItemIconImg.Image = GFImageConverter.ToNetImage(m_itemsImage[0].Image.ToArray()); // Same free it later.
-            DropChestBox.SelectedIndex = 0;
-            ItemImgList.SelectedIndex = 0;
-            ItemList.SelectedIndex = 0;
-            UsedSndList.SelectedIndex = 0;
-            EquipTypeBox.SelectedIndex = 0;
-            TargetBox.SelectedIndex = 0;
-            RestrictReputationBox.SelectedIndex = 0;
-            ItemQualityBox.SelectedIndex = 0;
-            AttributeTypeBox.SelectedIndex = 0;
-            SpecialTypeBox.SelectedIndex = 0;
-            EnchantTimeTypeBox.SelectedIndex = 0;
-            TimeLimitTypeBox.SelectedIndex = 0;
-            AuctionTypeBox.SelectedIndex = 0;
         }
 
-        private void ItemEditor_FormClosing(object sender, FormClosingEventArgs e)
+        private void UIItem_FormClosing(object sender, FormClosingEventArgs e)
         {
-            // Save database (project)
-            foreach (var sound in m_soundData)
-                sound?.Release();
-            Console.WriteLine("[ItemEditor] Released sounds.");
-
-            foreach (var item in m_itemsImage)
-                item.Image.Dispose();
             ItemIconImg.Image?.Dispose();
-            Console.WriteLine("[ItemEditor] Released items icon images.");
-
-            foreach (var img in m_dropChestImage)
-                img.Image.Dispose();
             ChestDropImg.Image?.Dispose();
-            Console.WriteLine("[ItemEditor] Released chest drop images.");
         }
 
         private void DropChestBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             ChestDropImg.Image?.Dispose(); // Dispose it to avoid memory leak !
-            ChestDropImg.Image = GFImageConverter.ToNetImage(m_dropChestImage[DropChestBox.SelectedIndex].Image.ToArray());
+            ChestDropImg.Image = GFImageConverter.ToNetImage(BasicAssetDatabase.GetChestDropByIndex(DropChestBox.SelectedIndex).Image.ToArray());
             if (m_currentItem != null)
-                m_currentItem.ModelFilename = m_dropChestImage[DropChestBox.SelectedIndex].Filename;
+                m_currentItem.ModelFilename = BasicAssetDatabase.GetChestDropByIndex(DropChestBox.SelectedIndex).Filename;
         }
 
         private void ItemImgList_SelectedIndexChanged(object sender, EventArgs e)
         {
             ItemIconImg.Image?.Dispose();
-            var obj = ItemImgList.Items[ItemImgList.SelectedIndex];
-            if (obj == null)
-            {
-                Console.WriteLine("Failed to update selected index image list, returned ItemImgList.Items[ItemImgList.SelectedIndex] is null !");
-                return;
-            }
-            var iconName = obj.ToString();
+
+            var iconName = ItemImgList.Items[ItemImgList.SelectedIndex] as string ?? throw new InvalidCastException("Failed to update selected index image list, convertion to string failed !");
             if (string.IsNullOrEmpty(iconName))
             {
-                Console.WriteLine("Failed to update selected index image list, returned obj.ToString() is null !");
+                m_Log.Error("Failed to update selected index image list, returned iconName is null or empty !");
                 return;
             }
-            var iconFile = iconName.ToLower();
-            var icon = m_itemsImage.Find(it => it.Filename.Contains(iconFile));
+
+            var icon = BasicAssetDatabase.GetItemImageByFilename(iconName.ToLower());
             if (icon != null)
                 ItemIconImg.Image = GFImageConverter.ToNetImage(icon.Image.ToArray());
             else
-                ItemIconImg.Image = GFImageConverter.ToNetImage(m_itemsImage[0].Image.ToArray());
+                ItemIconImg.Image = GFImageConverter.ToNetImage(BasicAssetDatabase.GetItemImageByIndex(0).Image.ToArray());
         }
 
         private void ItemList_SelectedIndexChanged(object sender, EventArgs e)
@@ -396,23 +351,33 @@ namespace GFEditor.Editor
                 PopulateItemProperty(foundItem);
         }
 
+        private void UsedSndList_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (m_currentItem != null)
+            {
+                var usedSoundName = UsedSndList.Items[UsedSndList.SelectedIndex] as string ?? throw new InvalidCastException("Failed to assign new used sound name, UsedSndList.Items[UsedSndList.SelectedIndex] as string returned null !");
+                if (string.IsNullOrEmpty(usedSoundName))
+                {
+                    m_Log.Error("Failed to update used sound name, returned usedSoundName is null or empty !");
+                    return;
+                }
+                m_currentItem.UsedSoundName = usedSoundName;
+            }
+        }
+
         private void TestSoundBtn_Click(object sender, EventArgs e)
         {
-            if (UsedSndList.SelectedIndex <= 0) // Avoid 0 because its "None"
-                return;
-            var obj = ItemImgList.Items[ItemImgList.SelectedIndex];
-            if (obj == null)
+            // Avoid 0 because its "None"
+            if (UsedSndList.SelectedIndex <= 0) return;
+
+            var usedSoundName = UsedSndList.Items[UsedSndList.SelectedIndex] as string ?? throw new InvalidCastException("Failed to test sound, returned UsedSndList.Items[UsedSndList.SelectedIndex] is null !");
+            if (string.IsNullOrEmpty(usedSoundName))
             {
-                Console.WriteLine("Failed to test sound, returned ItemImgList.Items[ItemImgList.SelectedIndex] is null !");
+                m_Log.Error("Failed to play used sound name, returned usedSoundName is null or empty !");
                 return;
             }
-            var soundName = obj.ToString();
-            if (string.IsNullOrEmpty(soundName))
-            {
-                Console.WriteLine("Failed to test sound, returned obj.ToString() is null !");
-                return;
-            }
-            var sound = m_soundData.Find(s => s.Name.Equals(soundName, StringComparison.CurrentCultureIgnoreCase));
+
+            var sound = BasicAssetDatabase.GetSoundByFilename(usedSoundName);
             sound?.Play();
         }
 
@@ -614,7 +579,7 @@ namespace GFEditor.Editor
         private void RangedAttackUD_ValueChanged(object sender, EventArgs e)
         {
             if (m_currentItem != null)
-                m_currentItem.RangeAttack = (int)RangedAttackUD.Value;
+                m_currentItem.RangedAttack = (int)RangedAttackUD.Value;
         }
 
         private void MagicAttackUD_ValueChanged(object sender, EventArgs e)
@@ -728,7 +693,7 @@ namespace GFEditor.Editor
 
         private void SpecialTypeBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var selectedEnumValue = Enum.GetValues<SpecialType>().ElementAtOrDefault(SpecialTypeBox.SelectedIndex); // Get enum value by index
+            var selectedEnumValue = Enum.GetValues<MonsterType>().ElementAtOrDefault(SpecialTypeBox.SelectedIndex); // Get enum value by index
             if (m_currentItem != null)
                 m_currentItem.SpecialType = (int)selectedEnumValue;
         }
@@ -895,16 +860,53 @@ namespace GFEditor.Editor
 
         private void TooltipBtn_Click(object sender, EventArgs e)
         {
-            m_tooltipPanel.Show(this);
+            if (!m_tooltipPanel.IsVisible())
+                m_tooltipPanel.Show(this);
         }
 
         private void AddNewItemBtn_Click(object sender, EventArgs e)
         {
-            if (CSItemDatabase.CreateNewItem())
+            if (CItemDatabase.CreateNewItem(out var newIndex))
             {
                 PopulateItemList();
-                ItemList.SelectedIndex = 0; // Reset index.
+                ItemList.SelectedIndex = newIndex <= 0 ? 0 : newIndex - 1; // Select the new item, -1 because SelectedIndex start at 0 and newIndex start at 1.
             }
+        }
+
+        private void ModelIDTxt_TextChanged(object sender, EventArgs e)
+        {
+            if (m_currentItem != null)
+                m_currentItem.ModelId = ModelIDTxt.Text;
+        }
+
+        private void SaveAndCloseBtn_Click(object sender, EventArgs e)
+        {
+            CItemDatabase.Save();
+            Hide();
+        }
+
+        private void WeaponEffectIdUD_ValueChanged(object sender, EventArgs e)
+        {
+            if (m_currentItem != null)
+                m_currentItem.WeaponEffectId = (int)WeaponEffectIdUD.Value;
+        }
+
+        private void FlyEffectIdUD_ValueChanged(object sender, EventArgs e)
+        {
+            if (m_currentItem != null)
+                m_currentItem.FlyEffectId = (int)FlyEffectIdUD.Value;
+        }
+
+        private void UsedEffectIdUD_ValueChanged(object sender, EventArgs e)
+        {
+            if (m_currentItem != null)
+                m_currentItem.UsedEffectId = (int)UsedEffectIdUD.Value;
+        }
+
+        private void EnchanceEffectIdUD_ValueChanged(object sender, EventArgs e)
+        {
+            if (m_currentItem != null)
+                m_currentItem.EnchanceEffectId = (int)EnchanceEffectIdUD.Value;
         }
     }
 }

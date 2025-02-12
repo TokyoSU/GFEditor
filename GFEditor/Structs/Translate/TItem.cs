@@ -1,13 +1,15 @@
-﻿namespace GFEditor.Structs
+﻿namespace GFEditor.Structs.Translate
 {
-    public class TTextIndex : IComparable<TTextIndex>
+    public class TItem : IComparable<TItem>
     {
         [JsonProperty]
         public int Index;
         [JsonProperty]
-        public required string Value;
+        public required string Name;
+        [JsonProperty]
+        public required string Description;
 
-        public int CompareTo(TTextIndex? other)
+        public int CompareTo(TItem? other)
         {
             if (other == null) return 1;
             if (Index < other.Index) return -1;
@@ -17,7 +19,7 @@
 
         public override string ToString()
         {
-            return $"{Index}|{Value}|";
+            return $"{Index}|{Name}|{Description}|";
         }
     }
 }

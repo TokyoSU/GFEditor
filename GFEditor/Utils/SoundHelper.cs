@@ -2,17 +2,19 @@
 {
     public static class SoundHelper
     {
+        private static readonly Logger m_Log = LogManager.GetCurrentClassLogger();
+
         /// <summary>
         /// Copy specific sound from the srcFolder to the Constants.AssetSoundPath folder.
         /// </summary>
         /// <param name="database">The item database.</param>
         public static void CopyRequiredUsedSounds()
         {
-            var soundList = CSItemDatabase.GetUsedSoundNameList();
+            var soundList = CItemDatabase.GetUsedSoundNameList();
             if (soundList == null) return;
             if (soundList.Count <= 0)
             {
-                Console.WriteLine($"No used sound name in item database found, failed to copy sound to: {Constants.AssetSoundPath}");
+                m_Log.Info($"No used sound name in item database found, failed to copy sound to: {Constants.AssetSoundPath}");
                 return;
             }
 
@@ -37,7 +39,7 @@
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.Message);
+                    m_Log.Error(ex.Message);
                 }
             }
         }

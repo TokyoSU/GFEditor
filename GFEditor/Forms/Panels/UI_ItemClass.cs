@@ -1,11 +1,13 @@
 ﻿namespace GFEditor.Editor
 {
-    public partial class ItemClassPanel : Form
+    public partial class UI_ItemClass : Form
     {
-        private CSItem? m_Item;
+        private static readonly Logger m_Log = LogManager.GetCurrentClassLogger();
         private readonly Dictionary<ClassType, CheckBox> m_classCheckBoxDict;
+        private Item? m_Item;
+        private bool m_Visible = false;
 
-        public ItemClassPanel()
+        public UI_ItemClass()
         {
             InitializeComponent();
             ControlBox = false;
@@ -75,11 +77,16 @@
             };
         }
 
+        /// <summary>
+        /// Does the item class UI is shown or hidden ?
+        /// </summary>
+        public bool IsVisible() => m_Visible;
+
         private void PopulateItemClassCheckbox()
         {
             if (m_Item == null)
             {
-                Console.WriteLine("Failed to populate item class restriction, item is null, was it assigned beforehand ?");
+                m_Log.Error("Failed to populate item class restriction, item is null, was it assigned beforehand ?");
                 return;
             }
             var flag = (ClassType)m_Item.RestrictClass;
@@ -92,7 +99,7 @@
             }
         }
 
-        public void SetItem(CSItem item)
+        public void SetItem(Item item)
         {
             m_Item = item;
             if (m_Item != null)
@@ -102,6 +109,12 @@
         private void OKBtn_Click(object sender, EventArgs e)
         {
             Hide();
+            m_Visible = false;
+        }
+
+        private void ItemClass_Shown(object sender, EventArgs e)
+        {
+            m_Visible = true;
         }
 
         private void Novice_CheckedChanged(object sender, EventArgs e)

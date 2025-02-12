@@ -1,7 +1,8 @@
 ﻿namespace GFEditor.Enums
 {
-    public enum EquipType: byte
+    public enum EquipType: short
     {
+        Unknown = -1,
         None = 0,
         Head = 1,
         Torso = 2,

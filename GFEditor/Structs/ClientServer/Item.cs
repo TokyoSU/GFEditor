@@ -1,9 +1,9 @@
-﻿namespace GFEditor.Structs
+﻿namespace GFEditor.Structs.ClientServer
 {
     /// <summary>
     /// 92 entries. (Starting from 0)
     /// </summary>
-    public class CSItem : IComparable<CSItem>
+    public class Item : IComparable<Item>
     {
         [JsonProperty]
         public int Index;
@@ -87,8 +87,8 @@
         public int AttackSpeed;
         [JsonProperty]
         public int Attack;
-        [JsonProperty]
-        public int RangeAttack;
+        [JsonProperty("RangeAttack")]
+        public int RangedAttack;
         [JsonProperty]
         public int PhysicoDefence;
         [JsonProperty]
@@ -200,7 +200,7 @@
             return (ItemType)ItemType == Enums.ItemType.HolyItem;
         }
 
-        public int CompareTo(CSItem? other)
+        public int CompareTo(Item? other)
         {
             if (other == null) return 1;
             if (Index < other.Index) return -1;
@@ -218,7 +218,7 @@
                 // Replace 0 and null with an empty string
                 if (field.Name.Equals("RestrictClass") && value is ulong v2 && v2 != 0) // RestrictClass use HEX.
                     sb.Append(v2.ToString("X")).Append('|');
-                else if (value == null || (value is string v5 && string.IsNullOrEmpty(v5)) || (value is int v && v == 0) || (value is ulong v1 && v1 == 0) || (value is uint v4 && v4 == 0) || (field.Name.Equals("Target") && value is int v3 && v3 == 1))
+                else if (value == null || value is string v5 && string.IsNullOrEmpty(v5) || value is int v && v == 0 || value is ulong v1 && v1 == 0 || value is uint v4 && v4 == 0 || field.Name.Equals("Target") && value is int v3 && v3 == 1)
                     sb.Append("").Append('|');
                 else
                     sb.Append(value).Append('|');

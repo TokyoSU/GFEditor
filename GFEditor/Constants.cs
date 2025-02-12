@@ -1,53 +1,100 @@
 ﻿namespace GFEditor
 {
+    public class ConstantFromJson
+    {
+        [JsonProperty]
+        public string ClientPath = string.Empty;
+        [JsonProperty]
+        public string ServerPath = string.Empty; // NOTE: Make it use the real server through network ?
+        [JsonProperty]
+        public string TranslatePath = string.Empty;
+        [JsonProperty]
+        public bool TranslateAutoOnLoad;
+    }
+
     public static class Constants
     {
-        // Path
+        // Parameters
+
+
+        // Client/Server Path
+
+        public static ConstantFromJson Parameters = new();
+
+        // Editor Path
 
         public static string AssetItemPath = "Assets/Items/";
         public static string AssetChestPath = "Assets/DropChest/";
         public static string AssetDataPath = "Assets/Data/";
         public static string AssetSoundPath = "Assets/Sounds/";
-        public static string AssetClientPath = AssetDataPath + "Client/";
-        public static string AssetServerPath = AssetDataPath + "Server/";
-        public static string AssetTranslatePath = AssetDataPath + "Translate/";
-        public static string AssetGenClientPath = AssetDataPath + "Generated/Client/";
-        public static string AssetGenServerPath = AssetDataPath + "Generated/Server/";
-        public static string AssetGenTranslatePath = AssetDataPath + "Generated/Translate/";
-        public static string AssetGenDatabasePath = AssetDataPath + "Generated/Database/";
 
-        // Inis
+        // Editor Destination Path
 
-        public static string AssetOrigCItemPath = AssetClientPath + "c_item.ini";
-        public static string AssetOrigSItemPath = AssetServerPath + "S_Item.ini";
+        // Database Path
 
-        public static string AssetOrigTTextIndex = AssetTranslatePath + "T_TextIndex.ini";
+        public static string AssetJTItem = AssetDataPath + "T_Item.json";
+        public static string AssetJTTextIndex = AssetDataPath + "T_TextIndex.json";
+        public static string AssetJItemPath = AssetDataPath + "C_Item.json";
+        public static string AssetJEditorPath = AssetDataPath + "Editor.json";
 
-        // Inis Destination
+        public static void Load()
+        {
+            if (File.Exists(AssetJEditorPath)) // Load through json if exist.
+            {
+                Parameters = JsonConvert.DeserializeObject<ConstantFromJson>(File.ReadAllText(AssetJEditorPath)) ?? throw new Exception("Failed to read json: " + AssetJEditorPath + ", something went wrong !");
+            }
+            else
+            {
+                SelectOriginalClientFolder();
+                SelectOriginalServerFolder();
+                SelectOriginalTranslateFolder();
+            }
+        }
 
-        public static string AssetCItemPath = AssetGenClientPath + "C_Item.ini";
-        public static string AssetSItemPath = AssetGenServerPath + "S_Item.ini";
+        public static void Save()
+        {
+            SaveHelper.SaveJson(AssetJEditorPath, Parameters);
+        }
 
-        public static string AssetTTextIndex = AssetGenTranslatePath + "T_TextIndex.ini";
+        public static void SelectOriginalClientFolder()
+        {
+            var folder = new FolderBrowserDialog()
+            {
+                Description = "Selecting ini client folder (C)...",
+                ShowNewFolderButton = false
+            };
+            var result = folder.ShowDialog();
+            if (result != DialogResult.OK && !string.IsNullOrWhiteSpace(folder.SelectedPath))
+                throw new Exception("Failed to select ini client folder !");
+            Parameters.ClientPath = folder.SelectedPath;
+        }
 
-        // Database
+        public static void SelectOriginalServerFolder()
+        {
+            var folder = new FolderBrowserDialog()
+            {
+                Description = "Selecting ini server folder (S)...",
+                ShowNewFolderButton = false
+            };
+            var result = folder.ShowDialog();
+            if (result != DialogResult.OK && !string.IsNullOrWhiteSpace(folder.SelectedPath))
+                throw new Exception("Failed to select ini server folder !");
+            if (folder.SelectedPath.Equals(Parameters.ClientPath))
+                throw new Exception("Failed to select ini server folder, same folder as client, please select the server ini folder instead !");
+            Parameters.ServerPath = folder.SelectedPath;
+        }
 
-        public static string AssetJItemPath = AssetGenDatabasePath + "Items.json";
-        public static string AssetJTTextIndex = AssetGenDatabasePath + "TextIndex.json";
-
-        // Images
-
-        public static string NoChestDropImg = AssetChestPath + "NoChestDrop.png";
-        public static string G00001Img = AssetChestPath + "G00001.png";
-        public static string G00002Img = AssetChestPath + "G00002.png";
-        public static string G00003Img = AssetChestPath + "G00003.png";
-        public static string G00004Img = AssetChestPath + "G00004.png";
-        public static string G00005Img = AssetChestPath + "G00005.png";
-        public static string G00006Img = AssetChestPath + "G00006.png";
-        public static string G00007Img = AssetChestPath + "G00007.png";
-        public static string G00008Img = AssetChestPath + "G00008.png";
-        public static string G00009Img = AssetChestPath + "G00009.png";
-        public static string G00010Img = AssetChestPath + "G00010.png";
-        public static string G00020Img = AssetChestPath + "G00020.png";
+        public static void SelectOriginalTranslateFolder()
+        {
+            var folder = new FolderBrowserDialog()
+            {
+                Description = "Selecting ini translate folder (T)...",
+                ShowNewFolderButton = false
+            };
+            var result = folder.ShowDialog();
+            if (result != DialogResult.OK && !string.IsNullOrWhiteSpace(folder.SelectedPath))
+                throw new Exception("Failed to select ini translate folder !");
+            Parameters.TranslatePath = folder.SelectedPath;
+        }
     }
 }
