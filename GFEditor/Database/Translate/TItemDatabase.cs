@@ -2,7 +2,7 @@
 {
     public static class TItemDatabase
     {
-        private static readonly Logger m_Log = LogManager.GetCurrentClassLogger();
+        private static readonly Logger m_Log = LogManager.GetLogger("T_Item");
         private static readonly string m_FilePath = Constants.Parameters.TranslatePath + "\\T_Item.ini";
         private static List<TItem>? m_Database = [];
         private static UI_Loader? m_Loader = null;
@@ -39,7 +39,7 @@
             m_Loader?.EnableItem(true);
             m_Loader?.SetItemProgress(string.Empty, 0);
             m_Loader?.SetItemMaxProgress(lines.Count - 1);
-            for (int index = 0; index < lines.Count - 1; index += 2)
+            for (int index = 0; index < lines.Count - 1; index += 3)
             {
                 var text = new TItem()
                 {
@@ -68,41 +68,45 @@
                         stringBuilder.AppendLine(item.ToString());
                 }
             }
+            using var fileStream = new FileStream(m_FilePath, FileMode.Create);
+            using var writer = new StreamWriter(fileStream, StringConverter.GetChinese());
+            writer.Write(stringBuilder.ToString());
+        }
 
-            using (var fileStream = new FileStream(m_FilePath, FileMode.Create))
-            using (var writer = new StreamWriter(fileStream, StringConverter.GetChinese()))
-                writer.Write(stringBuilder.ToString());
-            if (m_Database != null)
-                SaveHelper.SaveJson(Constants.AssetJTItem, m_Database);
+        public static void UpdateNewDescription(int index, string newText)
+        {
+            var value = GetByIndex(index);
+            if (value != null)
+                value.Description = newText;
         }
 
         public static TItem? GetByIndex(int index)
         {
-            if (index < 1) throw new ArgumentOutOfRangeException($"Failed to find index: {index}, Out of range, Min: {DATA_GetMinIndex()}, Max: {DATA_GetMaxIndex()}");
-            if (m_Database == null) throw new AccessViolationException($"Failed to find index: {index} in the TItem::Index database, database is null, was it loaded ?");
+            if (index < 1) throw new ArgumentOutOfRangeException($"Failed to find index: {index}, Out of range, Min: {DATA_GetMinIndex()}, Max: {DATA_GetMaxIndex()}.");
+            if (m_Database == null) throw new AccessViolationException($"Failed to find index: {index}, was it loaded ?");
 
             var result = m_Database.Find(e => e.Index == index);
             if (result != null) return result;
 
-            m_Log.Warn($"Failed to find index: {index} in the TItem::Index database !");
+            m_Log.Warn($"Failed to find index: {index}.");
             return null;
         }
 
         public static TItem? GetByStringInText(string text)
         {
-            if (m_Database == null) throw new AccessViolationException($"Failed to find string: {text} in the TItem::Name database, database is null, was it loaded ?");
+            if (m_Database == null) throw new AccessViolationException($"Failed to find string: {text}, was it loaded ?");
             for (int i = 0; i < m_Database.Count; i++)
             {
                 var value = m_Database[i];
                 if (value.Name.Contains(text))
                     return value;
             }
-            throw new InvalidOperationException($"Failed to find: {text} in the TItem::Name database !");
+            throw new InvalidOperationException($"Failed to find: {text}.");
         }
 
         private static int DATA_GetMinIndex()
         {
-            if (m_Database == null) throw new AccessViolationException("Failed to get minimum index of TItem database, database is null, was it loaded ?");
+            if (m_Database == null) throw new AccessViolationException("Failed to get minimum index, was it loaded ?");
             int min = int.MaxValue;
             m_Database.ForEach(e =>
             {
@@ -114,7 +118,7 @@
 
         private static int DATA_GetMaxIndex()
         {
-            if (m_Database == null) throw new AccessViolationException("Failed to get maximum index of TItem database, database is null, was it loaded ?");
+            if (m_Database == null) throw new AccessViolationException("Failed to get maximum index, was it loaded ?");
             int max = 0;
             m_Database.ForEach(e =>
             {

@@ -3,11 +3,11 @@
     public enum TimeType: byte
     {
         None = 0,
-        Sec = 1,
-        Min = 2,
+        Seconds = 1,
+        Minutes = 2,
         RealHour = 3,
-        RealDays = 4,
+        RealDay = 4,
         NoDurationNoSave = 5,
-        RealMin = 6
+        RealMinute = 6
     }
 }

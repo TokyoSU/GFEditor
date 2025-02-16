@@ -14,8 +14,10 @@
         private void Main_FormClosing(object sender, FormClosingEventArgs e)
         {
             CItemDatabase.Save();
+            CColorDatabase.Save();
             TItemDatabase.Save();
             TTextIndexDatabase.Save();
+
             BasicAssetDatabase.Release();
         }
 

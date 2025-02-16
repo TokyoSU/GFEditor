@@ -1,6 +1,4 @@
-﻿using GFEditor.Structs.Translate;
-
-namespace GFEditor.Database.Translate
+﻿namespace GFEditor.Database.Translate
 {
     public static class TTextIndexDatabase
     {
@@ -69,10 +67,10 @@ namespace GFEditor.Database.Translate
                         stringBuilder.AppendLine(item.ToString());
                 }
             }
-
             using (var fileStream = new FileStream(FilePath, FileMode.Create))
             using (var writer = new StreamWriter(fileStream, StringConverter.GetChinese()))
                 writer.Write(stringBuilder.ToString());
+            // Then save json.
             if (m_Database != null)
                 SaveHelper.SaveJson(Constants.AssetJTTextIndex, m_Database);
         }

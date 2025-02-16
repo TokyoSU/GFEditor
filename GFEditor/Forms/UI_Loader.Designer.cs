@@ -99,12 +99,12 @@
             Controls.Add(CurLabel);
             Controls.Add(MaxLabel);
             Controls.Add(MaxProgress);
-            FormBorderStyle = FormBorderStyle.FixedDialog;
+            FormBorderStyle = FormBorderStyle.FixedToolWindow;
             Icon = (Icon)resources.GetObject("$this.Icon");
             MaximizeBox = false;
             MinimizeBox = false;
             Name = "UI_Loader";
-            StartPosition = FormStartPosition.CenterParent;
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "GF - Loader";
             Load += LoaderPanel_Load;
             Shown += LoaderPanel_Shown;

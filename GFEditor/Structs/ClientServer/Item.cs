@@ -1,4 +1,6 @@
-﻿namespace GFEditor.Structs.ClientServer
+﻿using Newtonsoft.Json.Linq;
+
+namespace GFEditor.Structs.ClientServer
 {
     /// <summary>
     /// 92 entries. (Starting from 0)
@@ -98,7 +100,7 @@
         [JsonProperty]
         public int HitRate;
         [JsonProperty]
-        public int DodgeRate;
+        public int EvadeRate;
         [JsonProperty]
         public int PhysicoCriticalRate;
         [JsonProperty]
@@ -197,7 +199,38 @@
         /// </summary>
         public bool IsHoly()
         {
-            return (ItemType)ItemType == Enums.ItemType.HolyItem;
+            return (QualityType)ItemQuality == QualityType.Red;
+        }
+
+        public bool IsKuso()
+        {
+            var type = (ItemType)ItemType;
+            return type == Enums.ItemType.Kuso ||
+                   type == Enums.ItemType.KusoBow ||
+                   type == Enums.ItemType.KusoGun ||
+                   type == Enums.ItemType.KusoOneHand ||
+                   type == Enums.ItemType.KusoShield ||
+                   type == Enums.ItemType.KusoSoulCrystal ||
+                   type == Enums.ItemType.KusoStaff ||
+                   type == Enums.ItemType.KusoSuit ||
+                   type == Enums.ItemType.KusoAccessory ||
+                   type == Enums.ItemType.KusoTwoHand;
+        }
+
+        public string GetClassRestrictNameList()
+        {
+            var enumNames = Enum.GetNames<ClassType>();
+            var enumValues = Enum.GetValues<ClassType>();
+            var flags = (ClassType)RestrictClass;
+            var result = string.Empty;
+
+            for (int index = 0; index < enumValues.Length; index++)
+            {
+                if (flags.HasFlag(enumValues[index]))
+                    result += enumNames[index] + " / ";
+            }
+
+            return result[..result.LastIndexOf('/')]; // Remove last '/' and return.
         }
 
         public int CompareTo(Item? other)

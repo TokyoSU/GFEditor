@@ -8,10 +8,12 @@
         private static void Main()
         {
             StringConverter.Initialize();
+            TEditorTranslate.Load();
             try
             {
-                using var main = new UI_Main();
-                main.ShowDialog();
+                Application.SetHighDpiMode(HighDpiMode.SystemAware);
+                //Application.SetColorMode(SystemColorMode.Classic); // Classic or Dark ...
+                Application.Run(new UI_Main());
             }
             catch (Exception ex)
             {

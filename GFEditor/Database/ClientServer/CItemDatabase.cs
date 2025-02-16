@@ -1,10 +1,8 @@
-﻿using GFEditor.Structs.ClientServer;
-
-namespace GFEditor.Database.ClientServer
+﻿namespace GFEditor.Database.ClientServer
 {
     public static class CItemDatabase
     {
-        private static readonly Logger m_Log = LogManager.GetCurrentClassLogger();
+        private static readonly Logger m_Log = LogManager.GetLogger("C_Item");
         private static readonly string m_ClientFilePath = Constants.Parameters.ClientPath + "\\C_Item.ini";
         private static readonly string m_ServerFilePath = Constants.Parameters.ServerPath + "\\S_Item.ini";
         private static List<Item>? m_Database = [];
@@ -104,7 +102,7 @@ namespace GFEditor.Database.ClientServer
             m_DatabaseServer?.Clear();
             m_Loader?.SetClassProgress("Items");
 
-            if (!File.Exists(Constants.AssetJItemPath))
+            if (!File.Exists(Constants.AssetJCItemPath))
             {
                 LoadIni();
                 LoadIniServer();
@@ -113,7 +111,7 @@ namespace GFEditor.Database.ClientServer
             else
             {
                 m_Loader?.SetCurProgress("Loading json database for items...", 50);
-                m_Database = JsonConvert.DeserializeObject<List<Item>>(File.ReadAllText(Constants.AssetJItemPath, Encoding.UTF8)); // Already contains server data.
+                m_Database = JsonConvert.DeserializeObject<List<Item>>(File.ReadAllText(Constants.AssetJCItemPath, Encoding.UTF8)); // Already contains server data.
                 m_Loader?.SetCurProgress("Loaded json database for items.", 100);
             }
 
@@ -129,7 +127,7 @@ namespace GFEditor.Database.ClientServer
                 build.AppendLine(item.ToString());
             File.WriteAllText(m_ClientFilePath, build.ToString(), StringConverter.GetChinese());
             File.WriteAllText(m_ServerFilePath, build.ToString(), StringConverter.GetChinese()); // Client and server is the same.
-            SaveHelper.SaveJson(Constants.AssetJItemPath, m_Database);
+            SaveHelper.SaveJson(Constants.AssetJCItemPath, m_Database);
         }
 
         private static void LoadIni()
@@ -277,7 +275,7 @@ namespace GFEditor.Database.ClientServer
                 MagicDamage = lines.GetInt(index + 43),
                 MagicDefence = lines.GetInt(index + 44),
                 HitRate = lines.GetInt(index + 45),
-                DodgeRate = lines.GetInt(index + 46),
+                EvadeRate = lines.GetInt(index + 46),
                 PhysicoCriticalRate = lines.GetInt(index + 47),
                 PhysicoCriticalDamage = lines.GetInt(index + 48),
                 MagicCriticalRate = lines.GetInt(index + 49),

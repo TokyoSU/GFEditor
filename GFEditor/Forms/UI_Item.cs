@@ -1,21 +1,135 @@
-﻿
-
-namespace GFEditor.Editor
+﻿namespace GFEditor.Editor
 {
     public partial class UI_Item : Form
     {
-        private static readonly Logger m_Log = LogManager.GetCurrentClassLogger();
-        private readonly UI_ItemClass m_classPanel = new();
-        private readonly UI_ItemOpFlags m_itemPanel = new();
-        private readonly UI_ItemTooltip m_tooltipPanel = new();
+        private static readonly Logger m_Log = LogManager.GetLogger("UI_Item");
+        private readonly Dictionary<ClassType, CheckBox> m_classCheckBoxDict;
+        private readonly Dictionary<OpFlags, CheckBox> m_opCheckBoxDict;
+        private readonly UI_TooltipViewer m_tooltipViewer = new();
         private Item? m_currentItem = null;
+        private bool m_Visible;
 
         public UI_Item()
         {
-            // Required for form.
             InitializeComponent();
-            ControlBox = false;
+            PopulateItemType();
+            PopulateItemEquipType();
+            PopulateItemTargetType();
+            PopulateReputationType();
+            PopulateItemQualityType();
+            PopulateItemTimeLimitType();
+            PopulateItemAuctionType();
+            PopulateItemPriceType();
+            PopulateItemSpecialType();
+            PopulateItemAttributeType();
+            PopulateItemEnchantTimeType();
+            m_classCheckBoxDict = new Dictionary<ClassType, CheckBox>()
+            {
+                { ClassType.Novice, Novice },
+                { ClassType.Fighter, Fighter },
+                { ClassType.Warrior, Warrior },
+                { ClassType.Paladin, Paladin },
+                { ClassType.Berserker, Berserker },
+                { ClassType.Hunter, Hunter },
+                { ClassType.Archer, Archer },
+                { ClassType.Ranger, Ranger },
+                { ClassType.Assassin, Assassin },
+                { ClassType.Acolyte, Acolyte },
+                { ClassType.Priest, Priest },
+                { ClassType.Cleric, Cleric },
+                { ClassType.Sage, Sage },
+                { ClassType.Spellcaster, Spellcaster },
+                { ClassType.Mage, Mage },
+                { ClassType.Wizard, Wizard },
+                { ClassType.Necromancer, Necromancer },
+                { ClassType.Warlord, Warlord },
+                { ClassType.Templar, Templar },
+                { ClassType.Sharpshooter, Sharpshooter },
+                { ClassType.DarkStalker, Darkstalker },
+                { ClassType.Prophet, Prophet },
+                { ClassType.Mystic, Mystic },
+                { ClassType.Archmage, Archmage },
+                { ClassType.Demonologist, Demonologist },
+                { ClassType.Mechanic, Mechanic },
+                { ClassType.Machinist, Machinist },
+                { ClassType.Enginner, Enginner },
+                { ClassType.Demolisionist, Demolitionist },
+                { ClassType.GearMaster, Gearmaster },
+                { ClassType.Gunner, Gunner },
+                { ClassType.Deathknight, Deathknight },
+                { ClassType.Crusader, Crusader },
+                { ClassType.Hawkeye, Hawkeye },
+                { ClassType.Windshadow, Windshadow },
+                { ClassType.Saint, Saint },
+                { ClassType.Shaman, Shaman },
+                { ClassType.Avatar, Avatar },
+                { ClassType.Shadowlord, Shadowlord },
+                { ClassType.Destroyer, Destroyer },
+                { ClassType.HolyKnight, Holyknight },
+                { ClassType.Predator, Predator },
+                { ClassType.Shinobi, Shinobi },
+                { ClassType.Archangel, Archangel },
+                { ClassType.Druid, Druid },
+                { ClassType.Warlock, Warlock },
+                { ClassType.Shinigami, Shinigami },
+                { ClassType.CogMaster, Cogmaster },
+                { ClassType.Bombardier, Bombardier },
+                { ClassType.MechMaster, Mechmaster },
+                { ClassType.Artillerist, Artillerist },
+                { ClassType.Wanderer, Wanderer },
+                { ClassType.Drifter, Drifter },
+                { ClassType.VoidRunner, Voidrunner },
+                { ClassType.TimeTraveler, Timetraveler },
+                { ClassType.Dimensionalist, Dimentionalist },
+                { ClassType.KeyMaster, Keymaster },
+                { ClassType.Reaper, Reaper },
+                { ClassType.Chronomancer, Chronomancer },
+                { ClassType.Phantom, Phantom },
+                { ClassType.ChronoShifter, Chronoshifter }
+            };
+            m_opCheckBoxDict = new Dictionary<OpFlags, CheckBox>()
+            {
+                { OpFlags.CanUse, Useable },
+                { OpFlags.NoDecrease, NoDecrease },
+                { OpFlags.NoTrade, NoTrade },
+                { OpFlags.NoDiscard, NoDiscard },
+                { OpFlags.NoEnhance, NoEnchance },
+                { OpFlags.NoRepair, NoRepair },
+                { OpFlags.Combineable, Combinable },
+                { OpFlags.BindOnEquip, BindOnEquip },
+                { OpFlags.AccumTime, AccumTime },
+                { OpFlags.NoSameBuff, NoSameBuff },
+                { OpFlags.NoInBattle, NoInBattle },
+                { OpFlags.NoInTown, NoInTown },
+                { OpFlags.NoInCave, NoInCave },
+                { OpFlags.NoInInstance, NoInInstance },
+                { OpFlags.LinkToQuest, LinkQuest },
+                { OpFlags.ForDead, ForDead },
+                { OpFlags.Only1, Only1 },
+                { OpFlags.Only2, Only2 },
+                { OpFlags.Only3, Only3 },
+                { OpFlags.Only4, Only4 },
+                { OpFlags.Only5, Only5 },
+                { OpFlags.Replaceable1, Replaceable1 },
+                { OpFlags.Replaceable2, Replaceable2 },
+                { OpFlags.Replaceable3, Replaceable3 },
+                { OpFlags.Replaceable4, Replaceable4 },
+                { OpFlags.Replaceable5, Replaceable5 },
+                { OpFlags.NoInBattlefield, NoInBattlefield },
+                { OpFlags.NoInField, NoInField },
+                { OpFlags.NoTransNode, NoTransNode },
+                { OpFlags.UnBindItem, UnbindItem },
+                { OpFlags.OnlyEquip, OnlyEquip }
+            };
+            if (TEditorTranslate.Editor == null)
+            {
+                m_Log.Warn("Failed to translate restricted class panel, TEditorTranslate.Editor is null !");
+                return;
+            }
+            m_classCheckBoxDict.TranslateClassText(TEditorTranslate.Editor.ItemClassPanel);
         }
+
+        public bool IsVisible() => m_Visible;
 
         private void ItemForm_Shown(object sender, EventArgs e)
         {
@@ -24,18 +138,8 @@ namespace GFEditor.Editor
             PopulateItemImageList();
             PopulateSoundList();
             PopulateItemList();
-            PopulateItemType();
-            PopulateItemEquipType();
-            PopulateItemTargetType();
-            PopulateReputationType();
-            PopulateItemQualityType();
-            PopulateItemAttributeType();
-            PopulateItemSpecialType();
-            PopulateItemEnchantTimeType();
-            PopulateItemTimeLimitType();
-            PopulateItemAuctionType();
-            PopulateItemPriceType();
             PopulateDefaultValues();
+            m_Visible = true;
         }
 
         private Item? GetCurrentItem()
@@ -62,7 +166,7 @@ namespace GFEditor.Editor
             }
             else
             {
-                throw new Exception("Error populating the items list, index list is null, did the item database was loaded ?");
+                throw new AccessViolationException("Error populating the items list, index list is null, did the item database was loaded ?");
             }
         }
 
@@ -101,27 +205,6 @@ namespace GFEditor.Editor
             TimeLimitTypeBox.Items.Clear();
             TimeLimitTypeBox.Items.AddRange(Enum.GetNames<TimeLimitType>());
             m_Log.Info("Populated item time limit type.");
-        }
-
-        private void PopulateItemEnchantTimeType()
-        {
-            EnchantTimeTypeBox.Items.Clear();
-            EnchantTimeTypeBox.Items.AddRange(Enum.GetNames<TimeType>());
-            m_Log.Info("Populated enchant time type.");
-        }
-
-        private void PopulateItemSpecialType()
-        {
-            SpecialTypeBox.Items.Clear();
-            SpecialTypeBox.Items.AddRange(Enum.GetNames<MonsterType>());
-            m_Log.Info("Populated item special type.");
-        }
-
-        private void PopulateItemAttributeType()
-        {
-            AttributeTypeBox.Items.Clear();
-            AttributeTypeBox.Items.AddRange(Enum.GetNames<AttributeType>());
-            m_Log.Info("Populated item attribute type.");
         }
 
         private void PopulateItemQualityType()
@@ -163,6 +246,27 @@ namespace GFEditor.Editor
             m_Log.Info("Populated item equip type.");
         }
 
+        private void PopulateItemSpecialType()
+        {
+            SpecialTypeBox.Items.Clear();
+            SpecialTypeBox.Items.AddRange(Enum.GetNames<MonsterType>());
+            m_Log.Info("Populated item special type.");
+        }
+
+        private void PopulateItemAttributeType()
+        {
+            AttributeTypeBox.Items.Clear();
+            AttributeTypeBox.Items.AddRange(Enum.GetNames<AttributeType>());
+            m_Log.Info("Populated item attribute type.");
+        }
+
+        private void PopulateItemEnchantTimeType()
+        {
+            EnchantTimeTypeBox.Items.Clear();
+            EnchantTimeTypeBox.Items.AddRange(Enum.GetNames<TimeType>());
+            m_Log.Info("Populated enchant time type.");
+        }
+
         private void PopulateDefaultValues()
         {
             ChestDropImg.Image = GFImageConverter.ToNetImage(BasicAssetDatabase.GetChestDropByIndex(0).Image.ToArray()); // It create a new file, this will need to be disposed off later.
@@ -175,21 +279,20 @@ namespace GFEditor.Editor
             TargetBox.SelectedIndex = 0;
             RestrictReputationBox.SelectedIndex = 0;
             ItemQualityBox.SelectedIndex = 0;
+            TimeLimitTypeBox.SelectedIndex = 0;
+            AuctionTypeBox.SelectedIndex = 0;
             AttributeTypeBox.SelectedIndex = 0;
             SpecialTypeBox.SelectedIndex = 0;
             EnchantTimeTypeBox.SelectedIndex = 0;
-            TimeLimitTypeBox.SelectedIndex = 0;
-            AuctionTypeBox.SelectedIndex = 0;
         }
 
         private void PopulateItemProperty(Item item)
         {
             m_currentItem = item;
 
-            m_itemPanel.SetItem(item);
-            m_itemPanel.Update();
-            m_classPanel.SetItem(item);
-            m_classPanel.Update();
+            // Update tooltip if the item changed.
+            m_tooltipViewer.SetItem(m_currentItem);
+            m_tooltipViewer.Update();
 
             ItemIndexTxt.Text = item.Index.ToString();
             ItemImgList.SelectIndexByName(item.IconFilename);
@@ -224,6 +327,38 @@ namespace GFEditor.Editor
             CastingTimeUD.Value = item.CastingTime;
             CooldownTimeUD.Value = item.CoolDownTime;
             CooldownGroupUD.Value = item.CoolDownGroup;
+            DropRateUD.Value = item.DropRate;
+            DropIndexUD.Value = item.DropIndex;
+            TimeLimitTypeBox.SelectIndexByEnum((TimeLimitType)item.LimitType);
+            TimeLimitUD.Value = item.DueDateTime;
+            BackpackSizeUD.Value = item.BackpackSize;
+            SocketMaxUD.Value = item.SocketMax;
+            SocketRateUD.Value = item.SocketRate;
+            MaxStackUD.Value = item.MaxStack;
+            PriceTypeBox.SelectIndexByEnum((MerchantCoinType)item.ShopPriceType);
+            PriceUD.Value = item.Price;
+            RestrictEventPosTxt.Text = item.RestrictEventPosition;
+            MissionIndexUD.Value = item.MissionIndex;
+            LogLevelUD.Value = item.LogLevel;
+            AuctionTypeBox.SelectIndexByEnum((AuctionType)item.AuctionType);
+            ExtraData1UD.Value = item.ExtraData01;
+            ExtraData2UD.Value = item.ExtraData02;
+            ExtraData3UD.Value = item.ExtraData03;
+
+            var itemName = item.Name.Length > 0 ? item.Name : string.Empty;
+            var itemDesc = item.Tip.Length > 0 ? item.Tip : string.Empty;
+            if (Constants.Parameters.TranslateAutoOnLoad)
+            {
+                var itemText = TItemDatabase.GetByIndex(item.Index);
+                NameTxt.Text = itemText != null ? (itemText.Name.Length > 0 ? itemText.Name : itemName) : itemName;
+                TipTxt.Text = itemText != null ? (itemText.Description.Length > 0 ? itemText.Description : itemDesc) : itemDesc;
+            }
+            else
+            {
+                NameTxt.Text = itemName;
+                TipTxt.Text = itemDesc;
+            }
+
             MaxHPUD.Value = item.MaxHp;
             MaxMPUD.Value = item.MaxMp;
             StrUD.Value = item.Str;
@@ -231,34 +366,37 @@ namespace GFEditor.Editor
             IntUD.Value = item.Int;
             WilUD.Value = item.Wil;
             AgiUD.Value = item.Agi;
-            AvgPhysicalDmgUD.Value = item.AvgPhysicoDamage;
-            RandPhysicalDmgUD.Value = item.RandPhysicoDamage;
+            AveragePhysicalUD.Value = item.AvgPhysicoDamage;
+            RandomPhysicalUD.Value = item.RandPhysicoDamage;
             AttackRangeUD.Value = item.AttackRange;
             AttackSpeedUD.Value = item.AttackSpeed;
             AttackUD.Value = item.Attack;
             RangedAttackUD.Value = item.RangedAttack;
-            PhysicalDefUD.Value = item.PhysicoDefence;
+            PhysicalDefenceUD.Value = item.PhysicoDefence;
             MagicAttackUD.Value = item.MagicDamage;
-            MagicalDefUD.Value = item.MagicDefence;
+            MagicalDefenceUD.Value = item.MagicDefence;
+            MaxDurabilityUD.Value = item.MaxDurability;
             HitRateUD.Value = item.HitRate;
-            DodgeRateUD.Value = item.DodgeRate;
+            DodgeRateUD.Value = item.EvadeRate;
             PhysicalCriticalRateUD.Value = item.PhysicoCriticalRate;
-            PhysicalCriticalDmgUD.Value = item.PhysicoCriticalDamage;
+            PhysicalCriticalDamageUD.Value = item.PhysicoCriticalDamage;
             MagicalCriticalRateUD.Value = item.MagicCriticalRate;
-            MagicalCriticalDmgUD.Value = item.MagicCriticalDamage;
+            MagicalCriticalDamageUD.Value = item.MagicCriticalDamage;
             PhysicalPenetrationUD.Value = item.PhysicalPenetration;
             MagicalPenetrationUD.Value = item.MagicalPenetration;
-            PhysicalPenetrationDefUD.Value = item.PhysicalPenetrationDefence;
-            MagicalPenetrationDefUD.Value = item.MagicalPenetrationDefence;
+            PhysicalPenetrationDefenceUD.Value = item.PhysicalPenetrationDefence;
+            MagicalPenetrationDefenceUD.Value = item.MagicalPenetrationDefence;
+            BlockRateUD.Value = item.BlockRate;
+
             AttributeTypeBox.SelectIndexByEnum((AttributeType)item.Attribute);
             AttributeDamageUD.Value = item.AttributeDamage;
             AttributeRateUD.Value = item.AttributeRate;
             AttributeResistanceUD.Value = item.AttributeResist;
+
             SpecialTypeBox.SelectIndexByEnum((MonsterType)item.SpecialType);
             SpecialRateUD.Value = item.SpecialRate;
-            SpecialDmgUD.Value = item.SpecialDamage;
-            DropRateUD.Value = item.DropRate;
-            DropIndexUD.Value = item.DropIndex;
+            SpecialDamageUD.Value = item.SpecialDamage;
+
             TreasureBuff1UD.Value = item.TreasureBuffs01;
             TreasureBuff2UD.Value = item.TreasureBuffs02;
             TreasureBuff3UD.Value = item.TreasureBuffs03;
@@ -270,46 +408,43 @@ namespace GFEditor.Editor
             ElfSkillIndexUD.Value = item.ElfSkillIndex;
             EnchantTimeTypeBox.SelectIndexByEnum((TimeType)item.EnchantTimeType);
             EnchantDurationUD.Value = item.EnchantDuration;
-            TimeLimitTypeBox.SelectIndexByEnum((TimeLimitType)item.LimitType);
-            TimeLimitUD.Value = item.DueDateTime;
-            BackpackSizeUD.Value = item.BackpackSize;
-            SocketMaxUD.Value = item.SocketMax;
-            SocketRateUD.Value = item.SocketRate;
-            MaxDurabilityUD.Value = item.MaxDurability;
-            MaxStackUD.Value = item.MaxStack;
-            PriceTypeBox.SelectIndexByEnum((MerchantCoinType)item.ShopPriceType);
-            PriceUD.Value = item.Price;
-            RestrictEventPosTxt.Text = item.RestrictEventPosition;
-            MissionIndexUD.Value = item.MissionIndex;
-            BlockRateUD.Value = item.BlockRate;
-            LogLevelUD.Value = item.LogLevel;
-            AuctionTypeBox.SelectIndexByEnum((AuctionType)item.AuctionType);
-            ExtraData1UD.Value = item.ExtraData01;
-            ExtraData2UD.Value = item.ExtraData02;
-            ExtraData3UD.Value = item.ExtraData03;
 
-            if (Constants.Parameters.TranslateAutoOnLoad)
-            {
-                var itemText = TItemDatabase.GetByIndex(item.Index);
-                if (itemText != null)
-                {
-                    NameTxt.Text = itemText.Name;
-                    TipTxt.Text = itemText.Description;
-                }
-            }
-            else
-            {
-                NameTxt.Text = item.Name.ToString();
-                TipTxt.Text = item.Tip;
-            }
-
-            // Update tooltip if the item changed.
-            m_tooltipPanel.SetItem(item);
-            m_tooltipPanel.Update();
+            PopulateItemClassCheckbox(item);
+            PopulateOpFlags(item);
         }
 
-        private void UIItem_Load(object sender, EventArgs e)
+        private void PopulateItemClassCheckbox(Item item)
         {
+            if (item == null)
+            {
+                m_Log.Error("Failed to populate item class restriction, item is null, was it assigned beforehand ?");
+                return;
+            }
+            var flag = (ClassType)item.RestrictClass;
+            foreach (var entry in m_classCheckBoxDict)
+            {
+                if (flag.HasFlag(entry.Key))
+                    entry.Value.Checked = true;
+                else
+                    entry.Value.Checked = false;
+            }
+        }
+
+        private void PopulateOpFlags(Item item)
+        {
+            if (item == null)
+            {
+                m_Log.Info("Failed to populate item opflags, item is null, was it assigned beforehand ?");
+                return;
+            }
+            var flag = (OpFlags)item.OpFlags;
+            foreach (var entry in m_opCheckBoxDict)
+            {
+                if (flag.HasFlag(entry.Key))
+                    entry.Value.Checked = true;
+                else
+                    entry.Value.Checked = false;
+            }
         }
 
         private void UIItem_FormClosing(object sender, FormClosingEventArgs e)
@@ -388,11 +523,6 @@ namespace GFEditor.Editor
                 m_currentItem.EquipType = (int)selectedEnumValue;
         }
 
-        private void RestrictClassBtn_Click(object sender, EventArgs e)
-        {
-            m_classPanel.Show(this);
-        }
-
         private void ItemTypeBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             var selectedEnumValue = Enum.GetValues<ItemType>().ElementAtOrDefault(ItemTypeBox.SelectedIndex); // Get enum value by index
@@ -410,11 +540,6 @@ namespace GFEditor.Editor
         {
             if (GirlCBox.Checked)
                 BoyCBox.Checked = false;
-        }
-
-        private void RestrictUseBtn_Click(object sender, EventArgs e)
-        {
-            m_itemPanel.Show(this);
         }
 
         private void TargetBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -504,6 +629,166 @@ namespace GFEditor.Editor
                 m_currentItem.MaxStack = (int)MaxStackUD.Value;
         }
 
+        private void DropRateUD_ValueChanged(object sender, EventArgs e)
+        {
+            if (m_currentItem != null)
+                m_currentItem.DropRate = (int)DropRateUD.Value;
+        }
+
+        private void DropIndexUD_ValueChanged(object sender, EventArgs e)
+        {
+            if (m_currentItem != null)
+                m_currentItem.DropIndex = (int)DropIndexUD.Value;
+        }
+
+        private void TimeLimitTypeBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var selectedEnumValue = Enum.GetValues<TimeLimitType>().ElementAtOrDefault(TimeLimitTypeBox.SelectedIndex); // Get enum value by index
+            if (m_currentItem != null)
+                m_currentItem.LimitType = (int)selectedEnumValue;
+        }
+
+        private void TimeLimitUD_ValueChanged(object sender, EventArgs e)
+        {
+            if (m_currentItem != null)
+                m_currentItem.DueDateTime = (int)TimeLimitUD.Value;
+        }
+
+        private void BackpackSizeUD_ValueChanged(object sender, EventArgs e)
+        {
+            if (m_currentItem != null)
+                m_currentItem.BackpackSize = (int)BackpackSizeUD.Value;
+        }
+
+        private void SocketMaxUD_ValueChanged(object sender, EventArgs e)
+        {
+            if (m_currentItem != null)
+                m_currentItem.SocketMax = (int)SocketMaxUD.Value;
+        }
+
+        private void SocketRateUD_ValueChanged(object sender, EventArgs e)
+        {
+            if (m_currentItem != null)
+                m_currentItem.SocketRate = (int)SocketRateUD.Value;
+        }
+
+        private void LogLevelUD_ValueChanged(object sender, EventArgs e)
+        {
+            if (m_currentItem != null)
+                m_currentItem.LogLevel = (int)LogLevelUD.Value;
+        }
+
+        private void AuctionTypeUD_ValueChanged(object sender, EventArgs e)
+        {
+            var selectedEnumValue = Enum.GetValues<AuctionType>().ElementAtOrDefault(AuctionTypeBox.SelectedIndex); // Get enum value by index
+            if (m_currentItem != null)
+                m_currentItem.AuctionType = (int)selectedEnumValue;
+        }
+
+        private void ExtraData1UD_ValueChanged(object sender, EventArgs e)
+        {
+            if (m_currentItem != null)
+                m_currentItem.ExtraData01 = (int)ExtraData1UD.Value;
+        }
+
+        private void ExtraData2UD_ValueChanged(object sender, EventArgs e)
+        {
+            if (m_currentItem != null)
+                m_currentItem.ExtraData02 = (int)ExtraData2UD.Value;
+        }
+
+        private void ExtraData3UD_ValueChanged(object sender, EventArgs e)
+        {
+            if (m_currentItem != null)
+                m_currentItem.ExtraData03 = (int)ExtraData3UD.Value;
+        }
+
+        private void TipTxt_TextChanged(object sender, EventArgs e)
+        {
+            if (m_currentItem != null)
+            {
+                // If it's translated, update the translate instead !
+                if (Constants.Parameters.TranslateAutoOnLoad)
+                    TItemDatabase.UpdateNewDescription(m_currentItem.Index, TipTxt.Text);
+                else // Else update the tip of item.
+                    m_currentItem.Tip = TipTxt.Text;
+                m_tooltipViewer.UpdateTooltip();
+                m_tooltipViewer.Update();
+            }
+        }
+
+        private void RestrictEventPosTxt_TextChanged(object sender, EventArgs e)
+        {
+            if (m_currentItem != null)
+                m_currentItem.RestrictEventPosition = RestrictEventPosTxt.Text;
+        }
+
+        private void PriceTypeBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var selectedEnumValue = Enum.GetValues<MerchantCoinType>().ElementAtOrDefault(PriceTypeBox.SelectedIndex); // Get enum value by index
+            if (m_currentItem != null)
+                m_currentItem.ShopPriceType = (int)selectedEnumValue;
+        }
+
+        private void PriceUD_ValueChanged(object sender, EventArgs e)
+        {
+            if (m_currentItem != null)
+                m_currentItem.Price = (int)PriceUD.Value;
+        }
+
+        private void TooltipBtn_Click(object sender, EventArgs e)
+        {
+            if (!m_tooltipViewer.IsVisible())
+                m_tooltipViewer.Show(this);
+        }
+
+        private void AddNewItemBtn_Click(object sender, EventArgs e)
+        {
+            if (CItemDatabase.CreateNewItem(out var newIndex))
+            {
+                PopulateItemList();
+                ItemList.SelectedIndex = newIndex <= 0 ? 0 : newIndex - 1; // Select the new item, -1 because SelectedIndex start at 0 and newIndex start at 1.
+            }
+        }
+
+        private void ModelIDTxt_TextChanged(object sender, EventArgs e)
+        {
+            if (m_currentItem != null)
+                m_currentItem.ModelId = ModelIDTxt.Text;
+        }
+
+        private void SaveAndCloseBtn_Click(object sender, EventArgs e)
+        {
+            m_tooltipViewer.SaveAndClose();
+            Hide();
+            m_Visible = false;
+            CItemDatabase.Save();
+        }
+
+        private void WeaponEffectIdUD_ValueChanged(object sender, EventArgs e)
+        {
+            if (m_currentItem != null)
+                m_currentItem.WeaponEffectId = (int)WeaponEffectIdUD.Value;
+        }
+
+        private void FlyEffectIdUD_ValueChanged(object sender, EventArgs e)
+        {
+            if (m_currentItem != null)
+                m_currentItem.FlyEffectId = (int)FlyEffectIdUD.Value;
+        }
+
+        private void UsedEffectIdUD_ValueChanged(object sender, EventArgs e)
+        {
+            if (m_currentItem != null)
+                m_currentItem.UsedEffectId = (int)UsedEffectIdUD.Value;
+        }
+
+        private void EnchanceEffectIdUD_ValueChanged(object sender, EventArgs e)
+        {
+            if (m_currentItem != null)
+                m_currentItem.EnchanceEffectId = (int)EnchanceEffectIdUD.Value;
+        }
+
         private void MaxHPUD_ValueChanged(object sender, EventArgs e)
         {
             if (m_currentItem != null)
@@ -516,16 +801,22 @@ namespace GFEditor.Editor
                 m_currentItem.MaxMp = (int)MaxMPUD.Value;
         }
 
-        private void PhysicalDefUD_ValueChanged(object sender, EventArgs e)
+        private void PhysicalDefenceUD_ValueChanged(object sender, EventArgs e)
         {
             if (m_currentItem != null)
-                m_currentItem.PhysicoDefence = (int)PhysicalDefUD.Value;
+                m_currentItem.PhysicoDefence = (int)PhysicalDefenceUD.Value;
         }
 
-        private void MagicalDefUD_ValueChanged(object sender, EventArgs e)
+        private void MagicalDefenceUD_ValueChanged(object sender, EventArgs e)
         {
             if (m_currentItem != null)
-                m_currentItem.MagicDefence = (int)MagicalDefUD.Value;
+                m_currentItem.MagicDefence = (int)MagicalDefenceUD.Value;
+        }
+
+        private void MaxDurabilityUD_ValueChanged(object sender, EventArgs e)
+        {
+            if (m_currentItem != null)
+                m_currentItem.MaxDurability = (int)MaxDurabilityUD.Value;
         }
 
         private void StrUD_ValueChanged(object sender, EventArgs e)
@@ -558,16 +849,16 @@ namespace GFEditor.Editor
                 m_currentItem.Agi = (int)AgiUD.Value;
         }
 
-        private void AvgPhysicalDmgUD_ValueChanged(object sender, EventArgs e)
+        private void AveragePhysicalUD_ValueChanged(object sender, EventArgs e)
         {
             if (m_currentItem != null)
-                m_currentItem.AvgPhysicoDamage = (int)AvgPhysicalDmgUD.Value;
+                m_currentItem.AvgPhysicoDamage = (int)AveragePhysicalUD.Value;
         }
 
-        private void RandPhysicalDmgUD_ValueChanged(object sender, EventArgs e)
+        private void RandomPhysicalUD_ValueChanged(object sender, EventArgs e)
         {
             if (m_currentItem != null)
-                m_currentItem.RandPhysicoDamage = (int)RandPhysicalDmgUD.Value;
+                m_currentItem.RandPhysicoDamage = (int)RandomPhysicalUD.Value;
         }
 
         private void AttackUD_ValueChanged(object sender, EventArgs e)
@@ -609,7 +900,7 @@ namespace GFEditor.Editor
         private void DodgeRateUD_ValueChanged(object sender, EventArgs e)
         {
             if (m_currentItem != null)
-                m_currentItem.DodgeRate = (int)DodgeRateUD.Value;
+                m_currentItem.EvadeRate = (int)DodgeRateUD.Value;
         }
 
         private void BlockRateUD_ValueChanged(object sender, EventArgs e)
@@ -642,53 +933,28 @@ namespace GFEditor.Editor
                 m_currentItem.MagicalPenetration = (int)MagicalPenetrationUD.Value;
         }
 
-        private void PhysicalCriticalDmgUD_ValueChanged(object sender, EventArgs e)
+        private void PhysicalCriticalDamageUD_ValueChanged(object sender, EventArgs e)
         {
             if (m_currentItem != null)
-                m_currentItem.PhysicoCriticalDamage = (int)PhysicalCriticalDmgUD.Value;
+                m_currentItem.PhysicoCriticalDamage = (int)PhysicalCriticalDamageUD.Value;
         }
 
-        private void MagicalCriticalDmgUD_ValueChanged(object sender, EventArgs e)
+        private void MagicalCriticalDamageUD_ValueChanged(object sender, EventArgs e)
         {
             if (m_currentItem != null)
-                m_currentItem.MagicCriticalDamage = (int)MagicalCriticalDmgUD.Value;
+                m_currentItem.MagicCriticalDamage = (int)MagicalCriticalDamageUD.Value;
         }
 
-        private void PhysicalPenetrationDefUD_ValueChanged(object sender, EventArgs e)
+        private void PhysicalPenetrationDefenceUD_ValueChanged(object sender, EventArgs e)
         {
             if (m_currentItem != null)
-                m_currentItem.PhysicalPenetrationDefence = (int)PhysicalPenetrationDefUD.Value;
+                m_currentItem.PhysicalPenetrationDefence = (int)PhysicalPenetrationDefenceUD.Value;
         }
 
-        private void MagicalPenetrationDefUD_ValueChanged(object sender, EventArgs e)
+        private void MagicalPenetrationDefenceUD_ValueChanged(object sender, EventArgs e)
         {
             if (m_currentItem != null)
-                m_currentItem.MagicalPenetrationDefence = (int)MagicalPenetrationDefUD.Value;
-        }
-
-        private void AttributeTypeBox_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            var selectedEnumValue = Enum.GetValues<AttributeType>().ElementAtOrDefault(AttributeTypeBox.SelectedIndex); // Get enum value by index
-            if (m_currentItem != null)
-                m_currentItem.Attribute = (int)selectedEnumValue;
-        }
-
-        private void AttributeRateUD_ValueChanged(object sender, EventArgs e)
-        {
-            if (m_currentItem != null)
-                m_currentItem.AttributeRate = (int)AttributeRateUD.Value;
-        }
-
-        private void AttributeDamageUD_ValueChanged(object sender, EventArgs e)
-        {
-            if (m_currentItem != null)
-                m_currentItem.AttributeDamage = (int)AttributeDamageUD.Value;
-        }
-
-        private void AttributeResistanceUD_ValueChanged(object sender, EventArgs e)
-        {
-            if (m_currentItem != null)
-                m_currentItem.AttributeResist = (int)AttributeResistanceUD.Value;
+                m_currentItem.MagicalPenetrationDefence = (int)MagicalPenetrationDefenceUD.Value;
         }
 
         private void SpecialTypeBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -698,10 +964,10 @@ namespace GFEditor.Editor
                 m_currentItem.SpecialType = (int)selectedEnumValue;
         }
 
-        private void SpecialDmgUD_ValueChanged(object sender, EventArgs e)
+        private void SpecialDamageUD_ValueChanged(object sender, EventArgs e)
         {
             if (m_currentItem != null)
-                m_currentItem.SpecialDamage = (int)SpecialDmgUD.Value;
+                m_currentItem.SpecialDamage = (int)SpecialDamageUD.Value;
         }
 
         private void SpecialRateUD_ValueChanged(object sender, EventArgs e)
@@ -710,16 +976,29 @@ namespace GFEditor.Editor
                 m_currentItem.SpecialRate = (int)SpecialRateUD.Value;
         }
 
-        private void DropRateUD_ValueChanged(object sender, EventArgs e)
+        private void AttributeTypeBox_SelectedIndexChanged(object sender, EventArgs e)
         {
+            var selectedEnumValue = Enum.GetValues<AttributeType>().ElementAtOrDefault(AttributeTypeBox.SelectedIndex); // Get enum value by index
             if (m_currentItem != null)
-                m_currentItem.DropRate = (int)DropRateUD.Value;
+                m_currentItem.Attribute = (int)selectedEnumValue;
         }
 
-        private void DropIndexUD_ValueChanged(object sender, EventArgs e)
+        private void AttributeDamageUD_ValueChanged(object sender, EventArgs e)
         {
             if (m_currentItem != null)
-                m_currentItem.DropIndex = (int)DropIndexUD.Value;
+                m_currentItem.AttributeDamage = (int)AttributeDamageUD.Value;
+        }
+
+        private void AttributeRateUD_ValueChanged(object sender, EventArgs e)
+        {
+            if (m_currentItem != null)
+                m_currentItem.AttributeRate = (int)AttributeRateUD.Value;
+        }
+
+        private void AttributeResistanceUD_ValueChanged(object sender, EventArgs e)
+        {
+            if (m_currentItem != null)
+                m_currentItem.AttributeResist = (int)AttributeResistanceUD.Value;
         }
 
         private void EnchantEnablerUD_ValueChanged(object sender, EventArgs e)
@@ -734,6 +1013,36 @@ namespace GFEditor.Editor
                 m_currentItem.EnchantIndex = (int)EnchantIndexUD.Value;
         }
 
+        private void ElfSkillIndexUD_ValueChanged(object sender, EventArgs e)
+        {
+            if (m_currentItem != null)
+                m_currentItem.ElfSkillIndex = (int)ElfSkillIndexUD.Value;
+        }
+
+        private void TreasureBuff1UD_ValueChanged(object sender, EventArgs e)
+        {
+            if (m_currentItem != null)
+                m_currentItem.TreasureBuffs01 = (int)TreasureBuff1UD.Value;
+        }
+
+        private void TreasureBuff2UD_ValueChanged(object sender, EventArgs e)
+        {
+            if (m_currentItem != null)
+                m_currentItem.TreasureBuffs02 = (int)TreasureBuff2UD.Value;
+        }
+
+        private void TreasureBuff3UD_ValueChanged(object sender, EventArgs e)
+        {
+            if (m_currentItem != null)
+                m_currentItem.TreasureBuffs03 = (int)TreasureBuff3UD.Value;
+        }
+
+        private void TreasureBuff4UD_ValueChanged(object sender, EventArgs e)
+        {
+            if (m_currentItem != null)
+                m_currentItem.TreasureBuffs04 = (int)TreasureBuff4UD.Value;
+        }
+
         private void ExpertLevelUD_ValueChanged(object sender, EventArgs e)
         {
             if (m_currentItem != null)
@@ -746,13 +1055,7 @@ namespace GFEditor.Editor
                 m_currentItem.ExpertEnchantIndex = (int)ExpertEnchantIndexUD.Value;
         }
 
-        private void ElfSkillIndexUD_ValueChanged(object sender, EventArgs e)
-        {
-            if (m_currentItem != null)
-                m_currentItem.ElfSkillIndex = (int)ElfSkillIndexUD.Value;
-        }
-
-        private void EnchantTimeTypeUD_ValueChanged(object sender, EventArgs e)
+        private void EnchantTimeTypeBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             var selectedEnumValue = Enum.GetValues<TimeType>().ElementAtOrDefault(EnchantTimeTypeBox.SelectedIndex); // Get enum value by index
             if (m_currentItem != null)
@@ -765,148 +1068,464 @@ namespace GFEditor.Editor
                 m_currentItem.EnchantDuration = (int)EnchantDurationUD.Value;
         }
 
-        private void TimeLimitTypeBox_SelectedIndexChanged(object sender, EventArgs e)
+        private void Novice_CheckedChanged(object sender, EventArgs e)
         {
-            var selectedEnumValue = Enum.GetValues<TimeLimitType>().ElementAtOrDefault(TimeLimitTypeBox.SelectedIndex); // Get enum value by index
-            if (m_currentItem != null)
-                m_currentItem.LimitType = (int)selectedEnumValue;
+            m_currentItem?.SetClassFlags(Novice, ClassType.Novice);
         }
 
-        private void TimeLimitUD_ValueChanged(object sender, EventArgs e)
+        private void Fighter_CheckedChanged(object sender, EventArgs e)
         {
-            if (m_currentItem != null)
-                m_currentItem.DueDateTime = (int)TimeLimitUD.Value;
+            m_currentItem?.SetClassFlags(Fighter, ClassType.Fighter);
         }
 
-        private void BackpackSizeUD_ValueChanged(object sender, EventArgs e)
+        private void Warrior_CheckedChanged(object sender, EventArgs e)
         {
-            if (m_currentItem != null)
-                m_currentItem.BackpackSize = (int)BackpackSizeUD.Value;
+            m_currentItem?.SetClassFlags(Warrior, ClassType.Warrior);
         }
 
-        private void SocketMaxUD_ValueChanged(object sender, EventArgs e)
+        private void Berserker_CheckedChanged(object sender, EventArgs e)
         {
-            if (m_currentItem != null)
-                m_currentItem.SocketMax = (int)SocketMaxUD.Value;
+            m_currentItem?.SetClassFlags(Berserker, ClassType.Berserker);
         }
 
-        private void SocketRateUD_ValueChanged(object sender, EventArgs e)
+        private void Warlord_CheckedChanged(object sender, EventArgs e)
         {
-            if (m_currentItem != null)
-                m_currentItem.SocketRate = (int)SocketRateUD.Value;
+            m_currentItem?.SetClassFlags(Warlord, ClassType.Warlord);
         }
 
-        private void MaxDurabilityUD_ValueChanged(object sender, EventArgs e)
+        private void Deathknight_CheckedChanged(object sender, EventArgs e)
         {
-            if (m_currentItem != null)
-                m_currentItem.MaxDurability = (int)MaxDurabilityUD.Value;
+            m_currentItem?.SetClassFlags(Deathknight, ClassType.Deathknight);
         }
 
-        private void LogLevelUD_ValueChanged(object sender, EventArgs e)
+        private void Destroyer_CheckedChanged(object sender, EventArgs e)
         {
-            if (m_currentItem != null)
-                m_currentItem.LogLevel = (int)LogLevelUD.Value;
+            m_currentItem?.SetClassFlags(Destroyer, ClassType.Destroyer);
         }
 
-        private void AuctionTypeUD_ValueChanged(object sender, EventArgs e)
+        private void Paladin_CheckedChanged(object sender, EventArgs e)
         {
-            var selectedEnumValue = Enum.GetValues<AuctionType>().ElementAtOrDefault(AuctionTypeBox.SelectedIndex); // Get enum value by index
-            if (m_currentItem != null)
-                m_currentItem.AuctionType = (int)selectedEnumValue;
+            m_currentItem?.SetClassFlags(Paladin, ClassType.Paladin);
         }
 
-        private void ExtraData1UD_ValueChanged(object sender, EventArgs e)
+        private void Templar_CheckedChanged(object sender, EventArgs e)
         {
-            if (m_currentItem != null)
-                m_currentItem.ExtraData01 = (int)ExtraData1UD.Value;
+            m_currentItem?.SetClassFlags(Templar, ClassType.Templar);
         }
 
-        private void ExtraData2UD_ValueChanged(object sender, EventArgs e)
+        private void Crusader_CheckedChanged(object sender, EventArgs e)
         {
-            if (m_currentItem != null)
-                m_currentItem.ExtraData02 = (int)ExtraData2UD.Value;
+            m_currentItem?.SetClassFlags(Crusader, ClassType.Crusader);
         }
 
-        private void ExtraData3UD_ValueChanged(object sender, EventArgs e)
+        private void Holyknight_CheckedChanged(object sender, EventArgs e)
         {
-            if (m_currentItem != null)
-                m_currentItem.ExtraData03 = (int)ExtraData3UD.Value;
+            m_currentItem?.SetClassFlags(Holyknight, ClassType.HolyKnight);
         }
 
-        private void TipTxt_TextChanged(object sender, EventArgs e)
+        private void Hunter_CheckedChanged(object sender, EventArgs e)
         {
-            if (m_currentItem != null)
-                m_currentItem.Tip = TipTxt.Text;
+            m_currentItem?.SetClassFlags(Hunter, ClassType.Hunter);
         }
 
-        private void RestrictEventPosTxt_TextChanged(object sender, EventArgs e)
+        private void Archer_CheckedChanged(object sender, EventArgs e)
         {
-            if (m_currentItem != null)
-                m_currentItem.RestrictEventPosition = RestrictEventPosTxt.Text;
+            m_currentItem?.SetClassFlags(Archer, ClassType.Archer);
         }
 
-        private void PriceTypeBox_SelectedIndexChanged(object sender, EventArgs e)
+        private void Ranger_CheckedChanged(object sender, EventArgs e)
         {
-            var selectedEnumValue = Enum.GetValues<MerchantCoinType>().ElementAtOrDefault(PriceTypeBox.SelectedIndex); // Get enum value by index
-            if (m_currentItem != null)
-                m_currentItem.ShopPriceType = (int)selectedEnumValue;
+            m_currentItem?.SetClassFlags(Ranger, ClassType.Ranger);
         }
 
-        private void PriceUD_ValueChanged(object sender, EventArgs e)
+        private void Sharpshooter_CheckedChanged(object sender, EventArgs e)
         {
-            if (m_currentItem != null)
-                m_currentItem.Price = (int)PriceUD.Value;
+            m_currentItem?.SetClassFlags(Sharpshooter, ClassType.Sharpshooter);
         }
 
-        private void TooltipBtn_Click(object sender, EventArgs e)
+        private void Hawkeye_CheckedChanged(object sender, EventArgs e)
         {
-            if (!m_tooltipPanel.IsVisible())
-                m_tooltipPanel.Show(this);
+            m_currentItem?.SetClassFlags(Hawkeye, ClassType.Hawkeye);
         }
 
-        private void AddNewItemBtn_Click(object sender, EventArgs e)
+        private void Predator_CheckedChanged(object sender, EventArgs e)
         {
-            if (CItemDatabase.CreateNewItem(out var newIndex))
-            {
-                PopulateItemList();
-                ItemList.SelectedIndex = newIndex <= 0 ? 0 : newIndex - 1; // Select the new item, -1 because SelectedIndex start at 0 and newIndex start at 1.
-            }
+            m_currentItem?.SetClassFlags(Predator, ClassType.Predator);
         }
 
-        private void ModelIDTxt_TextChanged(object sender, EventArgs e)
+        private void Assassin_CheckedChanged(object sender, EventArgs e)
         {
-            if (m_currentItem != null)
-                m_currentItem.ModelId = ModelIDTxt.Text;
+            m_currentItem?.SetClassFlags(Assassin, ClassType.Assassin);
         }
 
-        private void SaveAndCloseBtn_Click(object sender, EventArgs e)
+        private void Darkstalker_CheckedChanged(object sender, EventArgs e)
         {
-            CItemDatabase.Save();
-            Hide();
+            m_currentItem?.SetClassFlags(Darkstalker, ClassType.DarkStalker);
         }
 
-        private void WeaponEffectIdUD_ValueChanged(object sender, EventArgs e)
+        private void Windshadow_CheckedChanged(object sender, EventArgs e)
         {
-            if (m_currentItem != null)
-                m_currentItem.WeaponEffectId = (int)WeaponEffectIdUD.Value;
+            m_currentItem?.SetClassFlags(Windshadow, ClassType.Windshadow);
         }
 
-        private void FlyEffectIdUD_ValueChanged(object sender, EventArgs e)
+        private void Shinobi_CheckedChanged(object sender, EventArgs e)
         {
-            if (m_currentItem != null)
-                m_currentItem.FlyEffectId = (int)FlyEffectIdUD.Value;
+            m_currentItem?.SetClassFlags(Shinobi, ClassType.Shinobi);
         }
 
-        private void UsedEffectIdUD_ValueChanged(object sender, EventArgs e)
+        private void Acolyte_CheckedChanged(object sender, EventArgs e)
         {
-            if (m_currentItem != null)
-                m_currentItem.UsedEffectId = (int)UsedEffectIdUD.Value;
+            m_currentItem?.SetClassFlags(Acolyte, ClassType.Acolyte);
         }
 
-        private void EnchanceEffectIdUD_ValueChanged(object sender, EventArgs e)
+        private void Priest_CheckedChanged(object sender, EventArgs e)
         {
-            if (m_currentItem != null)
-                m_currentItem.EnchanceEffectId = (int)EnchanceEffectIdUD.Value;
+            m_currentItem?.SetClassFlags(Priest, ClassType.Priest);
+        }
+
+        private void Cleric_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Cleric, ClassType.Cleric);
+        }
+
+        private void Prophet_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Prophet, ClassType.Prophet);
+        }
+
+        private void Saint_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Saint, ClassType.Saint);
+        }
+
+        private void Archangel_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Archangel, ClassType.Archangel);
+        }
+
+        private void Sage_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Sage, ClassType.Sage);
+        }
+
+        private void Mystic_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Mystic, ClassType.Mystic);
+        }
+
+        private void Shaman_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Shaman, ClassType.Shaman);
+        }
+
+        private void Druid_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Druid, ClassType.Druid);
+        }
+
+        private void Spellcaster_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Spellcaster, ClassType.Spellcaster);
+        }
+
+        private void Mage_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Mage, ClassType.Mage);
+        }
+
+        private void Wizard_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Wizard, ClassType.Wizard);
+        }
+
+        private void Archmage_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Archmage, ClassType.Archmage);
+        }
+
+        private void Avatar_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Avatar, ClassType.Avatar);
+        }
+
+        private void Warlock_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Warlock, ClassType.Warlock);
+        }
+
+        private void Necromancer_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Necromancer, ClassType.Necromancer);
+        }
+
+        private void Demonologist_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Demonologist, ClassType.Demonologist);
+        }
+
+        private void Shadowlord_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Shadowlord, ClassType.Shadowlord);
+        }
+
+        private void Shinigami_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Shinigami, ClassType.Shinigami);
+        }
+
+        private void Mechanic_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Mechanic, ClassType.Mechanic);
+        }
+
+        private void Machinist_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Machinist, ClassType.Machinist);
+        }
+
+        private void Demolitionist_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Demolitionist, ClassType.Demolisionist);
+        }
+
+        private void Gunner_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Gunner, ClassType.Gunner);
+        }
+
+        private void Bombardier_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Bombardier, ClassType.Bombardier);
+        }
+
+        private void Artillerist_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Artillerist, ClassType.Artillerist);
+        }
+
+        private void Enginner_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Enginner, ClassType.Enginner);
+        }
+
+        private void Gearmaster_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Gearmaster, ClassType.GearMaster);
+        }
+
+        private void Cogmaster_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Cogmaster, ClassType.CogMaster);
+        }
+
+        private void Mechmaster_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Mechmaster, ClassType.MechMaster);
+        }
+
+        private void Wanderer_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Wanderer, ClassType.Wanderer);
+        }
+
+        private void Drifter_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Drifter, ClassType.Drifter);
+        }
+
+        private void Timetraveler_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Timetraveler, ClassType.TimeTraveler);
+        }
+
+        private void Keymaster_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Keymaster, ClassType.KeyMaster);
+        }
+
+        private void Chronomancer_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Chronomancer, ClassType.Chronomancer);
+        }
+
+        private void Chronoshifter_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Chronoshifter, ClassType.ChronoShifter);
+        }
+
+        private void Voidrunner_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Voidrunner, ClassType.VoidRunner);
+        }
+
+        private void Dimentionalist_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Dimentionalist, ClassType.Dimensionalist);
+        }
+
+        private void Reaper_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Reaper, ClassType.Reaper);
+        }
+
+        private void Phantom_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetClassFlags(Phantom, ClassType.Phantom);
+        }
+
+        private void Useable_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetOpFlags(Useable, OpFlags.CanUse);
+        }
+
+        private void Combinable_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetOpFlags(Combinable, OpFlags.Combineable);
+        }
+
+        private void BindOnEquip_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetOpFlags(BindOnEquip, OpFlags.BindOnEquip);
+        }
+
+        private void AccumTime_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetOpFlags(AccumTime, OpFlags.AccumTime);
+        }
+
+        private void LinkQuest_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetOpFlags(LinkQuest, OpFlags.LinkToQuest);
+        }
+
+        private void ForDead_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetOpFlags(ForDead, OpFlags.ForDead);
+        }
+
+        private void UnbindItem_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetOpFlags(UnbindItem, OpFlags.UnBindItem);
+        }
+
+        private void OnlyEquip_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetOpFlags(OnlyEquip, OpFlags.OnlyEquip);
+        }
+
+        private void NoDecrease_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetOpFlags(NoDecrease, OpFlags.NoDecrease);
+        }
+
+        private void NoTrade_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetOpFlags(NoTrade, OpFlags.NoTrade);
+        }
+
+        private void NoDiscard_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetOpFlags(NoDiscard, OpFlags.NoDiscard);
+        }
+
+        private void NoEnchance_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetOpFlags(NoEnchance, OpFlags.NoEnhance);
+        }
+
+        private void NoRepair_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetOpFlags(NoRepair, OpFlags.NoRepair);
+        }
+
+        private void NoSameBuff_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetOpFlags(NoSameBuff, OpFlags.NoSameBuff);
+        }
+
+        private void NoInBattle_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetOpFlags(NoInBattle, OpFlags.NoInBattle);
+        }
+
+        private void NoInTown_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetOpFlags(NoInTown, OpFlags.NoInTown);
+        }
+
+        private void NoInCave_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetOpFlags(NoInCave, OpFlags.NoInCave);
+        }
+
+        private void NoInInstance_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetOpFlags(NoInInstance, OpFlags.NoInInstance);
+        }
+
+        private void NoInBattlefield_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetOpFlags(Useable, OpFlags.CanUse);
+        }
+
+        private void NoInField_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetOpFlags(NoInField, OpFlags.NoInField);
+        }
+
+        private void NoTransNode_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetOpFlags(NoTransNode, OpFlags.NoTransNode);
+        }
+
+        private void Only1_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetOpFlags(Only1, OpFlags.Only1);
+        }
+
+        private void Only2_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetOpFlags(Only2, OpFlags.Only2);
+        }
+
+        private void Only3_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetOpFlags(Only3, OpFlags.Only3);
+        }
+
+        private void Only4_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetOpFlags(Only4, OpFlags.Only4);
+        }
+
+        private void Only5_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetOpFlags(Only5, OpFlags.Only5);
+        }
+
+        private void Replaceable1_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetOpFlags(Replaceable1, OpFlags.Replaceable1);
+        }
+
+        private void Replaceable2_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetOpFlags(Replaceable2, OpFlags.Replaceable2);
+        }
+
+        private void Replaceable3_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetOpFlags(Replaceable3, OpFlags.Replaceable3);
+        }
+
+        private void Replaceable4_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetOpFlags(Replaceable4, OpFlags.Replaceable4);
+        }
+
+        private void Replaceable5_CheckedChanged(object sender, EventArgs e)
+        {
+            m_currentItem?.SetOpFlags(Replaceable5, OpFlags.Replaceable5);
         }
     }
 }

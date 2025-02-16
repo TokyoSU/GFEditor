@@ -1,7 +1,4 @@
-﻿using GFEditor.Database.ClientServer;
-using GFEditor.Database.Translate;
-
-namespace GFEditor.Editor
+﻿namespace GFEditor.Editor
 {
     public partial class UI_Loader : Form
     {
@@ -63,7 +60,9 @@ namespace GFEditor.Editor
 
             // Set loader and increase max class count.
             BasicAssetDatabase.SetLoader(this);
+
             CItemDatabase.SetLoader(this);
+            CColorDatabase.SetLoader(this);
             TItemDatabase.SetLoader(this);
             TTextIndexDatabase.SetLoader(this);
 
@@ -72,6 +71,7 @@ namespace GFEditor.Editor
 
             // Client/Server Files.
             CItemDatabase.Load();
+            CColorDatabase.Load();
 
             // Translate Files.
             TItemDatabase.Load();

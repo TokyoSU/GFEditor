@@ -13,6 +13,12 @@
             return GetChinese().GetBytes(str);
         }
 
-
+        public static string RemoveString(this string str, string valueToRemove)
+        {
+            string result = str;
+            if (str.Contains(valueToRemove))
+                result = str.Replace(valueToRemove, "");
+            return result;
+        }
     }
 }

@@ -32,9 +32,12 @@
 
         // Database Path
 
+        public static string AssetJCItemPath = AssetDataPath + "C_Item.json";
+        public static string AssetJCColor = AssetDataPath + "C_Color.json";
+
         public static string AssetJTItem = AssetDataPath + "T_Item.json";
         public static string AssetJTTextIndex = AssetDataPath + "T_TextIndex.json";
-        public static string AssetJItemPath = AssetDataPath + "C_Item.json";
+
         public static string AssetJEditorPath = AssetDataPath + "Editor.json";
 
         public static void Load()

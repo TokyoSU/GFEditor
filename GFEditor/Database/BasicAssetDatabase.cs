@@ -2,7 +2,7 @@
 {
     public static class BasicAssetDatabase
     {
-        private static readonly Logger m_Log = LogManager.GetCurrentClassLogger();
+        private static readonly Logger m_Log = LogManager.GetLogger("BasicAsset");
         private static readonly List<NamedImage> m_itemsImage = [];
         private static readonly List<NamedImage> m_dropChestImage = [];
         private static readonly List<SoundPlayer> m_soundData = [];

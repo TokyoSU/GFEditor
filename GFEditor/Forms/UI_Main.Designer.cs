@@ -28,10 +28,12 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(UI_Main));
             ShowItemBtn = new Button();
             ShowEnchantBtn = new Button();
             TranslateAutoCBox = new CheckBox();
+            Tooltip = new ToolTip(components);
             SuspendLayout();
             // 
             // ShowItemBtn
@@ -41,12 +43,13 @@
             ShowItemBtn.Size = new System.Drawing.Size(99, 23);
             ShowItemBtn.TabIndex = 0;
             ShowItemBtn.Text = "Item Editor";
+            Tooltip.SetToolTip(ShowItemBtn, "It include everything you need to change item, drop etc..");
             ShowItemBtn.UseVisualStyleBackColor = true;
             ShowItemBtn.Click += ShowItemBtn_Click;
             // 
             // ShowEnchantBtn
             // 
-            ShowEnchantBtn.Location = new System.Drawing.Point(12, 41);
+            ShowEnchantBtn.Location = new System.Drawing.Point(117, 12);
             ShowEnchantBtn.Name = "ShowEnchantBtn";
             ShowEnchantBtn.Size = new System.Drawing.Size(99, 23);
             ShowEnchantBtn.TabIndex = 1;
@@ -57,7 +60,7 @@
             // TranslateAutoCBox
             // 
             TranslateAutoCBox.AutoSize = true;
-            TranslateAutoCBox.Location = new System.Drawing.Point(166, 12);
+            TranslateAutoCBox.Location = new System.Drawing.Point(222, 15);
             TranslateAutoCBox.Name = "TranslateAutoCBox";
             TranslateAutoCBox.Size = new System.Drawing.Size(152, 19);
             TranslateAutoCBox.TabIndex = 2;
@@ -65,15 +68,19 @@
             TranslateAutoCBox.UseVisualStyleBackColor = true;
             TranslateAutoCBox.CheckedChanged += TranslateAutoCBox_CheckedChanged;
             // 
+            // Tooltip
+            // 
+            Tooltip.IsBalloon = true;
+            // 
             // UI_Main
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(365, 80);
+            ClientSize = new System.Drawing.Size(376, 47);
             Controls.Add(TranslateAutoCBox);
             Controls.Add(ShowEnchantBtn);
             Controls.Add(ShowItemBtn);
-            FormBorderStyle = FormBorderStyle.FixedSingle;
+            FormBorderStyle = FormBorderStyle.FixedToolWindow;
             Icon = (Icon)resources.GetObject("$this.Icon");
             MaximizeBox = false;
             MinimizeBox = false;
@@ -92,5 +99,6 @@
         private Button ShowItemBtn;
         private Button ShowEnchantBtn;
         private CheckBox TranslateAutoCBox;
+        private ToolTip Tooltip;
     }
 }
