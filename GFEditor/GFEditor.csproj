@@ -1,25 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net9.0-windows</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <UseWindowsForms>True</UseWindowsForms>
-    <UseWPF>false</UseWPF>
-    <StartupObject>GFEditor.Program</StartupObject>
-    <ApplicationIcon>Icon1.ico</ApplicationIcon>
-    <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
-    <IntermediateOutputPath>Build\obj\</IntermediateOutputPath>
-    <BaseOutputPath>Build\bin\</BaseOutputPath>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <NoWarn>1701;1702;WFO5001</NoWarn>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <NoWarn>1701;1702;WFO5001</NoWarn>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	<SatelliteResourceLanguages>none</SatelliteResourceLanguages>
+	<ApplicationIcon>Icon1.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,17 +15,26 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Hexa.NET.GLFW" Version="1.0.4" />
+    <PackageReference Include="Hexa.NET.ImGui" Version="2.2.6" />
+    <PackageReference Include="Hexa.NET.ImGui.Backends" Version="1.0.14" />
+    <PackageReference Include="Hexa.NET.ImGui.Backends.GLFW" Version="1.0.14" />
+    <PackageReference Include="Hexa.NET.ImGui.Widgets" Version="1.2.11" />
+    <PackageReference Include="Hexa.NET.ImGui.Widgets.Extras" Version="1.0.4" />
+    <PackageReference Include="Hexa.NET.ImGuizmo" Version="2.2.6" />
+    <PackageReference Include="Hexa.NET.ImNodes" Version="2.2.6" />
+    <PackageReference Include="Hexa.NET.ImPlot" Version="2.2.6" />
+    <PackageReference Include="Hexa.NET.OpenGL4" Version="1.1.0" />
+    <PackageReference Include="Hexa.NET.StbImage" Version="1.0.2" />
+    <PackageReference Include="Hexa.NET.Utilities" Version="2.2.2" />
     <PackageReference Include="NAudio" Version="2.2.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="NLog" Version="5.4.0" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.6" />
+    <PackageReference Include="WinSCP" Version="6.3.7" />
   </ItemGroup>
 
   <ItemGroup>
     <None Update="NLog.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="TranslateEN.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
