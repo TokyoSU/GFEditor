@@ -6,7 +6,7 @@ namespace GFEditor.Editor
     {
         private static readonly TranslatedValues m_Translate = TranslateUtils.Json.TranslatedValues;
         private readonly Logger m_Log = LogManager.GetCurrentClassLogger();
-        private ClassTextures? m_classTextures;
+        private ClassesTextures? m_classTextures;
 
         public List<ERestrictClass> FighterClassSections = 
         [
@@ -92,7 +92,7 @@ namespace GFEditor.Editor
             ERestrictClass.Phantom
         ];
 
-        public void SetClassTextures(ClassTextures textures) => m_classTextures = textures;
+        public void SetClassTextures(ClassesTextures textures) => m_classTextures = textures;
 
         public void DrawOpFlagParameter(ItemData item, string label, EItemOpFlags flags, float offsetX = 30f)
         {

@@ -49,14 +49,18 @@ namespace GFEditor.Editor.Window
                 {
                     if (ImGui.Selectable(m_Translate.Connect))
                     {
-                        if (m_UbuntuWindow.IsOpen)
+                        if (!m_UbuntuWindow.IsOpen)
+                        {
+                            m_UbuntuWindow.Initialize();
                             m_UbuntuWindow.Show();
+                        }
                         else
+                        {
                             m_UbuntuWindow.Hide();
+                        }
                     }
-
-                    if (ImGui.Selectable(m_Translate.Disconnect))
-                        m_UbuntuWindow.Disconnect();
+                    if (ImGui.Selectable("List Directory"))
+                        m_UbuntuWindow.ListDirectory("/root/gf_server");
                     ImGui.EndMenu();
                 }
                 ImGui.EndMainMenuBar();
@@ -74,6 +78,7 @@ namespace GFEditor.Editor.Window
         private void DrawEditor()
         {
             m_ItemEditor.DrawContent();
+            m_UbuntuWindow.DrawContent();
         }
 
         public void DrawContent()
@@ -139,7 +144,6 @@ namespace GFEditor.Editor.Window
 
         public void Dispose()
         {
-            m_UbuntuWindow.Dispose();
             m_ItemEditor.Dispose();
         }
     }

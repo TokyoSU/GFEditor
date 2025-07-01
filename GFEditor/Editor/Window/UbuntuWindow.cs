@@ -2,23 +2,38 @@
 {
     public class UbuntuWindow
     {
+        private static readonly Logger Log = LogManager.GetCurrentClassLogger();
         private static readonly TranslatedValues m_Translate = TranslateUtils.Json.TranslatedValues;
-        private const string RootPath = "/root/gf_server";
-        private Session? m_session = null;
-        private SessionOptions? m_sessionOptions = null;
-        private CConfigUbuntu m_Ubuntu = ConfigUtils.Configs.Ubuntu;
+        private static readonly CConfigUbuntu m_Ubuntu = ConfigUtils.Configs.Ubuntu;
+        private SessionOptions SessionOptions
+        {
+            get
+            {
+                var sessionOptions = new SessionOptions()
+                {
+                    Protocol = Protocol.Sftp,
+                    UserName = m_Username,
+                    Password = m_Password,
+                    PortNumber = m_Port,
+                    HostName = m_Hostname,
+                    SshHostKeyFingerprint = m_Hostkey,
+                    Timeout = TimeSpan.FromMilliseconds(100),
+                    FtpMode = FtpMode.Active,
+                    FtpSecure = FtpSecure.None
+                };
+                sessionOptions.AddRawSettings("SftpServer", "sudo%20/usr/lib/openssh/sftp-server");
+                return sessionOptions;
+            }
+        }
         private string m_Hostname = string.Empty;
         private string m_Hostkey = string.Empty;
         private string m_Username = string.Empty;
         private string m_Password = string.Empty;
         private int m_Port = 0;
         private bool m_Shown = false;
-        private bool m_WasConnectedByAutoConnect = false; // Autoconnect one time !
         public bool IsOpen => m_Shown;
-
         public void Show() => m_Shown = true;
         public void Hide() => m_Shown = false;
-        public bool IsConnected() => m_session != null && m_session.Opened;
 
         public void Initialize()
         {
@@ -39,33 +54,53 @@
             if (m_Ubuntu.Port == 0 || m_Ubuntu.Port != m_Port) m_Ubuntu.Port = m_Port;
         }
 
-        private void CreateSftpClient()
+        public void ListDirectory(string localPath)
         {
-            if (m_session == null)
+            UpdateConfig();
+            Task.Run(() =>
             {
-                Initialize();
-                UpdateConfig();
-                m_sessionOptions = new SessionOptions()
+                using var session = new Session();
+                session.Open(SessionOptions);
+                if (session.Opened)
                 {
-                    Protocol = Protocol.Sftp,
-                    FtpMode = FtpMode.Passive,
-                    UserName = m_Ubuntu.Username,
-                    Password = m_Ubuntu.Password,
-                    HostName = m_Ubuntu.Host,
-                    PortNumber = m_Ubuntu.Port,
-                    SshHostKeyFingerprint = m_Ubuntu.HostKey,
-                    Timeout = TimeSpan.FromMilliseconds(100),
-                    TimeoutInMilliseconds = 100,
-                };
-                m_sessionOptions.AddRawSettings("SftpServer", "sudo%20/usr/lib/openssh/sftp-server");
-                m_session ??= new Session();
-            }
+                    var result = session.ListDirectory(localPath);
+                    foreach (var file in result.Files)
+                    {
+                        Log.Info("File: {0}, Size: {1}, IsDirectory: {2}", file.Name, file.Length, file.IsDirectory);
+                    }
+
+                    /*var result = session.PutFilesToDirectory(localPath, removePath, null, false);
+                    result.Check();
+
+                    if (result.IsSuccess)
+                    {
+                        Log.Info("Successfully transferred files from {0} to {1}", localPath, removePath);
+                        foreach (var msg in result.Transfers)
+                        {
+                            Log.Info("Transfered file: {0}", msg.FileName);
+                        }
+                    }
+                    else
+                    {
+                        foreach (var error in result.Failures)
+                        {
+                            Log.Error("Failed to transfer file: {0}", error.Message);
+                        }
+                    }*/
+                }
+                else
+                {
+                    Log.Error("Failed to open SFTP session to {0}:{1} with user {2}", m_Ubuntu.Host, m_Ubuntu.Port, m_Ubuntu.Username);
+
+                }
+            });
         }
 
         public void DrawContent()
         {
             if (m_Shown)
             {
+                UpdateConfig();
                 if (ImGui.Begin(m_Translate.UbuntuName, ref m_Shown))
                 {
                     ImGuiUtils.InputText("SFTP Host", ref m_Hostname);
@@ -73,61 +108,8 @@
                     ImGuiUtils.InputText("Username", ref m_Username);
                     ImGuiUtils.InputText("Password", ref m_Password);
                     ImGuiUtils.InputInt("Port", ref m_Port);
-                    if (ImGui.Button("Connect"))
-                        Connect();
-                    ImGui.SameLine(); ImGui.Checkbox("Auto connect", ref m_Ubuntu.AutoConnect);
                     ImGui.End();
                 }
-            }
-        }
-
-        private void Connect()
-        {
-            CreateSftpClient();
-            if (m_session != null && !m_session.Opened && m_sessionOptions != null)
-            {
-                try
-                {
-                    //m_session.Open(m_sessionOptions);
-                    if (m_session.Opened)
-                        ImGuiNotify.Insert(new ImGuiToast(ImGuiToastType.Success, "Ubuntu Server", 2000, "Connected to " + m_Hostname));
-                }
-                catch (Exception ex)
-                {
-                    ImGuiNotify.Insert(new ImGuiToast(ImGuiToastType.Error, "Ubuntu Server", 2000, ex.Message));
-                }
-            }
-        }
-
-        public void Disconnect()
-        {
-            if (IsConnected())
-            {
-                m_session?.Close();
-                Dispose();
-                m_sessionOptions = null;
-                ImGuiNotify.Insert(new ImGuiToast(ImGuiToastType.Success, "Ubuntu Server", 2000, "Disconnected"));
-            }
-        }
-
-        public void Dispose()
-        {
-            if (m_session != null)
-            {
-                if (m_session.Opened)
-                    m_session.Close();
-                m_session.Dispose();
-            }
-            m_session = null;
-        }
-
-        public void AutoConnect()
-        {
-            if (m_Ubuntu.AutoConnect && m_session == null && !m_WasConnectedByAutoConnect &&
-                m_Ubuntu.Host.IsValid() && m_Ubuntu.HostKey.IsValid() && m_Ubuntu.Password.IsValid() && m_Ubuntu.Username.IsValid() && m_Ubuntu.Port != 0)
-            {
-                Connect();
-                m_WasConnectedByAutoConnect = true;
             }
         }
     }

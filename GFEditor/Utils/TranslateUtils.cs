@@ -6,7 +6,6 @@ namespace GFEditor.Utils
     public static class TranslateUtils
     {
         private const string LanguageFilename = "GFEditor.language.json";
-        private const string TranslateFilename = "GFEditor.translated.exported.json";
         private const string TranslateFolder = "translations";
         public static JsonTranslate Json = new();
         public static JsonLanguage JsonLang = new();

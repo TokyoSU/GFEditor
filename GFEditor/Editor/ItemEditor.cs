@@ -8,14 +8,16 @@
         private const string m_dropPath = "textures\\chest";
         private readonly ItemEditorUtils m_itemEditorUtils = new();
         private readonly ItemQuery m_ItemList = new();
-        private readonly ClassTextures m_ClassImages = new();
+        private readonly ClassesTextures m_ClassImages = new();
         private readonly Dictionary<string, Texture2D> m_iconsImages = [];
         private readonly Dictionary<string, Texture2D> m_dropImages = [];
         private string[] m_ItemsStringList = [];
         private int m_SelectedListIndex = 0;
         public bool IsOpen = false;
+        static int ReputationIndex = -1;
+        static int selectedValue = 0;
 
-        private void EditorError(string message)
+        private static void EditorError(string message)
         {
             m_Log.Error(message);
             ImGuiNotify.Insert(new ImGuiToast(ImGuiToastType.Error, "Item Editor", 2000, message));
@@ -31,6 +33,7 @@
             if (filePath.FileExist())
             {
                 m_ItemList.ReadFile(filePath);
+
                 return;
             }
             EditorError("Failed to load file: " + filePath + ", file probably not found !");
@@ -191,7 +194,6 @@
                                 item.m_bOpFlagsArray[EItemOpFlags.eIOF_Replaceable5] = false;
                                 item.m_bOpFlagsArray[EItemOpFlags.eIOF_Replaceable] = true;
                             }
-
                         }
 
                         ImGuiUtils.SetOffsetPos(new Vector2(15f, 0f));
@@ -221,7 +223,17 @@
 
                     if (ImGui.CollapsingHeader(m_Translate.HeaderItemReputation))
                     {
+                        List<string> alignementList = [];
+                        foreach (var value in Enum.GetValues<EAlignement>())
+                        {
+                            if (value == EAlignement.eA_End || value == EAlignement.eA_GroupEnd) continue; // Skip alignement
+                            alignementList.Add(AlignementUtils.GetAlignementName(value));
+                        }
+                        ImGui.ListBox("Type", ref ReputationIndex, [.. alignementList], alignementList.Count);
+                        alignementList.Clear();
+                        item.m_eRestrictAlign = AlignementUtils.GetEnumAlignementFromID(ReputationIndex);
 
+                        ImGuiUtils.InputULong("Value", ref item.m_nRestrictPrestige);
                     }
 
                     if (ImGui.CollapsingHeader(m_Translate.HeaderItemAttribute))

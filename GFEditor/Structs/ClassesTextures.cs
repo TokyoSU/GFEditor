@@ -1,6 +1,6 @@
 ﻿namespace GFEditor.Structs
 {
-    public class ClassTextures
+    public class ClassesTextures
     {
         private static readonly Logger m_Log = LogManager.GetCurrentClassLogger();
         private readonly Dictionary<ERestrictClass, Texture2D> m_ClassTextures = [];
@@ -29,9 +29,7 @@
         public void Dispose()
         {
             foreach (var texture in m_ClassTextures.Values)
-            {
                 TextureUtils.DisposeTexture(texture);
-            }
             m_ClassTextures.Clear();
         }
     }
