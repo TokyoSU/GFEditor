@@ -94,7 +94,7 @@ namespace GFEditor.Editor
 
         public void SetClassTextures(ClassesTextures textures) => m_classTextures = textures;
 
-        public void DrawOpFlagParameter(ItemData item, string label, EItemOpFlags flags, float offsetX = 30f)
+        public void DrawOpFlagParameter(CItem item, string label, EItemOpFlags flags, float offsetX = 30f)
         {
             ImGuiUtils.SetOffsetPos(new Vector2(offsetX, 0f));
             bool value = item.m_bOpFlagsArray[flags];
@@ -125,7 +125,7 @@ namespace GFEditor.Editor
             ImGui.Text(label);
         }
 
-        public void DrawOpFlagPlusParameter(ItemData item, string label, EItemOpFlagsPlus flags, float offsetX = 30f)
+        public void DrawOpFlagPlusParameter(CItem item, string label, EItemOpFlagsPlus flags, float offsetX = 30f)
         {
             ImGuiUtils.SetOffsetPos(new Vector2(offsetX, 0f));
             bool value = item.m_bOpFlagsPlusArray[flags];
@@ -135,12 +135,12 @@ namespace GFEditor.Editor
             ImGui.Text(label);
         }
 
-        public static void DrawClassCheckBoxRestrict(string label, ItemData item, ERestrictClass restrictType)
+        public static void DrawClassCheckBoxRestrict(string label, CItem item, ERestrictClass restrictType)
         {
             
         }
 
-        public void DrawClassCheckbox(ItemData item, ERestrictClass eRestrictClass, float offsetX)
+        public void DrawClassCheckbox(CItem item, ERestrictClass eRestrictClass, float offsetX)
         {
             ImGuiUtils.SetOffsetPos(new Vector2(offsetX, 0f));
 
@@ -157,7 +157,7 @@ namespace GFEditor.Editor
             ImGui.Text(label);
         }
 
-        public void DrawClassSection(ItemData item, string sectionName, float offsetXMultiplier, ERestrictClass headerIcon, List<ERestrictClass> eRestrictClasses)
+        public void DrawClassSection(CItem item, string sectionName, float offsetXMultiplier, ERestrictClass headerIcon, List<ERestrictClass> eRestrictClasses)
         {
             if (eRestrictClasses == null || eRestrictClasses.Count != 10)
             {

@@ -135,11 +135,26 @@ namespace GFEditor.Utils
         [JsonProperty("HeaderItemModel")]
         public string HeaderItemModel = string.Empty;
 
+        [JsonProperty("HeaderItemBasics")]
+        public string HeaderItemBasics = string.Empty;
+
         [JsonProperty("HeaderDropName")]
         public string HeaderDropName = string.Empty;
 
         [JsonProperty("HeaderItemIcon")]
         public string HeaderItemIcon = string.Empty;
+
+        [JsonProperty("HeaderItemStats")]
+        public string HeaderItemStats = string.Empty;
+
+        [JsonProperty("HeaderItemCooldown")]
+        public string HeaderItemCooldown = string.Empty;
+
+        [JsonProperty("HeaderItemRebirth")]
+        public string HeaderItemRebirth = string.Empty;
+
+        [JsonProperty("HeaderItemMiscellaneous")]
+        public string HeaderItemMiscellaneous = string.Empty;
 
         [JsonProperty("HeaderItemDrop")]
         public string HeaderItemDrop = string.Empty;
@@ -149,6 +164,9 @@ namespace GFEditor.Utils
 
         [JsonProperty("HeaderItemRestriction")]
         public string HeaderItemRestriction = string.Empty;
+
+        [JsonProperty("HeaderItemRestrictionTime")]
+        public string HeaderItemRestrictionTime = string.Empty;
 
         [JsonProperty("HeaderItemFlags")]
         public string HeaderItemFlags = string.Empty;
@@ -168,8 +186,8 @@ namespace GFEditor.Utils
         [JsonProperty("HeaderItemAttributeDamage")]
         public string HeaderItemAttributeDamage = string.Empty;
 
-        [JsonProperty("HeaderItemSpecialDamage")]
-        public string HeaderItemSpecialDamage = string.Empty;
+        [JsonProperty("HeaderItemSpecial")]
+        public string HeaderItemSpecial = string.Empty;
 
         [JsonProperty("HeaderItemPrice")]
         public string HeaderItemPrice = string.Empty;
@@ -179,6 +197,15 @@ namespace GFEditor.Utils
 
         [JsonProperty("HeaderItemClass")]
         public string HeaderItemClass = string.Empty;
+
+        [JsonProperty("HeaderItemAuction")]
+        public string HeaderItemAuction = string.Empty;
+
+        [JsonProperty("HeaderItemExperience")]
+        public string HeaderItemExperience = string.Empty;
+
+        [JsonProperty("HeaderItemMissionAndEvents")]
+        public string HeaderItemMissionAndEvents = string.Empty;
 
         [JsonProperty("FighterSection")]
         public string FighterSection = string.Empty;

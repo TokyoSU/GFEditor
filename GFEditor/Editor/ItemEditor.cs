@@ -2,30 +2,32 @@
 {
     public class ItemEditor
     {
-        private static readonly Logger m_Log = LogManager.GetCurrentClassLogger();
         private static readonly TranslatedValues m_Translate = TranslateUtils.Json.TranslatedValues;
         private const string m_itemIconPath = "textures\\itemicon";
         private const string m_dropPath = "textures\\chest";
         private readonly ItemEditorUtils m_itemEditorUtils = new();
-        private readonly ItemQuery m_ItemList = new();
+        private readonly CItemQuery m_ItemList = new();
         private readonly ClassesTextures m_ClassImages = new();
         private readonly Dictionary<string, Texture2D> m_iconsImages = [];
         private readonly Dictionary<string, Texture2D> m_dropImages = [];
-        private string[] m_ItemsStringList = [];
-        private int m_SelectedListIndex = 0;
+        private string[] _ItemsStringList = [];
+        private int _AlignementIndex = 0;
+        private int _AttributeIndex = 0;
+        private int _PriceIndex = 0;
+        private int _SpecialIndex = 0;
+        private int _EnchantTimeTypeIndex = 0;
+        private int _EnchantTypeIndex = 0;
+        private int _SelectedListIndex = 0;
+        private int _AuctionTypeIndex = 0;
+        private int _QualityIndex = 0;
+        private int _ItemTypeIndex = 0;
+        private int _EquipTypeIndex = 0;
+        private int _TimeLimitTypeIndex = 0;
         public bool IsOpen = false;
-        static int ReputationIndex = -1;
-        static int selectedValue = 0;
-
-        private static void EditorError(string message)
-        {
-            m_Log.Error(message);
-            ImGuiNotify.Insert(new ImGuiToast(ImGuiToastType.Error, "Item Editor", 2000, message));
-        }
 
         public void Init()
         {
-            if (m_ItemList.ContainsAnyValue()) // Avoid loading item each time the editor open...
+            if (m_ItemList.HasValues()) // Avoid loading item each time the editor open...
                 return;
             m_ClassImages.LoadTextures();
             m_itemEditorUtils.SetClassTextures(m_ClassImages);
@@ -33,10 +35,9 @@
             if (filePath.FileExist())
             {
                 m_ItemList.ReadFile(filePath);
-
                 return;
             }
-            EditorError("Failed to load file: " + filePath + ", file probably not found !");
+            GuiNotify.Show(ImGuiToastType.Error, "Item Editor", "Failed to load item list, file probably not found !");
         }
 
         public void DrawContent()
@@ -44,7 +45,7 @@
             if (!IsOpen) return;
 
             // Now that the item is loaded, update the item list !
-            if (m_ItemsStringList.Length <= 0 && m_ItemList.IsLoaded()) ResetStringList();
+            if (_ItemsStringList.Length <= 0 && m_ItemList.IsLoaded()) ResetStringList();
 
             DrawItemList();
             DrawItemProperties();
@@ -52,12 +53,12 @@
 
         private void DrawItemList()
         {
-            if (ImGui.Begin(m_Translate.ItemListName))
+            if (ImGui.Begin(m_Translate.ItemListName, ImGuiWindowFlags.AlwaysAutoResize))
             {
                 // Now create the item list window.
                 var regionSize = ImGui.GetContentRegionAvail();
                 ImGui.SetNextWindowSize(new Vector2(regionSize.X - 1f, regionSize.Y - 20f));
-                ImGuiUtils.ListBox("##ItemList", ref m_SelectedListIndex, m_ItemsStringList);
+                ImGuiUtils.ListBox("##ItemList", ref _SelectedListIndex, _ItemsStringList);
                 ImGui.Separator();
 
                 if (ImGuiUtils.DoubleButton(m_Translate.AddBtnName, m_Translate.RemoveBtnName, out var add, out var remove))
@@ -71,24 +72,39 @@
 
         private void DrawItemProperties()
         {
-            if (ImGui.Begin(m_Translate.ItemEditorName, ref IsOpen) && m_ItemsStringList.Length > 0)
+            if (ImGui.Begin(m_Translate.ItemEditorName, ref IsOpen, ImGuiWindowFlags.AlwaysAutoResize) && _ItemsStringList.Length > 0)
             {
-                var strIndex = m_ItemsStringList[m_SelectedListIndex].AsULong();
+                var strIndex = _ItemsStringList[_SelectedListIndex].AsULong();
                 if (m_ItemList.GetItem(strIndex, out var item))
                 {
+                    _TimeLimitTypeIndex = (int)item.m_nLimitType;
+                    _EquipTypeIndex = (int)item.m_eEquipType;
+                    _ItemTypeIndex = (int)item.m_eItemType;
+                    _QualityIndex = (int)item.m_eItemQuality;
+                    _AlignementIndex = (int)item.m_eRestrictAlign;
+                    _AttributeIndex = (int)item.m_eAttribute;
+                    _PriceIndex = (int)item.m_nShopPriceType;
+                    _SpecialIndex = (int)item.m_eSpecialType;
+                    _EnchantTypeIndex = (int)item.m_eEnchantType;
+                    _EnchantTimeTypeIndex = (int)item.m_eEnchantTimeType;
+                    _AuctionTypeIndex = (int)item.m_eAuctionType;
+
                     ImGuiUtils.Label(m_Translate.HeaderItemIndex + ": " + item.m_nId, false);
                     ImGuiUtils.Label(m_Translate.HeaderItemName + ": " + item.m_kName, false);
                     ImGuiUtils.InputText(m_Translate.HeaderItemModel, ref item.m_nModelFilename);
-
-                    if (ImGui.CollapsingHeader(m_Translate.HeaderItemIcon))
+                    ImGuiUtils.InputText(m_Translate.HeaderItemIcon + ":", ref item.m_kIconFilename);
+                    var image = GetIconByName(item.m_kIconFilename);
+                    if (image != null)
                     {
-                        ImGuiUtils.InputText(m_Translate.HeaderItemIcon + ":", ref item.m_kIconFilename);
-                        var image = GetIconByName(item.m_kIconFilename);
-                        if (image != null)
-                        {
-                            ImGui.SameLine();
-                            ImGuiUtils.Image(image, false);
-                        }
+                        ImGui.SameLine();
+                        ImGuiUtils.Image(image, false);
+                    }
+
+                    if (ImGui.CollapsingHeader(m_Translate.HeaderItemBasics))
+                    {
+                        ImGuiUtils.EnumBox("Item Quality", ref _QualityIndex, out item.m_eItemQuality, EItemQuality.eIQ_Max);
+                        ImGuiUtils.EnumBox("Item Type", ref _ItemTypeIndex, out item.m_eItemType, EItemType.eIIT_OpenUIStart, EItemType.eIIT_OpenUIEnd, EItemType.eIIT_Max);
+                        ImGuiUtils.EnumBox("Equip Type", ref _EquipTypeIndex, out item.m_eEquipType, EEquipType.eEPT_Unknown, EEquipType.eEPT_Max);
                     }
 
                     if (ImGui.CollapsingHeader(m_Translate.HeaderItemDrop))
@@ -114,6 +130,18 @@
 
                     if (ImGui.CollapsingHeader(m_Translate.HeaderItemRestriction))
                     {
+                        ImGuiUtils.InputUShort("Item Group", ref item.m_nItemGroup);
+                        ImGuiUtils.InputByte("Minimum Level", ref item.m_nRestrictLevel);
+                        ImGuiUtils.InputByte("Maximum Level", ref item.m_nRestrictMaxLevel);
+                        ImGuiUtils.InputUShort("Stack Size", ref item.m_nMaxStack);
+
+                        ImGuiUtils.SetOffsetPos(new Vector2(15f, 0f));
+                        if (ImGui.CollapsingHeader(m_Translate.HeaderItemRestrictionTime))
+                        {
+                            ImGuiUtils.EnumBox("Time Limit Type", ref _TimeLimitTypeIndex, out item.m_nLimitType, ELimitTimeType.eLTT_Max);
+                            ImGuiUtils.InputULong("Time Limit", ref item.m_nDueDateTime);
+                        }
+
                         ImGuiUtils.SetOffsetPos(new Vector2(15f, 0f));
                         if (ImGui.CollapsingHeader(m_Translate.HeaderItemClass))
                         {
@@ -223,52 +251,122 @@
 
                     if (ImGui.CollapsingHeader(m_Translate.HeaderItemReputation))
                     {
-                        List<string> alignementList = [];
-                        foreach (var value in Enum.GetValues<EAlignement>())
-                        {
-                            if (value == EAlignement.eA_End || value == EAlignement.eA_GroupEnd) continue; // Skip alignement
-                            alignementList.Add(AlignementUtils.GetAlignementName(value));
-                        }
-                        ImGui.ListBox("Type", ref ReputationIndex, [.. alignementList], alignementList.Count);
-                        alignementList.Clear();
-                        item.m_eRestrictAlign = AlignementUtils.GetEnumAlignementFromID(ReputationIndex);
-
+                        ImGuiUtils.EnumBox("Restriction", ref _AlignementIndex, out item.m_eRestrictAlign, EAlignement.eA_End, EAlignement.eA_GroupEnd);
                         ImGuiUtils.InputULong("Value", ref item.m_nRestrictPrestige);
+                    }
+
+                    if (ImGui.CollapsingHeader(m_Translate.HeaderItemStats))
+                    {
+                        ImGuiUtils.InputULong("Health", ref item.m_nMaxHp);
+                        ImGuiUtils.InputULong("Mana", ref item.m_nMaxMp);
+                        ImGuiUtils.InputShort("Str", ref item.m_nStr);
+                        ImGuiUtils.InputShort("Vit", ref item.m_nVit);
+                        ImGuiUtils.InputShort("Int", ref item.m_nInt);
+                        ImGuiUtils.InputShort("Wil", ref item.m_nWil);
+                        ImGuiUtils.InputShort("Agi", ref item.m_nDex);
+                        ImGuiUtils.InputLong("Casting Time", ref item.m_nCastingTime);
+                        ImGuiUtils.InputULong("Physical Attack (Average)", ref item.m_nAvgPhysicalDamage);
+                        ImGuiUtils.InputULong("Physical Attack (Random)", ref item.m_nRandPhysicalDamage);
+                        ImGuiUtils.InputULong("Ranged Attack", ref item.m_nRangeDamage);
+                        ImGuiUtils.InputULong("Magical Attack", ref item.m_nMagicDamage);
+                        ImGuiUtils.InputShort("Physical Penetration", ref item.m_nPhysicalPenetration);
+                        ImGuiUtils.InputShort("Magical Penetration", ref item.m_nMagicalPenetration);
+                        ImGuiUtils.InputULong("Physical Defence", ref item.m_nPhysicalDefence);
+                        ImGuiUtils.InputULong("Magical Defence", ref item.m_nMagicDefence);
+                        ImGuiUtils.InputShort("Physical Penetration Defence", ref item.m_nPhysicalPenetrationDefence);
+                        ImGuiUtils.InputShort("Magical Penetration Defence", ref item.m_nMagicalPenetrationDefence);
+                        ImGuiUtils.InputUShort("Attack Range", ref item.m_nAttackRange);
+                        ImGuiUtils.InputUShort("Attack Speed", ref item.m_nAttackSpeed);
+                        ImGuiUtils.InputChar("Hit Rate", ref item.m_nHitRate);
+                        ImGuiUtils.InputChar("Dodge Rate", ref item.m_nDodgeRate);
+                        ImGuiUtils.InputChar("Block Rate", ref item.m_nBlockRate);
+                        ImGuiUtils.InputShort("Physical Critical Rate", ref item.m_nPhysicalCriticalRate);
+                        ImGuiUtils.InputShort("Magical Critical Rate", ref item.m_nMagicCriticalRate);
+                        ImGuiUtils.InputULong("Physical Critical Damage", ref item.m_nPhysicalCriticalDamage);
+                        ImGuiUtils.InputULong("Magical Critical Damage", ref item.m_nMagicCriticalDamage);
                     }
 
                     if (ImGui.CollapsingHeader(m_Translate.HeaderItemAttribute))
                     {
-
+                        ImGuiUtils.EnumBox("Attribute Type", ref _AttributeIndex, out item.m_eAttribute, EAttrResist.eAR_Max);
+                        ImGuiUtils.InputULong("Damage", ref item.m_nAttributeDamage);
+                        ImGuiUtils.InputShort("Rate", ref item.m_nAttributeRate);
+                        ImGuiUtils.InputULong("Resistance", ref item.m_nAttributeResist);
                     }
 
                     if (ImGui.CollapsingHeader(m_Translate.HeaderItemEnchantments))
                     {
+                        ImGuiUtils.EnumBox("Enchant Type", ref _EnchantTypeIndex, out item.m_eEnchantType, EBuffIconType.eBT_Max);
+                        ImGuiUtils.InputInt("Index", ref item.m_nEnchantId);
+                        ImGuiUtils.EnumBox("Time Type", ref _EnchantTimeTypeIndex, out item.m_eEnchantTimeType, ETimeType.eTIT_Max);
+                        ImGuiUtils.InputLong("Duration", ref item.m_nEnchantDuration);
+                    }
 
+                    if (ImGui.CollapsingHeader(m_Translate.HeaderItemCooldown))
+                    {
+                        ImGuiUtils.InputLong("Cooldown Time", ref item.m_nCoolDownTime);
+                        ImGuiUtils.InputUShort("Cooldown Group", ref item.m_nCoolDownGroup);
                     }
 
                     if (ImGui.CollapsingHeader(m_Translate.HeaderItemElf))
                     {
-
+                        ImGuiUtils.InputUShort("Elf Skill", ref item.m_nElfSkillId);
                     }
 
-                    if (ImGui.CollapsingHeader(m_Translate.HeaderItemAttributeDamage))
+                    if (ImGui.CollapsingHeader(m_Translate.HeaderItemSpecial))
                     {
-
-                    }
-
-                    if (ImGui.CollapsingHeader(m_Translate.HeaderItemSpecialDamage))
-                    {
-
+                        ImGuiUtils.EnumBox("Monster Type", ref _SpecialIndex, out item.m_eSpecialType, EMonsterType.eET_Size);
+                        ImGuiUtils.InputULong("Damage", ref item.m_nSpecialDamage);
+                        ImGuiUtils.InputShort("Rate", ref item.m_nSpecialRate);
                     }
 
                     if (ImGui.CollapsingHeader(m_Translate.HeaderItemPrice))
                     {
-
+                        ImGuiUtils.EnumBox("Price Type", ref _PriceIndex, out item.m_nShopPriceType);
+                        ImGuiUtils.InputULong("Price", ref item.m_nSysPrice);
                     }
 
                     if (ImGui.CollapsingHeader(m_Translate.HeaderItemSockets))
                     {
+                        ImGuiUtils.InputByte("Max", ref item.m_nMaxSocket);
+                        ImGuiUtils.InputChar("Rate", ref item.m_nSocketRate);
+                    }
 
+                    if (ImGui.CollapsingHeader(m_Translate.HeaderItemRebirth))
+                    {
+                        ImGuiUtils.InputShort("Minimum Required", ref item.m_nRebirthCount);
+                        ImGuiUtils.InputShort("Max Score", ref item.m_nRebirthMaxScore);
+                        ImGuiUtils.InputShort("Score", ref item.m_nRebirthScore);
+                    }
+
+                    if (ImGui.CollapsingHeader(m_Translate.HeaderItemMiscellaneous))
+                    {
+                        ImGuiUtils.InputByte("Backpack Size", ref item.m_nBackpackSize);
+                        ImGuiUtils.InputInt("Treasure Buffs 1", ref item.m_kTreasureBuffs1);
+                        ImGuiUtils.InputInt("Treasure Buffs 2", ref item.m_kTreasureBuffs2);
+                        ImGuiUtils.InputInt("Treasure Buffs 3", ref item.m_kTreasureBuffs3);
+                        ImGuiUtils.InputInt("Treasure Buffs 4", ref item.m_kTreasureBuffs4);
+                        ImGuiUtils.InputLong("Extra Data 1", ref item.m_kExtraData1);
+                        ImGuiUtils.InputLong("Extra Data 2", ref item.m_kExtraData2);
+                        ImGuiUtils.InputLong("Extra Data 3", ref item.m_kExtraData3);
+                        ImGuiUtils.InputByte("Log Level", ref item.m_nLogLevel);
+                    }
+                    
+                    if (ImGui.CollapsingHeader(m_Translate.HeaderItemAuction))
+                    {
+                        ImGuiUtils.EnumBox("Auction Type", ref _AuctionTypeIndex, out item.m_eAuctionType, EAuctionType.eAT_Max);
+                    }
+
+                    if (ImGui.CollapsingHeader(m_Translate.HeaderItemExperience))
+                    {
+                        ImGuiUtils.InputShort("Max Level", ref item.m_nExpertLevel);
+                        ImGuiUtils.InputInt("Enchant Index", ref item.m_nExpertEnchantId);
+                    }
+
+                    if (ImGui.CollapsingHeader(m_Translate.HeaderItemMissionAndEvents))
+                    {
+                        ImGuiUtils.InputULong("Mission Position ID", ref item.m_nMissionPosId);
+                        ImGuiUtils.InputText("Restrict Event Position IDs", ref item.m_nRestrictEventPosId);
                     }
 
                     item.ProcessClassRestriction();
@@ -292,17 +390,17 @@
 
         private void ResetStringList()
         {
-            m_ItemsStringList = m_ItemList.GetAllItems().Select(e => e.m_nId).ToStringArray();
+            _ItemsStringList = m_ItemList.GetAllItems().Select(e => e.m_nId).ToStringArray();
         }
 
         private void OnListAdd()
         {
-
+            GuiNotify.Show(ImGuiToastType.Warning, "Item Editor", "Add item to the list is not implemented yet !");
         }
 
         private void OnListRemove()
         {
-
+            GuiNotify.Show(ImGuiToastType.Warning, "Item Editor", "Remove item from the list is not implemented yet !");
         }
 
         private Texture2D? GetIconByName(string name)

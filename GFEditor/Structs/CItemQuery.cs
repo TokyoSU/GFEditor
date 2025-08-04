@@ -2,7 +2,7 @@
 
 namespace GFEditor.Structs
 {
-    public class ItemQuery : BaseQuery<IdType, ItemData>
+    public class CItemQuery : CBaseQuery<IdType, CItem>
     {
         private Task? m_readFileTask = null;
         private string m_fileName = string.Empty;
@@ -14,51 +14,58 @@ namespace GFEditor.Structs
         public long GetVersion() => m_nVer;
         public long GetColumnCount() => m_nColumnCount;
 
-        public bool GetItem(IdType index, out ItemData result)
+        public bool GetItem(IdType index, out CItem result)
         {
             return m_kMap.TryGetValue(index, out result);
         }
 
-        public List<ItemData> GetAllItems()
+        public IOrderedEnumerable<CItem> GetAllItems()
         {
-            return [.. m_kMap.Values];
+            return m_kMap.Values.OrderBy(e => e.m_nId);
         }
 
-        public bool ContainsAnyValue()
+        public bool HasValues()
         {
             return m_kMap.Count > 0;
         }
 
         private void Read()
         {
-            InTextStream m_Stream = new(m_fileName, true, true);
-            if (!m_Stream.IsOpen())
+            var strm = new InTextStream(m_fileName, true, true);
+            if (!strm.IsOpen())
                 return;
 
-            var delimiter = m_Stream.GetDelimiter();
-            var headerString = m_Stream.GetFirstLine();
+            var delimiter = strm.GetDelimiter();
+            var headerString = strm.GetFirstLine();
             headerString = headerString[1..^1]; // Remove first | and last |.
             var splittedHeader = headerString.Split(delimiter);
             m_VerStr = splittedHeader[0];
             m_nVer = m_VerStr.At(1, delimiter).AsLong();
             m_nColumnCount = splittedHeader[1].AsLong();
 
-            var splittedValues = m_Stream.SplitByColumns(m_nColumnCount, delimiter);
+            var splittedValues = strm.SplitByColumns(m_nColumnCount, delimiter);
             if (splittedValues == null)
             {
-                ImGuiNotify.Insert(new ImGuiToast(ImGuiToastType.Warning, "CItemQuery", 3000, "Failed to split ini data by columns, column count: {0}", m_nColumnCount));
+                GuiNotify.Show(ImGuiToastType.Warning, "CItemQuery", "Failed to split ini data by columns, column count: {0}", m_nColumnCount);
                 return;
             }
 
-            for (int i = 0; i < splittedValues.Count; i++)
+            foreach (var value in splittedValues)
             {
-                var value = splittedValues[i];
-                if (value == null) continue;
+                if (value == null)
+                {
+                    GuiNotify.Show(ImGuiToastType.Warning, "CItemQuery", "Found null value in splitted values, column count: {0}", m_nColumnCount);
+                    continue;
+                }
+
                 var index = (IdType)value[0].AsULong();
                 if (m_kMap.ContainsKey(index))
+                {
+                    GuiNotify.Show(ImGuiToastType.Warning, "CItemQuery", "Duplicate item ID found: {0}, skipping.", index);
                     continue;
+                }
 
-                var data = new ItemData
+                m_kMap.Add(index, new CItem
                 {
                     m_nId = index,
                     m_kIconFilename = value[1].ToLower(),
@@ -92,23 +99,23 @@ namespace GFEditor.Structs
                     m_nMaxHp = value[29].AsULong(),
                     m_nMaxMp = value[30].AsULong(),
                     m_nStr = (BaseAttrType)value[31].AsShort(),
-                    m_nCon = (BaseAttrType)value[32].AsShort(),
+                    m_nVit = (BaseAttrType)value[32].AsShort(),
                     m_nInt = (BaseAttrType)value[33].AsShort(),
-                    m_nVol = (BaseAttrType)value[34].AsShort(),
+                    m_nWil = (BaseAttrType)value[34].AsShort(),
                     m_nDex = (BaseAttrType)value[35].AsShort(),
-                    m_nAvgPhysicoDamage = value[36].AsULong(),
-                    m_nRandPhysicoDamage = value[37].AsULong(),
+                    m_nAvgPhysicalDamage = value[36].AsULong(),
+                    m_nRandPhysicalDamage = value[37].AsULong(),
                     m_nAttackRange = (GridType)value[38].AsUShort(),
                     m_nAttackSpeed = (AttackSpeedType)value[39].AsUShort(),
-                    m_nAttack = value[40].AsULong(),
-                    m_nRangeAttack = value[41].AsULong(),
-                    m_nPhysicoDefence = value[42].AsULong(),
-                    m_nMagicDamage = value[43].AsULong(),
-                    m_nMagicDefence = value[44].AsULong(),
+                    m_nAttack = (ulong)value[40].AsDouble(), // Make double to fix database issues.
+                    m_nRangeDamage = (ulong)value[41].AsDouble(),
+                    m_nPhysicalDefence = (ulong)value[42].AsDouble(),
+                    m_nMagicDamage = (ulong)value[43].AsDouble(),
+                    m_nMagicDefence = (ulong)value[44].AsDouble(),
                     m_nHitRate = (RateType)value[45].AsChar(),
                     m_nDodgeRate = (RateType)value[46].AsChar(),
-                    m_nPhysicoCriticalRate = value[47].AsShort(),
-                    m_nPhysicoCriticalDamage = value[48].AsULong(),
+                    m_nPhysicalCriticalRate = value[47].AsShort(),
+                    m_nPhysicalCriticalDamage = value[48].AsULong(),
                     m_nMagicCriticalRate = value[49].AsShort(),
                     m_nMagicCriticalDamage = value[50].AsULong(),
                     m_nPhysicalPenetration = value[51].AsShort(),
@@ -135,15 +142,15 @@ namespace GFEditor.Structs
                     m_nElfSkillId = value[72].AsUShort(),
                     m_eEnchantTimeType = (ETimeType)value[73].AsUShort(),
                     m_nEnchantDuration = value[74].AsLong(),
-                    m_nLimitType = value[75].AsULong(),
+                    m_nLimitType = (ELimitTimeType)value[75].AsULong(),
                     m_nDueDateTime = (RentType)value[76].AsULong(),
                     m_nBackpackSize = value[77].AsByte(),
                     m_nMaxSocket = value[78].AsByte(),
                     m_nSocketRate = (RateType)value[79].AsChar(),
-                    m_nMaxDurability = value[80].AsUShort(),
+                    m_nMaxDurability = (ushort)value[80].AsDouble(), // Make double to fix database issues.
                     m_nMaxStack = value[81].AsUShort(),
                     m_nShopPriceType = (EShopPriceType)value[82].AsUShort(),
-                    m_fSysPrice = value[83].AsSingle(),
+                    m_nSysPrice = (ulong)value[83].AsDouble(),
                     m_nRestrictEventPosId = value[84],
                     m_nMissionPosId = (IdType)value[85].AsULong(),
                     m_nBlockRate = (RateType)value[86].AsChar(),
@@ -152,16 +159,11 @@ namespace GFEditor.Structs
                     m_kExtraData1 = value[89].AsLong(),
                     m_kExtraData2 = value[90].AsLong(),
                     m_kExtraData3 = value[91].AsLong(),
-                    m_kTip = value[92],
-                    m_bClassRestrictionArray = [],
-                    m_bOpFlagsArray = [],
-                    m_bOpFlagsPlusArray = [],
-                };
-                data.Initialize();
-                m_kMap.Add(index, data);
+                    m_kTip = value[92]
+                });
             }
 
-            ImGuiNotify.Insert(new ImGuiToast(ImGuiToastType.Info, "CItemQuery", 3000, "Loaded items."));
+            GuiNotify.Show(ImGuiToastType.Success, "CItemQuery", $"Loaded {m_kMap.Count} items from {m_fileName}");
         }
 
         public bool IsLoaded()

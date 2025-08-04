@@ -92,7 +92,7 @@
             }
         }
 
-        public static void InputChar(string label, ref byte value)
+        public static void InputByte(string label, ref byte value)
         {
             Label(label);
             unsafe
@@ -100,6 +100,30 @@
                 fixed (byte* v = &value)
                 {
                     ImGui.InputScalar("##" + label, ImGuiDataType.U8, v);
+                }
+            }
+        }
+
+        public static void InputShort(string label, ref short value)
+        {
+            Label(label);
+            unsafe
+            {
+                fixed (short* v = &value)
+                {
+                    ImGui.InputScalar("##" + label, ImGuiDataType.S16, v);
+                }
+            }
+        }
+
+        public static void InputUShort(string label, ref ushort value)
+        {
+            Label(label);
+            unsafe
+            {
+                fixed (ushort* v = &value)
+                {
+                    ImGui.InputScalar("##" + label, ImGuiDataType.U16, v);
                 }
             }
         }
@@ -182,6 +206,18 @@
             }
         }
 
+        public static void InputFloat(string label, ref float value)
+        {
+            Label(label);
+            unsafe
+            {
+                fixed (float* v = &value)
+                {
+                    ImGui.InputScalar("##" + label, ImGuiDataType.Float, v);
+                }
+            }
+        }
+
         public static bool InputText(string label, ref string result)
         {
             Label(label);
@@ -210,20 +246,27 @@
             ImGui.SetCursorPos(new Vector2(position.X + offset.X, position.Y + offset.Y));
         }
 
-        public static void EnumBox<T>(string label, ref int selectedIndex, out int valueSelected)
+        public static void EnumBox<T>(string label, ref int selectedIndex, out T valueSelected, params T[] ignoredEnums)
         {
-            var enumLists = Enum.GetNames(typeof(T));
-            var enumValues = Enum.GetValues(typeof(T));
+            var allNames = Enum.GetNames(typeof(T));
+            var allValues = Enum.GetValues(typeof(T)).Cast<T>().ToArray();
+            var filtered = allValues.Where(v => !ignoredEnums.Contains(v)).ToArray();
+            var enumLists = filtered.Select(e => e?.ToString() ?? string.Empty).ToArray();
             Label(label);
             ImGui.ListBox("##" + label, ref selectedIndex, enumLists, enumLists.Length);
-            var enumValue = enumValues.GetValue(selectedIndex);
-            valueSelected = enumValue != null ? (int)enumValue : 0;
+            valueSelected = filtered.Length > selectedIndex ? filtered[selectedIndex] : default;
         }
 
         public static bool CollapsingHeaderWithTexture(Texture2D texture, string label, bool isSameLine = true)
         {
             Image(texture, isSameLine);
             return ImGui.CollapsingHeader(label);
+        }
+
+        public static void ShowTooltip(string text)
+        {
+            if (ImGui.IsItemHovered())
+                ImGui.SetTooltip(text);
         }
     }
 }

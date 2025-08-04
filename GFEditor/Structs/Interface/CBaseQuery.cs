@@ -1,6 +1,6 @@
 ﻿namespace GFEditor.Structs.Interface
 {
-    public class BaseQuery<KEY, VALUE>
+    public class CBaseQuery<KEY, VALUE>
         where KEY: notnull
         where VALUE: class
     {
