@@ -1,4 +1,5 @@
-﻿namespace GFEditor.Editor
+﻿
+namespace GFEditor.Editor
 {
     public class ItemEditor
     {
@@ -11,6 +12,7 @@
         private readonly Dictionary<string, Texture2D> m_iconsImages = [];
         private readonly Dictionary<string, Texture2D> m_dropImages = [];
         private string[] _ItemsStringList = [];
+        private int _DropTypeIndex = 0;
         private int _AlignementIndex = 0;
         private int _AttributeIndex = 0;
         private int _PriceIndex = 0;
@@ -74,7 +76,7 @@
         {
             if (ImGui.Begin(m_Translate.ItemEditorName, ref IsOpen, ImGuiWindowFlags.AlwaysAutoResize) && _ItemsStringList.Length > 0)
             {
-                var strIndex = _ItemsStringList[_SelectedListIndex].AsULong();
+                var strIndex = _ItemsStringList[_SelectedListIndex].AsUInt();
                 if (m_ItemList.GetItem(strIndex, out var item))
                 {
                     _TimeLimitTypeIndex = (int)item.m_nLimitType;
@@ -88,6 +90,7 @@
                     _EnchantTypeIndex = (int)item.m_eEnchantType;
                     _EnchantTimeTypeIndex = (int)item.m_eEnchantTimeType;
                     _AuctionTypeIndex = (int)item.m_eAuctionType;
+                    _DropTypeIndex = (int)GetChestTypeByName(item.m_nDropFilename);
 
                     ImGuiUtils.Label(m_Translate.HeaderItemIndex + ": " + item.m_nId, false);
                     ImGuiUtils.Label(m_Translate.HeaderItemName + ": " + item.m_kName, false);
@@ -109,23 +112,28 @@
 
                     if (ImGui.CollapsingHeader(m_Translate.HeaderItemDrop))
                     {
-                        ImGuiUtils.InputULong("Drop Index", ref item.m_nDropIndex);
+                        ImGuiUtils.InputUInt("Drop Index", ref item.m_nDropIndex);
                         ImGuiUtils.InputChar("Drop Rate", ref item.m_nDropRate);
                         ImGuiUtils.InputText(m_Translate.HeaderDropName, ref item.m_nDropFilename);
-                        var drop = GetChestByName(item.m_nDropFilename);
-                        if (drop != null)
+                        ImGuiUtils.EnumBox("Drop Type", ref _DropTypeIndex, out EChestType dropType, EChestType.eCT_Max);
+                        item.m_nDropFilename = GetChestNameByType(dropType);
+                        if (item.m_nDropFilename.IsValid())
                         {
-                            ImGui.SameLine();
-                            ImGuiUtils.ImageSized(drop, new Vector2(128, 128));
+                            var drop = GetChestByName(item.m_nDropFilename);
+                            if (drop != null)
+                            {
+                                ImGui.SameLine();
+                                ImGuiUtils.ImageSized(drop, new Vector2(128, 128));
+                            }
                         }
                     }
                     
                     if (ImGui.CollapsingHeader(m_Translate.HeaderItemEffects))
                     {
-                        ImGuiUtils.InputULong("Weapon effect", ref item.m_nWeaponEffectId);
-                        ImGuiUtils.InputULong("Fly effect", ref item.m_nFlyEffectId);
-                        ImGuiUtils.InputULong("Used effect", ref item.m_nUsedEffectId);
-                        ImGuiUtils.InputULong("Enchanced effect", ref item.m_nEnhanceEffectId);
+                        ImGuiUtils.InputUInt("Weapon effect", ref item.m_nWeaponEffectId);
+                        ImGuiUtils.InputUInt("Fly effect", ref item.m_nFlyEffectId);
+                        ImGuiUtils.InputUInt("Used effect", ref item.m_nUsedEffectId);
+                        ImGuiUtils.InputUInt("Enchanced effect", ref item.m_nEnhanceEffectId);
                     }
 
                     if (ImGui.CollapsingHeader(m_Translate.HeaderItemRestriction))
@@ -265,10 +273,11 @@
                         ImGuiUtils.InputShort("Wil", ref item.m_nWil);
                         ImGuiUtils.InputShort("Agi", ref item.m_nDex);
                         ImGuiUtils.InputLong("Casting Time", ref item.m_nCastingTime);
-                        ImGuiUtils.InputULong("Physical Attack (Average)", ref item.m_nAvgPhysicalDamage);
-                        ImGuiUtils.InputULong("Physical Attack (Random)", ref item.m_nRandPhysicalDamage);
+                        ImGuiUtils.InputULong("Physical Attack", ref item.m_nAttack);
                         ImGuiUtils.InputULong("Ranged Attack", ref item.m_nRangeDamage);
                         ImGuiUtils.InputULong("Magical Attack", ref item.m_nMagicDamage);
+                        ImGuiUtils.InputULong("Physical Attack (Average)", ref item.m_nAvgPhysicalDamage);
+                        ImGuiUtils.InputULong("Physical Attack (Random)", ref item.m_nRandPhysicalDamage);
                         ImGuiUtils.InputShort("Physical Penetration", ref item.m_nPhysicalPenetration);
                         ImGuiUtils.InputShort("Magical Penetration", ref item.m_nMagicalPenetration);
                         ImGuiUtils.InputULong("Physical Defence", ref item.m_nPhysicalDefence);
@@ -284,6 +293,7 @@
                         ImGuiUtils.InputShort("Magical Critical Rate", ref item.m_nMagicCriticalRate);
                         ImGuiUtils.InputULong("Physical Critical Damage", ref item.m_nPhysicalCriticalDamage);
                         ImGuiUtils.InputULong("Magical Critical Damage", ref item.m_nMagicCriticalDamage);
+                        ImGuiUtils.InputUShort("Durability", ref item.m_nMaxDurability);
                     }
 
                     if (ImGui.CollapsingHeader(m_Translate.HeaderItemAttribute))
@@ -365,7 +375,7 @@
 
                     if (ImGui.CollapsingHeader(m_Translate.HeaderItemMissionAndEvents))
                     {
-                        ImGuiUtils.InputULong("Mission Position ID", ref item.m_nMissionPosId);
+                        ImGuiUtils.InputUInt("Mission Position ID", ref item.m_nMissionPosId);
                         ImGuiUtils.InputText("Restrict Event Position IDs", ref item.m_nRestrictEventPosId);
                     }
 
@@ -395,7 +405,8 @@
 
         private void OnListAdd()
         {
-            GuiNotify.Show(ImGuiToastType.Warning, "Item Editor", "Add item to the list is not implemented yet !");
+            m_ItemList.AddNewItem();
+            ResetStringList(); // Reset the list !
         }
 
         private void OnListRemove()
@@ -443,12 +454,70 @@
             return null;
         }
 
+        private EChestType GetChestTypeByName(string name)
+        {
+            return name switch
+            {
+                "G00001" => EChestType.eCT_G1,
+                "G00002" => EChestType.eCT_G2,
+                "G00003" => EChestType.eCT_G3,
+                "G00004" => EChestType.eCT_G4,
+                "G00005" => EChestType.eCT_G5,
+                "G00006" => EChestType.eCT_G6,
+                "G00007" => EChestType.eCT_G7,
+                "G00008" => EChestType.eCT_G8,
+                "G00009" => EChestType.eCT_G9,
+                "G00010" => EChestType.eCT_G10,
+                _ => EChestType.eCT_None,
+            };
+        }
+
+        private string GetChestNameByType(EChestType type)
+        {
+            return type switch
+            {
+                EChestType.eCT_G1 => "G00001",
+                EChestType.eCT_G2 => "G00002",
+                EChestType.eCT_G3 => "G00003",
+                EChestType.eCT_G4 => "G00004",
+                EChestType.eCT_G5 => "G00005",
+                EChestType.eCT_G6 => "G00006",
+                EChestType.eCT_G7 => "G00007",
+                EChestType.eCT_G8 => "G00008",
+                EChestType.eCT_G9 => "G00009",
+                EChestType.eCT_G10 => "G00010",
+                _ => "",
+            };
+        }
+
         public void Dispose()
         {
             foreach (var item in m_iconsImages)
                 TextureUtils.DisposeTexture(item.Value);
             m_iconsImages.Clear();
             m_ClassImages.Dispose();
+        }
+
+        public void Save()
+        {
+            var filePath = ConfigUtils.Configs.Path.Client + "\\C_Item.ini";
+            var filePathServer = ConfigUtils.Configs.Path.Server + "\\S_Item.ini";
+            var str = new StringBuilder();
+            str.AppendLine($"|{m_ItemList.GetVersionStr()}|{m_ItemList.GetColumnCount()}|");
+            foreach (var item in m_ItemList.GetAllItems())
+            {
+                str.AppendLine(item.GetSerializedString());
+            }
+            try
+            {
+                File.WriteAllText(filePath, str.ToString(), Encoding.GetEncoding("Big5"));
+                File.WriteAllText(filePathServer, str.ToString(), Encoding.GetEncoding("Big5"));
+                GuiNotify.Show(ImGuiToastType.Success, "Item Editor", "C/S_Item saved successfully !");
+            }
+            catch (Exception ex)
+            {
+                GuiNotify.Show(ImGuiToastType.Error, "Item Editor", "Failed to save C/S_Item: {0}", ex.Message);
+            }
         }
     }
 }

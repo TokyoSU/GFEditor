@@ -183,9 +183,6 @@ namespace GFEditor.Utils
         [JsonProperty("HeaderItemElf")]
         public string HeaderItemElf = string.Empty;
 
-        [JsonProperty("HeaderItemAttributeDamage")]
-        public string HeaderItemAttributeDamage = string.Empty;
-
         [JsonProperty("HeaderItemSpecial")]
         public string HeaderItemSpecial = string.Empty;
 

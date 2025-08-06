@@ -134,6 +134,18 @@
             ImGui.InputInt("##" + label, ref value);
         }
 
+        public static void InputUInt(string label, ref uint value)
+        {
+            Label(label);
+            unsafe
+            {
+                fixed (uint* v = &value)
+                {
+                    ImGui.InputScalar("##" + label, ImGuiDataType.U32, v);
+                }
+            }
+        }
+
         /// <summary>
         /// Creates an input field for manually entering a long (64-bit signed integer) value.
         /// </summary>

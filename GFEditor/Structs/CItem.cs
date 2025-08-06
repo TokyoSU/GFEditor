@@ -114,10 +114,10 @@
         public short m_nMagicalPenetrationDefence;
         [JsonProperty("attribute")]
         public EAttrResist m_eAttribute;
-        [JsonProperty("attributeDamage")]
-        public ulong m_nAttributeDamage;
         [JsonProperty("attributeRate")]
         public short m_nAttributeRate;
+        [JsonProperty("attributeDamage")]
+        public ulong m_nAttributeDamage;
         [JsonProperty("attributeResist")]
         public ulong m_nAttributeResist;
         [JsonProperty("specialType")]
@@ -263,8 +263,8 @@
             m_sBuilder.AppendGF(m_nPhysicalPenetrationDefence).Append('|');
             m_sBuilder.AppendGF(m_nMagicalPenetrationDefence).Append('|');
             m_sBuilder.AppendGF(m_eAttribute).Append('|');
-            m_sBuilder.AppendGF(m_nAttributeDamage).Append('|');
             m_sBuilder.AppendGF(m_nAttributeRate).Append('|');
+            m_sBuilder.AppendGF(m_nAttributeDamage).Append('|');
             m_sBuilder.AppendGF(m_nAttributeResist).Append('|');
             m_sBuilder.AppendGF(m_eSpecialType).Append('|');
             m_sBuilder.AppendGF(m_nSpecialRate).Append('|');

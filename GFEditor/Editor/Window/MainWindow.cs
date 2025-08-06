@@ -1,6 +1,4 @@
-﻿using GFEditor.Utils;
-
-namespace GFEditor.Editor.Window
+﻿namespace GFEditor.Editor.Window
 {
     public class MainWindow
     {
@@ -16,6 +14,16 @@ namespace GFEditor.Editor.Window
         {
             if (ImGui.BeginMainMenuBar())
             {
+                if (ImGui.BeginMenu("Project"))
+                {
+                    // Edit menu...
+                    if (ImGui.Selectable("Save All"))
+                    {
+                        m_ItemEditor.Save();
+                    }
+                    ImGui.EndMenu();
+                }
+
                 // File menu...
                 if (ImGui.BeginMenu(m_Translate.FileBtnName))
                 {

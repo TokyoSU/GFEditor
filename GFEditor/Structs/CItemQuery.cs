@@ -14,6 +14,17 @@ namespace GFEditor.Structs
         public long GetVersion() => m_nVer;
         public long GetColumnCount() => m_nColumnCount;
 
+        public void AddNewItem()
+        {
+            var lowestId = GetLowestUnusedId();
+            var newItem = new CItem
+            {
+                m_nId = lowestId // Ensure we don't use 0 as an ID.
+            };
+            if (!m_kMap.TryAdd(newItem.m_nId, newItem))
+                GuiNotify.Show(ImGuiToastType.Error, "CItemQuery", $"Failed to add new item with ID {newItem.m_nId}, it might already exist.");
+        }
+
         public bool GetItem(IdType index, out CItem result)
         {
             return m_kMap.TryGetValue(index, out result);
@@ -27,6 +38,21 @@ namespace GFEditor.Structs
         public bool HasValues()
         {
             return m_kMap.Count > 0;
+        }
+
+        private IdType GetLowestUnusedId()
+        {
+            // Get all used ids
+            var usedIds = m_kMap.Keys.OrderBy(id => id);
+
+            // Start from 1 (or 0, depending on your id convention)
+            IdType candidate = 1;
+            foreach (var id in usedIds)
+            {
+                if (id > candidate) break;
+                if (id == candidate) candidate++;
+            }
+            return candidate;
         }
 
         private void Read()
@@ -123,8 +149,8 @@ namespace GFEditor.Structs
                     m_nPhysicalPenetrationDefence = value[53].AsShort(),
                     m_nMagicalPenetrationDefence = value[54].AsShort(),
                     m_eAttribute = (EAttrResist)value[55].AsShort(),
-                    m_nAttributeDamage = value[56].AsULong(),
                     m_nAttributeRate = value[57].AsShort(),
+                    m_nAttributeDamage = value[56].AsULong(),
                     m_nAttributeResist = value[58].AsULong(),
                     m_eSpecialType = (EMonsterType)value[59].AsULong(),
                     m_nSpecialRate = value[60].AsShort(),

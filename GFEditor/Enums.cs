@@ -1,5 +1,21 @@
 ﻿namespace GFEditor
 {
+    public enum EChestType
+    {
+        eCT_None = 0,
+        eCT_G1 = 1,
+        eCT_G2 = 2,
+        eCT_G3 = 3,
+        eCT_G4 = 4,
+        eCT_G5 = 5,
+        eCT_G6 = 6,
+        eCT_G7 = 7,
+        eCT_G8 = 8,
+        eCT_G9 = 9,
+        eCT_G10 = 10,
+        eCT_Max = 11
+    };
+
     public enum EAchievementSummary
     {
         eAS_None = 0,

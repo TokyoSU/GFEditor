@@ -32,7 +32,7 @@ global using GLFWwindowPtr = Hexa.NET.GLFW.GLFWwindowPtr;
 
 // From Ghidra:
 
-global using IdType = ulong;
+global using IdType = uint;
 global using TimeType = long;
 global using BaseAttrType = short;
 global using GridType = ushort;
