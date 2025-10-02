@@ -1,14 +1,22 @@
-﻿using System.Reflection.Emit;
-
-namespace GFEditor.Editor
+﻿namespace GFEditor.Editor
 {
-    public class ItemEditorUtils
+    public enum BasicClassType
     {
-        private static readonly TranslatedValues m_Translate = TranslateUtils.Json.TranslatedValues;
-        private readonly Logger m_Log = LogManager.GetCurrentClassLogger();
-        private ClassesTextures? m_classTextures;
+        Fighter,
+        Hunter,
+        Spellcaster,
+        Acolyte,
+        Mechanic,
+        Wanderer
+    }
 
-        public List<ERestrictClass> FighterClassSections = 
+    public static class ItemEditorUtils
+    {
+        private static readonly Logger m_Log = LogManager.GetCurrentClassLogger();
+        private static readonly TranslatedValues m_Translate = TranslateUtils.Json.TranslatedValues;
+        private static ClassesTextures? m_classTextures = null;
+
+        private static readonly List<ERestrictClass> FighterClassSections = 
         [
             ERestrictClass.Fighter,
             ERestrictClass.Warrior,
@@ -22,7 +30,7 @@ namespace GFEditor.Editor
             ERestrictClass.HolyKnight
         ];
 
-        public List<ERestrictClass> HunterClassSections =
+        private static readonly List<ERestrictClass> HunterClassSections =
         [
             ERestrictClass.Hunter,
             ERestrictClass.Archer,
@@ -36,7 +44,7 @@ namespace GFEditor.Editor
             ERestrictClass.Shinobi
         ];
 
-        public List<ERestrictClass> SpellcasterClassSections =
+        private static readonly List<ERestrictClass> SpellcasterClassSections =
         [
             ERestrictClass.Spellcaster,
             ERestrictClass.Mage,
@@ -50,7 +58,7 @@ namespace GFEditor.Editor
             ERestrictClass.Shinigami
         ];
 
-        public List<ERestrictClass> AcolyteClassSections =
+        private static readonly List<ERestrictClass> AcolyteClassSections =
         [
             ERestrictClass.Acolyte,
             ERestrictClass.Priest,
@@ -64,7 +72,7 @@ namespace GFEditor.Editor
             ERestrictClass.Druid
         ];
 
-        public List<ERestrictClass> MechanicClassSections =
+        private static readonly List<ERestrictClass> MechanicClassSections =
         [
             ERestrictClass.Mechanic,
             ERestrictClass.Machinist,
@@ -78,7 +86,7 @@ namespace GFEditor.Editor
             ERestrictClass.MechMaster
         ];
 
-        public List<ERestrictClass> WandererClassSections =
+        private static readonly List<ERestrictClass> WandererClassSections =
         [
             ERestrictClass.Wanderer,
             ERestrictClass.Drifter,
@@ -92,9 +100,9 @@ namespace GFEditor.Editor
             ERestrictClass.Phantom
         ];
 
-        public void SetClassTextures(ClassesTextures textures) => m_classTextures = textures;
+        public static void SetClassTextures(ClassesTextures textures) => m_classTextures = textures;
 
-        public void DrawOpFlagParameter(CItem item, string label, EItemOpFlags flags, float offsetX = 30f)
+        public static void DrawOpFlagParameter(CItem item, string label, EItemOpFlags flags, float offsetX = 30f)
         {
             ImGuiUtils.SetOffsetPos(new Vector2(offsetX, 0f));
             bool value = item.m_bOpFlagsArray[flags];
@@ -125,7 +133,7 @@ namespace GFEditor.Editor
             ImGui.Text(label);
         }
 
-        public void DrawOpFlagPlusParameter(CItem item, string label, EItemOpFlagsPlus flags, float offsetX = 30f)
+        public static void DrawOpFlagPlusParameter(CItem item, string label, EItemOpFlagsPlus flags, float offsetX = 30f)
         {
             ImGuiUtils.SetOffsetPos(new Vector2(offsetX, 0f));
             bool value = item.m_bOpFlagsPlusArray[flags];
@@ -135,12 +143,7 @@ namespace GFEditor.Editor
             ImGui.Text(label);
         }
 
-        public static void DrawClassCheckBoxRestrict(string label, CItem item, ERestrictClass restrictType)
-        {
-            
-        }
-
-        public void DrawClassCheckbox(CItem item, ERestrictClass eRestrictClass, float offsetX)
+        public static void DrawClassCheckbox(CItem item, ERestrictClass eRestrictClass, float offsetX)
         {
             ImGuiUtils.SetOffsetPos(new Vector2(offsetX, 0f));
 
@@ -157,11 +160,26 @@ namespace GFEditor.Editor
             ImGui.Text(label);
         }
 
-        public void DrawClassSection(CItem item, string sectionName, float offsetXMultiplier, ERestrictClass headerIcon, List<ERestrictClass> eRestrictClasses)
+        public static void DrawClassSection(CItem item, string sectionName, float offsetXMultiplier, ERestrictClass headerIcon, BasicClassType classType)
         {
-            if (eRestrictClasses == null || eRestrictClasses.Count != 10)
+            var eRestrictClasses = classType switch
             {
-                m_Log.Error("Failed to draw the class section: " + sectionName + " class list is null or length is not exactly 10 !");
+                BasicClassType.Fighter => FighterClassSections,
+                BasicClassType.Hunter => HunterClassSections,
+                BasicClassType.Spellcaster => SpellcasterClassSections,
+                BasicClassType.Acolyte => AcolyteClassSections,
+                BasicClassType.Mechanic => MechanicClassSections,
+                BasicClassType.Wanderer => WandererClassSections,
+                _ => null,
+            };
+            if (eRestrictClasses == null)
+            {
+                m_Log.Error("Failed to draw the class sector: " + sectionName + ", class list is null, missing class type selected ?");
+                return;
+            }
+            if (eRestrictClasses.Count != 10)
+            {
+                m_Log.Error("Failed to draw the class section: " + sectionName + ", length is not exactly 10 !");
                 return;
             }
 

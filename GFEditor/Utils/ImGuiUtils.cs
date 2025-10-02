@@ -22,11 +22,11 @@
         /// <param name="label">The label for the list box, displayed on the left.</param>
         /// <param name="selected_index">A reference to the currently selected index in the list.</param>
         /// <param name="values">The array of strings representing the selectable items.</param>
-        public static void ListBox(string label, ref int selected_index, string[] values)
+        public static bool ListBox(string label, ref int selected_index, string[] values)
         {
             if (!label.Contains("##")) Label(label);
             ImGui.SetNextWindowSize(new Vector2(100, 700), ImGuiCond.FirstUseEver);
-            ImGui.ListBox("##" + label, ref selected_index, values, values.Length);
+            return ImGui.ListBox("##" + label, ref selected_index, values, values.Length);
         }
 
         /// <summary>

@@ -4,9 +4,6 @@
     {
         private static readonly TranslatedValues m_Translate = TranslateUtils.Json.TranslatedValues;
         private readonly OpenFolderDialog m_ClientFolderDialog = new() { AllowMultipleSelection = false };
-        private readonly OpenFolderDialog m_ServerFolderDialog = new() { AllowMultipleSelection = false };
-        private readonly OpenFolderDialog m_TranslateFolderDialog = new() { AllowMultipleSelection = false };
-        private readonly OpenFolderDialog m_IconFolderDialog = new() { AllowMultipleSelection = false };
         private readonly ItemEditor m_ItemEditor = new();
         private readonly UbuntuWindow m_UbuntuWindow = new();
 
@@ -29,12 +26,6 @@
                 {
                     if (ImGui.Selectable(m_Translate.FileClientSelectFolder))
                         m_ClientFolderDialog.Show(FolderClientCallback);
-                    if (ImGui.Selectable(m_Translate.FileServerSelectFolder))
-                        m_ServerFolderDialog.Show(FolderServerCallback);
-                    if (ImGui.Selectable(m_Translate.FileTranslateSelectFolder))
-                        m_TranslateFolderDialog.Show(FolderTranslateCallback);
-                    if (ImGui.Selectable(m_Translate.FileIconSelectFolder))
-                        m_IconFolderDialog.Show(FolderIconCallback);
                     ImGui.EndMenu();
                 }
 
@@ -78,9 +69,6 @@
         private void DrawDialogs()
         {
             m_ClientFolderDialog.Draw(ImGuiWindowFlags.NoDocking);
-            m_ServerFolderDialog.Draw(ImGuiWindowFlags.NoDocking);
-            m_TranslateFolderDialog.Draw(ImGuiWindowFlags.NoDocking);
-            m_IconFolderDialog.Draw(ImGuiWindowFlags.NoDocking);
         }
 
         private void DrawEditor()
@@ -130,24 +118,6 @@
         {
             ConfigUtils.Configs.Path.Client = m_ClientFolderDialog.SelectedFolder;
             PrintResult(m_Translate.ClientName, result, 0);
-        }
-
-        private void FolderServerCallback(object? sender, DialogResult result)
-        {
-            ConfigUtils.Configs.Path.Server = m_ServerFolderDialog.SelectedFolder;
-            PrintResult(m_Translate.ServerName, result, 1);
-        }
-
-        private void FolderTranslateCallback(object? sender, DialogResult result)
-        {
-            ConfigUtils.Configs.Path.Translate = m_TranslateFolderDialog.SelectedFolder;
-            PrintResult(m_Translate.TranslateName, result, 2);
-        }
-
-        private void FolderIconCallback(object? sender, DialogResult result)
-        {
-            ConfigUtils.Configs.Path.Icons = m_IconFolderDialog.SelectedFolder;
-            PrintResult(m_Translate.TranslateName, result, 3);
         }
 
         public void Dispose()
