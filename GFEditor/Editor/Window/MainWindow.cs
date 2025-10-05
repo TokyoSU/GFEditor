@@ -26,6 +26,8 @@
                 {
                     if (ImGui.Selectable(m_Translate.SelectGameFolder))
                         m_GameFolderDialog.Show(FolderGameCallback);
+                    if (ImGui.Selectable(m_Translate.BackupGameData))
+                        BackupUtils.MakeBackup();
                     ImGui.EndMenu();
                 }
 

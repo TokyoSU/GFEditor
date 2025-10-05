@@ -310,13 +310,13 @@
         {
             var m_sBuilder = new StringBuilder();
             m_sBuilder.AppendGF(m_nId).Append('|');
-            m_sBuilder.AppendGF(m_kIconFilename).Append('|');
-            m_sBuilder.AppendGF(m_nModelFilename).Append('|');
-            m_sBuilder.AppendGF(m_nDropFilename).Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
             m_sBuilder.AppendGF(m_nWeaponEffectId).Append('|');
             m_sBuilder.AppendGF(m_nFlyEffectId).Append('|');
             m_sBuilder.AppendGF(m_nUsedEffectId).Append('|');
-            m_sBuilder.AppendGF(m_nUsedSoundName).Append('|');
+            m_sBuilder.AppendGF("").Append('|');
             m_sBuilder.AppendGF(m_nEnhanceEffectId).Append('|');
             m_sBuilder.AppendGF("").Append('|'); // Placeholder for m_kName, only required if you don't have editor support xD (also reduce the size of the file by a lot !)
             m_sBuilder.AppendGF(m_eItemType).Append('|');

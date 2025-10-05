@@ -56,9 +56,8 @@
 
             unsafe
             {
-                io.Fonts.AddFontFromFileTTF("fonts\\unicode.ttf", 14.0f, null, io.Fonts.GetGlyphRangesChineseFull());
-                if (!io.Fonts.Build())
-                    m_Log.Warn("Failed to build normal and chinese fonts !");
+                //io.Fonts.AddFontDefault();
+                io.Fonts.AddFontFromFileTTF("fonts\\unicode.ttf", 14.0f, null, io.Fonts.GetGlyphRangesDefault());
             }
 
             ImGuiImplGLFW.SetCurrentContext(guiContext);

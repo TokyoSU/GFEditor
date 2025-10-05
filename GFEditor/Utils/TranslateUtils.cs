@@ -75,6 +75,9 @@ namespace GFEditor.Utils
         [JsonProperty("SelectGameFolder")]
         public string SelectGameFolder = string.Empty;
 
+        [JsonProperty("BackupGameData")]
+        public string BackupGameData = string.Empty;
+
         [JsonProperty("ClientName")]
         public string ClientName = string.Empty;
 

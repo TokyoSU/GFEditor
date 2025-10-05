@@ -12,9 +12,9 @@ namespace GFEditor.Utils
         public int Height = 0;
         public int Channels = 0;
 
-        public ImTextureID ToImGui()
+        public unsafe ImTextureRef ToImGui()
         {
-            return new ImTextureID(Id);
+            return new ImTextureRef(null, new ImTextureID(Id));
         }
     }
 
