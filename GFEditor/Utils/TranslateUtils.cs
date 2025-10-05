@@ -7,8 +7,11 @@ namespace GFEditor.Utils
     {
         private const string LanguageFilename = "GFEditor.language.json";
         private const string TranslateFolder = "translations";
-        public static JsonTranslate Json = new();
-        public static JsonLanguage JsonLang = new();
+        private static JsonTranslate _Json = new();
+        private static JsonLanguage _JsonLang = new();
+
+        public static JsonTranslate Json { get { return _Json; } }
+        public static JsonLanguage JsonLang { get { return _JsonLang; } }
 
         public static string GetTranslatedLanguage(TranslatedLanguage language)
         {
@@ -23,19 +26,19 @@ namespace GFEditor.Utils
         public static void Load()
         {
             // Get the language type inside the json.
-            JsonLang = JsonLanguageExtensions.FromJson(File.ReadAllText(LanguageFilename));
+            _JsonLang = JsonLanguageExtensions.FromJson(File.ReadAllText(LanguageFilename));
 
             // Now get the file based on the language loaded
             // If null select english by default.
-            var filePath = GetTranslatedLanguage(JsonLang != null ? JsonLang.Language : TranslatedLanguage.English);
+            var filePath = GetTranslatedLanguage(_JsonLang != null ? _JsonLang.Language : TranslatedLanguage.English);
             if (string.IsNullOrEmpty(filePath))
             {
                 Console.WriteLine("Selected default language.");
                 filePath = TranslateFolder + "/English.json";
             }
 
-            Json = JsonTranslateExtensions.FromJson(File.ReadAllText(filePath));
-            if (Json == null || Json.TranslatedValues == null)
+            _Json = JsonTranslateExtensions.FromJson(File.ReadAllText(filePath));
+            if (_Json == null || _Json.TranslatedValues == null)
                 throw new Exception("Translation file is null !");
         }
     }
@@ -69,17 +72,8 @@ namespace GFEditor.Utils
         [JsonProperty("ItemEditor")]
         public string ItemEditor = string.Empty;
 
-        [JsonProperty("FileClientSelectFolder")]
-        public string FileClientSelectFolder = string.Empty;
-
-        [JsonProperty("FileServerSelectFolder")]
-        public string FileServerSelectFolder = string.Empty;
-
-        [JsonProperty("FileTranslateSelectFolder")]
-        public string FileTranslateSelectFolder = string.Empty;
-
-        [JsonProperty("FileIconSelectFolder")]
-        public string FileIconSelectFolder = string.Empty;
+        [JsonProperty("SelectGameFolder")]
+        public string SelectGameFolder = string.Empty;
 
         [JsonProperty("ClientName")]
         public string ClientName = string.Empty;
@@ -230,6 +224,24 @@ namespace GFEditor.Utils
 
         [JsonProperty("OpFlagsDesc")]
         public OpFlagsDesc OpFlagsDesc = new();
+
+        [JsonProperty("ItemQuality")]
+        public string ItemQualityName = string.Empty;
+
+        [JsonProperty("ItemType")]
+        public string ItemTypeName = string.Empty;
+
+        [JsonProperty("EquipType")]
+        public string EquipTypeName = string.Empty;
+
+        [JsonProperty("DropIndex")]
+        public string DropIndexName = string.Empty;
+
+        [JsonProperty("DropRate")]
+        public string DropRateName = string.Empty;
+
+        [JsonProperty("DropType")]
+        public string DropTypeName = string.Empty;
 
         [JsonProperty("ClassesNames")]
         public List<string> ClassesNames = [];

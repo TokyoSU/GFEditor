@@ -1,3 +1,3 @@
-﻿using var glRender = new RenderGL();
-glRender.Initialize();
-glRender.Run();
+﻿using var engine = new EngineRender();
+engine.Initialize();
+engine.Run();

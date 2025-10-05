@@ -14,7 +14,7 @@
     {
         private static readonly Logger m_Log = LogManager.GetCurrentClassLogger();
         private static readonly TranslatedValues m_Translate = TranslateUtils.Json.TranslatedValues;
-        private static ClassesTextures? m_classTextures = null;
+        private static readonly Dictionary<ERestrictClass, Texture2D> m_ClassTextures = [];
 
         private static readonly List<ERestrictClass> FighterClassSections = 
         [
@@ -100,9 +100,36 @@
             ERestrictClass.Phantom
         ];
 
-        public static void SetClassTextures(ClassesTextures textures) => m_classTextures = textures;
+        public static void DisposeClassesTextures()
+        {
+            foreach (var texture in m_ClassTextures.Values)
+                TextureUtils.DisposeTexture(texture);
+            m_ClassTextures.Clear();
+        }
 
-        public static void DrawOpFlagParameter(CItem item, string label, EItemOpFlags flags, float offsetX = 30f)
+
+        public static void LoadClassesTextures()
+        {
+            var values = Enum.GetValues<ERestrictClass>();
+            foreach (var value in values)
+            {
+                if (value == ERestrictClass.None) continue;
+                string filePath = string.Format("textures/classes/{0}.png", value.ToString().ToLower());
+                if (filePath.FileExist())
+                    m_ClassTextures.TryAdd(value, TextureUtils.LoadTextureFromFile(filePath));
+                else
+                    m_Log.Warn("Failed to load class image " + value.ToString() + ", file not found !");
+            }
+        }
+
+        public static Texture2D GetClassesTextureByEnum(ERestrictClass value) => m_ClassTextures[value];
+
+        public static void DrawClassTexture(ERestrictClass value)
+        {
+            ImGuiUtils.Image(GetClassesTextureByEnum(value));
+        }
+
+        public static void DrawOpFlagParameter(Item item, string label, EItemOpFlags flags, float offsetX = 30f)
         {
             ImGuiUtils.SetOffsetPos(new Vector2(offsetX, 0f));
             bool value = item.m_bOpFlagsArray[flags];
@@ -110,22 +137,22 @@
                 item.m_bOpFlagsArray[flags] = value;
             switch (flags)
             {
-                case EItemOpFlags.eIOF_Only1:
-                case EItemOpFlags.eIOF_Only2:
-                case EItemOpFlags.eIOF_Only3:
-                case EItemOpFlags.eIOF_Only4:
-                case EItemOpFlags.eIOF_Only5:
+                case EItemOpFlags.Only1:
+                case EItemOpFlags.Only2:
+                case EItemOpFlags.Only3:
+                case EItemOpFlags.Only4:
+                case EItemOpFlags.Only5:
                     // If any of these value is ticked, then remove the only all value !
                     if (value)
-                        item.m_bOpFlagsArray[EItemOpFlags.eIOF_Only] = false;
+                        item.m_bOpFlagsArray[EItemOpFlags.Only] = false;
                     break;
-                case EItemOpFlags.eIOF_Replaceable1:
-                case EItemOpFlags.eIOF_Replaceable2:
-                case EItemOpFlags.eIOF_Replaceable3:
-                case EItemOpFlags.eIOF_Replaceable4:
-                case EItemOpFlags.eIOF_Replaceable5:
+                case EItemOpFlags.Replaceable1:
+                case EItemOpFlags.Replaceable2:
+                case EItemOpFlags.Replaceable3:
+                case EItemOpFlags.Replaceable4:
+                case EItemOpFlags.Replaceable5:
                     if (value)
-                        item.m_bOpFlagsArray[EItemOpFlags.eIOF_Replaceable] = false;
+                        item.m_bOpFlagsArray[EItemOpFlags.Replaceable] = false;
                     break;
             }
 
@@ -133,7 +160,7 @@
             ImGui.Text(label);
         }
 
-        public static void DrawOpFlagPlusParameter(CItem item, string label, EItemOpFlagsPlus flags, float offsetX = 30f)
+        public static void DrawOpFlagPlusParameter(Item item, string label, EItemOpFlagsPlus flags, float offsetX = 30f)
         {
             ImGuiUtils.SetOffsetPos(new Vector2(offsetX, 0f));
             bool value = item.m_bOpFlagsPlusArray[flags];
@@ -143,12 +170,10 @@
             ImGui.Text(label);
         }
 
-        public static void DrawClassCheckbox(CItem item, ERestrictClass eRestrictClass, float offsetX)
+        public static void DrawClassCheckbox(Item item, ERestrictClass eRestrictClass, float offsetX)
         {
             ImGuiUtils.SetOffsetPos(new Vector2(offsetX, 0f));
-
-            if (m_classTextures != null)
-                ImGuiUtils.Image(m_classTextures.GetTextureByEnum(eRestrictClass));
+            ImGuiUtils.Image(ItemEditorUtils.GetClassesTextureByEnum(eRestrictClass));
 
             string label = m_Translate.GetClassName(eRestrictClass);
             bool value = item.m_bClassRestrictionArray[eRestrictClass]; // Update value of checkbox if changed...
@@ -160,7 +185,7 @@
             ImGui.Text(label);
         }
 
-        public static void DrawClassSection(CItem item, string sectionName, float offsetXMultiplier, ERestrictClass headerIcon, BasicClassType classType)
+        public static void DrawClassSection(Item item, string sectionName, float xOffset, ERestrictClass headerIcon, BasicClassType classType)
         {
             var eRestrictClasses = classType switch
             {
@@ -183,23 +208,21 @@
                 return;
             }
 
-            ImGuiUtils.SetOffsetPos(new Vector2(15f * offsetXMultiplier, 0f));
-            if (m_classTextures != null ?
-                ImGuiUtils.CollapsingHeaderWithTexture(m_classTextures.GetTextureByEnum(headerIcon), sectionName) :
-                ImGui.CollapsingHeader(sectionName))
+            ImGuiUtils.SetOffsetPos(new Vector2(15f * xOffset, 0f));
+            if (ImGuiUtils.CollapsingHeaderWithTexture(ItemEditorUtils.GetClassesTextureByEnum(headerIcon), sectionName))
             {
-                DrawClassCheckbox(item, eRestrictClasses[0], 15f * offsetXMultiplier + 25f);
-                DrawClassCheckbox(item, eRestrictClasses[1], 15f * offsetXMultiplier + 25f);
+                DrawClassCheckbox(item, eRestrictClasses[0], 15f * xOffset + 25f);
+                DrawClassCheckbox(item, eRestrictClasses[1], 15f * xOffset + 25f);
                 ImGui.Separator();
-                DrawClassCheckbox(item, eRestrictClasses[2], 15f * offsetXMultiplier + 25f);
-                DrawClassCheckbox(item, eRestrictClasses[3], 15f * offsetXMultiplier + 25f);
-                DrawClassCheckbox(item, eRestrictClasses[4], 15f * offsetXMultiplier + 25f);
-                DrawClassCheckbox(item, eRestrictClasses[5], 15f * offsetXMultiplier + 25f);
+                DrawClassCheckbox(item, eRestrictClasses[2], 15f * xOffset + 25f);
+                DrawClassCheckbox(item, eRestrictClasses[3], 15f * xOffset + 25f);
+                DrawClassCheckbox(item, eRestrictClasses[4], 15f * xOffset + 25f);
+                DrawClassCheckbox(item, eRestrictClasses[5], 15f * xOffset + 25f);
                 ImGui.Separator();
-                DrawClassCheckbox(item, eRestrictClasses[6], 15f * offsetXMultiplier + 25f);
-                DrawClassCheckbox(item, eRestrictClasses[7], 15f * offsetXMultiplier + 25f);
-                DrawClassCheckbox(item, eRestrictClasses[8], 15f * offsetXMultiplier + 25f);
-                DrawClassCheckbox(item, eRestrictClasses[9], 15f * offsetXMultiplier + 25f);
+                DrawClassCheckbox(item, eRestrictClasses[6], 15f * xOffset + 25f);
+                DrawClassCheckbox(item, eRestrictClasses[7], 15f * xOffset + 25f);
+                DrawClassCheckbox(item, eRestrictClasses[8], 15f * xOffset + 25f);
+                DrawClassCheckbox(item, eRestrictClasses[9], 15f * xOffset + 25f);
             }
         }
     }

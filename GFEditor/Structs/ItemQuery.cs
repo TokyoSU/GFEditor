@@ -2,7 +2,7 @@
 
 namespace GFEditor.Structs
 {
-    public class CItemQuery : CBaseQuery<IdType, CItem>
+    public class ItemQuery : BaseQuery<IdType, Item>
     {
         private Task? m_readFileTask = null;
         private string m_fileName = string.Empty;
@@ -17,7 +17,7 @@ namespace GFEditor.Structs
         public void AddNewItem()
         {
             var lowestId = GetLowestUnusedId();
-            var newItem = new CItem
+            var newItem = new Item
             {
                 m_nId = lowestId // Ensure we don't use 0 as an ID.
             };
@@ -25,12 +25,12 @@ namespace GFEditor.Structs
                 GuiNotify.Show(ImGuiToastType.Error, "CItemQuery", $"Failed to add new item with ID {newItem.m_nId}, it might already exist.");
         }
 
-        public bool GetItem(IdType index, out CItem result)
+        public bool GetItem(IdType index, out Item result)
         {
             return m_kMap.TryGetValue(index, out result);
         }
 
-        public IOrderedEnumerable<CItem> GetAllItems()
+        public IOrderedEnumerable<Item> GetAllItems()
         {
             return m_kMap.Values.OrderBy(e => e.m_nId);
         }
@@ -44,7 +44,6 @@ namespace GFEditor.Structs
         {
             // Get all used ids
             var usedIds = m_kMap.Keys.OrderBy(id => id);
-
             // Start from 1 (or 0, depending on your id convention)
             IdType candidate = 1;
             foreach (var id in usedIds)
@@ -91,7 +90,7 @@ namespace GFEditor.Structs
                     continue;
                 }
 
-                m_kMap.Add(index, new CItem
+                m_kMap.Add(index, new Item
                 {
                     m_nId = index,
                     m_kIconFilename = value[1].ToLower(),

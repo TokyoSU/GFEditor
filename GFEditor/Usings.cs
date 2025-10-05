@@ -14,7 +14,6 @@ global using Hexa.NET.Utilities;
 global using Hexa.NET.StbImage;
 
 global using GFEditor;
-global using GFEditor.Renderer;
 global using GFEditor.Structs;
 global using GFEditor.Editor;
 global using GFEditor.Editor.Window;

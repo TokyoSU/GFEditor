@@ -3,7 +3,7 @@
     public class MainWindow
     {
         private static readonly TranslatedValues m_Translate = TranslateUtils.Json.TranslatedValues;
-        private readonly OpenFolderDialog m_ClientFolderDialog = new() { AllowMultipleSelection = false };
+        private readonly OpenFolderDialog m_GameFolderDialog = new() { AllowMultipleSelection = false };
         private readonly ItemEditor m_ItemEditor = new();
         private readonly UbuntuWindow m_UbuntuWindow = new();
 
@@ -24,8 +24,8 @@
                 // File menu...
                 if (ImGui.BeginMenu(m_Translate.FileBtnName))
                 {
-                    if (ImGui.Selectable(m_Translate.FileClientSelectFolder))
-                        m_ClientFolderDialog.Show(FolderClientCallback);
+                    if (ImGui.Selectable(m_Translate.SelectGameFolder))
+                        m_GameFolderDialog.Show(FolderGameCallback);
                     ImGui.EndMenu();
                 }
 
@@ -68,7 +68,7 @@
 
         private void DrawDialogs()
         {
-            m_ClientFolderDialog.Draw(ImGuiWindowFlags.NoDocking);
+            m_GameFolderDialog.Draw(ImGuiWindowFlags.NoDocking);
         }
 
         private void DrawEditor()
@@ -88,10 +88,7 @@
         {
             return type switch
             {
-                0 => ConfigUtils.Configs.Path.Client,
-                1 => ConfigUtils.Configs.Path.Server,
-                2 => ConfigUtils.Configs.Path.Translate,
-                3 => ConfigUtils.Configs.Path.Icons,
+                0 => ConfigUtils.Configs.Path.Game,
                 _ => "Failed to get paths...",
             };
         }
@@ -114,9 +111,9 @@
             }
         }
 
-        private void FolderClientCallback(object? sender, DialogResult result)
+        private void FolderGameCallback(object? sender, DialogResult result)
         {
-            ConfigUtils.Configs.Path.Client = m_ClientFolderDialog.SelectedFolder;
+            ConfigUtils.Configs.Path.Game = m_GameFolderDialog.SelectedFolder;
             PrintResult(m_Translate.ClientName, result, 0);
         }
 

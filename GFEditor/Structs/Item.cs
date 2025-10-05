@@ -1,6 +1,6 @@
 ﻿namespace GFEditor.Structs
 {
-    public class CItem
+    public class Item
     {
         [JsonProperty("id")]
         public IdType m_nId;
@@ -189,7 +189,7 @@
         [JsonProperty("tip")]
         public string m_kTip = string.Empty;
 
-        public CItem() => Initialize();
+        public Item() => Initialize();
 
         // Editor only:
 
@@ -204,7 +204,109 @@
         /// fields. Each value is serialized in a specific order and format, which is consistent across calls. This
         /// method is typically used for exporting or logging the object's state.</remarks>
         /// <returns>A <see cref="string"/> containing the serialized representation of the object's data.</returns>
-        public string GetSerializedString()
+        public string GetClientString()
+        {
+            var m_sBuilder = new StringBuilder();
+            m_sBuilder.AppendGF(m_nId).Append('|');
+            m_sBuilder.AppendGF(m_kIconFilename).Append('|');
+            m_sBuilder.AppendGF(m_nModelFilename).Append('|');
+            m_sBuilder.AppendGF(m_nDropFilename).Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF(m_nUsedSoundName).Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|'); // Placeholder for m_kName, only required if you don't have editor support xD (also reduce the size of the file by a lot !)
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF(m_nLogLevel).Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|');
+            m_sBuilder.AppendGF("").Append('|'); // Placeholder for m_kTip, only required if you don't have editor support xD (also reduce the size of the file by a lot !)
+            return m_sBuilder.ToString();
+        }
+
+        /// <summary>
+        /// Server need to have stats and necessity informations !
+        /// </summary>
+        public string GetServerString()
         {
             var m_sBuilder = new StringBuilder();
             m_sBuilder.AppendGF(m_nId).Append('|');

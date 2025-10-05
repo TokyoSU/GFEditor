@@ -16,18 +16,40 @@
             if (isSameLine) ImGui.SameLine();
         }
 
-        /// <summary>
-        /// Creates a list box with a selectable list of items.
-        /// </summary>
-        /// <param name="label">The label for the list box, displayed on the left.</param>
-        /// <param name="selected_index">A reference to the currently selected index in the list.</param>
-        /// <param name="values">The array of strings representing the selectable items.</param>
         public static bool ListBox(string label, ref int selected_index, string[] values)
         {
             if (!label.Contains("##")) Label(label);
-            ImGui.SetNextWindowSize(new Vector2(100, 700), ImGuiCond.FirstUseEver);
             return ImGui.ListBox("##" + label, ref selected_index, values, values.Length);
         }
+
+        public static bool ListBoxEnum<T>(string label, ref int selectedIndex, out T valueSelected, params T[] ignoredEnums)
+        {
+            var allNames = Enum.GetNames(typeof(T));
+            var allValues = Enum.GetValues(typeof(T)).Cast<T>().ToArray();
+            var filtered = allValues.Where(v => !ignoredEnums.Contains(v)).ToArray();
+            var enumLists = filtered.Select(e => e?.ToString() ?? string.Empty).ToArray();
+            var result = ListBox(label, ref selectedIndex, enumLists);
+            valueSelected = filtered.Length > selectedIndex ? filtered[selectedIndex] : default;
+            return result;
+        }
+
+        public static bool ComboBox(string label, ref int selected_index, string[] values)
+        {
+            if (!label.Contains("##")) Label(label);
+            return ImGui.Combo("##" + label, ref selected_index, values, values.Length);
+        }
+
+        public static bool ComboBoxEnum<T>(string label, ref int selectedIndex, out T valueSelected, params T[] ignoredEnums)
+        {
+            var allNames = Enum.GetNames(typeof(T));
+            var allValues = Enum.GetValues(typeof(T)).Cast<T>().ToArray();
+            var filtered = allValues.Where(v => !ignoredEnums.Contains(v)).ToArray();
+            var enumLists = filtered.Select(e => e?.ToString() ?? string.Empty).ToArray();
+            var result = ComboBox(label, ref selectedIndex, enumLists);
+            valueSelected = filtered.Length > selectedIndex ? filtered[selectedIndex] : default;
+            return result;
+        }
+
 
         /// <summary>
         /// Creates two buttons side by side, returning whether either of them was pressed.
@@ -256,17 +278,6 @@
         public static void SetCursorPos(Vector2 position, Vector2 offset)
         {
             ImGui.SetCursorPos(new Vector2(position.X + offset.X, position.Y + offset.Y));
-        }
-
-        public static void EnumBox<T>(string label, ref int selectedIndex, out T valueSelected, params T[] ignoredEnums)
-        {
-            var allNames = Enum.GetNames(typeof(T));
-            var allValues = Enum.GetValues(typeof(T)).Cast<T>().ToArray();
-            var filtered = allValues.Where(v => !ignoredEnums.Contains(v)).ToArray();
-            var enumLists = filtered.Select(e => e?.ToString() ?? string.Empty).ToArray();
-            Label(label);
-            ImGui.ListBox("##" + label, ref selectedIndex, enumLists, enumLists.Length);
-            valueSelected = filtered.Length > selectedIndex ? filtered[selectedIndex] : default;
         }
 
         public static bool CollapsingHeaderWithTexture(Texture2D texture, string label, bool isSameLine = true)

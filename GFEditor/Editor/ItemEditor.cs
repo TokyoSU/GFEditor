@@ -4,13 +4,10 @@ namespace GFEditor.Editor
     public class ItemEditor
     {
         private static readonly TranslatedValues m_Translate = TranslateUtils.Json.TranslatedValues;
-        private const string m_itemIconPath = "textures\\itemicon";
-        private const string m_dropPath = "textures\\chest";
-        private readonly CItemQuery m_ItemList = new();
-        private readonly ClassesTextures m_ClassImages = new();
+        private readonly ItemQuery m_ItemList = new();
         private readonly Dictionary<string, Texture2D> m_iconsImages = [];
         private readonly Dictionary<string, Texture2D> m_dropImages = [];
-        private Action<int>? OnItemSelected;
+        private Action<int>? m_OnItemSelected;
         private string[] _ItemsStringList = [];
         private int _SelectedListIndex = 0;
         private int _DropTypeIndex = 0;
@@ -31,15 +28,15 @@ namespace GFEditor.Editor
         {
             if (m_ItemList.HasValues()) // Avoid loading item each time the editor open...
                 return;
-            m_ClassImages.LoadTextures();
-            OnItemSelected += OnItemSelectedCallback;
-            ItemEditorUtils.SetClassTextures(m_ClassImages);
-            string filePath = ConfigUtils.Configs.Path.Client + "/C_Item.ini";
+
+            var filePath = ConfigUtils.GetPath("Data\\DB\\C_Item.ini");
             if (filePath.FileExist())
             {
+                m_OnItemSelected += OnItemSelectedCallback;
                 m_ItemList.ReadFile(filePath);
                 return;
             }
+
             GuiNotify.Show(ImGuiToastType.Error, "Item Editor", "Failed to load item list, file probably not found !");
         }
 
@@ -81,11 +78,9 @@ namespace GFEditor.Editor
             {
                 // Now create the item list window.
                 var regionSize = ImGui.GetContentRegionAvail();
-                ImGui.SetNextWindowSize(new Vector2(regionSize.X - 1f, regionSize.Y - 20f));
+                ImGui.SetNextWindowSize(new Vector2(regionSize.X - 1f, regionSize.Y - 40f));
                 if (ImGuiUtils.ListBox("##ItemList", ref _SelectedListIndex, _ItemsStringList))
-                {
-                    OnItemSelected?.Invoke(_SelectedListIndex);
-                }
+                    m_OnItemSelected?.Invoke(_SelectedListIndex);
                 ImGui.Separator();
                 if (ImGuiUtils.DoubleButton(m_Translate.AddBtnName, m_Translate.RemoveBtnName, out var add, out var remove))
                 {
@@ -117,17 +112,17 @@ namespace GFEditor.Editor
 
                     if (ImGui.CollapsingHeader(m_Translate.HeaderItemBasics))
                     {
-                        ImGuiUtils.EnumBox("Item Quality", ref _QualityIndex, out item.m_eItemQuality, EItemQuality.eIQ_Max);
-                        ImGuiUtils.EnumBox("Item Type", ref _ItemTypeIndex, out item.m_eItemType, EItemType.eIIT_OpenUIStart, EItemType.eIIT_OpenUIEnd, EItemType.eIIT_Max);
-                        ImGuiUtils.EnumBox("Equip Type", ref _EquipTypeIndex, out item.m_eEquipType, EEquipType.eEPT_Unknown, EEquipType.eEPT_Max);
+                        ImGuiUtils.ComboBoxEnum(m_Translate.ItemQualityName, ref _QualityIndex, out item.m_eItemQuality, EItemQuality.Max);
+                        ImGuiUtils.ComboBoxEnum(m_Translate.ItemTypeName, ref _ItemTypeIndex, out item.m_eItemType, EItemType.OpenUIStart, EItemType.OpenUIEnd, EItemType.Max);
+                        ImGuiUtils.ComboBoxEnum(m_Translate.EquipTypeName, ref _EquipTypeIndex, out item.m_eEquipType, EEquipType.Unknown, EEquipType.Max);
                     }
 
                     if (ImGui.CollapsingHeader(m_Translate.HeaderItemDrop))
                     {
-                        ImGuiUtils.InputUInt("Drop Index", ref item.m_nDropIndex);
-                        ImGuiUtils.InputChar("Drop Rate", ref item.m_nDropRate);
+                        ImGuiUtils.InputUInt(m_Translate.DropIndexName, ref item.m_nDropIndex);
+                        ImGuiUtils.InputChar(m_Translate.DropRateName, ref item.m_nDropRate);
                         ImGuiUtils.InputText(m_Translate.HeaderDropName, ref item.m_nDropFilename);
-                        ImGuiUtils.EnumBox("Drop Type", ref _DropTypeIndex, out EChestType dropType, EChestType.eCT_Max);
+                        ImGuiUtils.ComboBoxEnum(m_Translate.DropTypeName, ref _DropTypeIndex, out EChestType dropType, EChestType.Max);
 
                         item.m_nDropFilename = GetChestNameByType(dropType);
                         if (item.m_nDropFilename.IsValid())
@@ -159,7 +154,7 @@ namespace GFEditor.Editor
                         ImGuiUtils.SetOffsetPos(new Vector2(15f, 0f));
                         if (ImGui.CollapsingHeader(m_Translate.HeaderItemRestrictionTime))
                         {
-                            ImGuiUtils.EnumBox("Time Limit Type", ref _TimeLimitTypeIndex, out item.m_nLimitType, ELimitTimeType.eLTT_Max);
+                            ImGuiUtils.ComboBoxEnum("Time Limit Type", ref _TimeLimitTypeIndex, out item.m_nLimitType, ELimitTimeType.Max);
                             ImGuiUtils.InputULong("Time Limit", ref item.m_nDueDateTime);
                         }
 
@@ -181,99 +176,99 @@ namespace GFEditor.Editor
                         ImGuiUtils.SetOffsetPos(new Vector2(15f, 0f));
                         if (ImGui.CollapsingHeader(m_Translate.OpFlags))
                         {
-                            ItemEditorUtils.DrawOpFlagParameter(item, m_Translate.OpFlagsDesc.CanUse, EItemOpFlags.eIOF_CanUse);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Disappear when used ?", EItemOpFlags.eIOF_NoDecrease);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't be traded ?", EItemOpFlags.eIOF_NoTrade);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't be discarded ?", EItemOpFlags.eIOF_NoDiscard);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't be enchanced ?", EItemOpFlags.eIOF_NoEnhance);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Can be combined ?", EItemOpFlags.eIOF_Combineable);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Bind on equiped ?", EItemOpFlags.eIOF_BindOnEquip);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Allow time accumulation when used ?", EItemOpFlags.eIOF_AccumTime);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Disallow using if same buff is already in use ?", EItemOpFlags.eIOF_NoSameBuff);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't be used in battle ?", EItemOpFlags.eIOF_NoInBattle);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't be used in town ?", EItemOpFlags.eIOF_NoInTown);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't be used in cave ?", EItemOpFlags.eIOF_NoInCave);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't be used in instance ?", EItemOpFlags.eIOF_NoInInstance);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Does this item is linked to a quest ?", EItemOpFlags.eIOF_LinkToQuest);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Used for dead people ?", EItemOpFlags.eIOF_ForDead);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't be used in battefield ?", EItemOpFlags.eIOF_NoInBattlefield);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't be used in fields ?", EItemOpFlags.eIOF_NoInField);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't be used for teleport ?", EItemOpFlags.eIOF_NoTransNode);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Allow this item to unbind other items ?", EItemOpFlags.eIOF_UnBindItem);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't equip the same item ?", EItemOpFlags.eIOF_OnlyEquip);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Unknown parameter", EItemOpFlags.eIOF_Unknown);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Only1 (Unknown param)", EItemOpFlags.eIOF_Only1);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Only2 (Unknown param)", EItemOpFlags.eIOF_Only2);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Only3 (Unknown param)", EItemOpFlags.eIOF_Only3);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Only4 (Unknown param)", EItemOpFlags.eIOF_Only4);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Only5 (Unknown param)", EItemOpFlags.eIOF_Only5);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Only (All) (Unknown param)", EItemOpFlags.eIOF_Only);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Replaceable1 (Unknown param)", EItemOpFlags.eIOF_Replaceable1);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Replaceable2 (Unknown param)", EItemOpFlags.eIOF_Replaceable2);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Replaceable3 (Unknown param)", EItemOpFlags.eIOF_Replaceable3);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Replaceable4 (Unknown param)", EItemOpFlags.eIOF_Replaceable4);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Replaceable5 (Unknown param)", EItemOpFlags.eIOF_Replaceable5);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Replaceable (All) (Unknown param)", EItemOpFlags.eIOF_Replaceable);
+                            ItemEditorUtils.DrawOpFlagParameter(item, m_Translate.OpFlagsDesc.CanUse, EItemOpFlags.CanUse);
+                            ItemEditorUtils.DrawOpFlagParameter(item, "Disappear when used ?", EItemOpFlags.NoDecrease);
+                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't be traded ?", EItemOpFlags.NoTrade);
+                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't be discarded ?", EItemOpFlags.NoDiscard);
+                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't be enchanced ?", EItemOpFlags.NoEnhance);
+                            ItemEditorUtils.DrawOpFlagParameter(item, "Can be combined ?", EItemOpFlags.Combineable);
+                            ItemEditorUtils.DrawOpFlagParameter(item, "Bind on equiped ?", EItemOpFlags.BindOnEquip);
+                            ItemEditorUtils.DrawOpFlagParameter(item, "Allow time accumulation when used ?", EItemOpFlags.AccumTime);
+                            ItemEditorUtils.DrawOpFlagParameter(item, "Disallow using if same buff is already in use ?", EItemOpFlags.NoSameBuff);
+                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't be used in battle ?", EItemOpFlags.NoInBattle);
+                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't be used in town ?", EItemOpFlags.NoInTown);
+                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't be used in cave ?", EItemOpFlags.NoInCave);
+                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't be used in instance ?", EItemOpFlags.NoInInstance);
+                            ItemEditorUtils.DrawOpFlagParameter(item, "Does this item is linked to a quest ?", EItemOpFlags.LinkToQuest);
+                            ItemEditorUtils.DrawOpFlagParameter(item, "Used for dead people ?", EItemOpFlags.ForDead);
+                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't be used in battefield ?", EItemOpFlags.NoInBattlefield);
+                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't be used in fields ?", EItemOpFlags.NoInField);
+                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't be used for teleport ?", EItemOpFlags.NoTransNode);
+                            ItemEditorUtils.DrawOpFlagParameter(item, "Allow this item to unbind other items ?", EItemOpFlags.UnBindItem);
+                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't equip the same item ?", EItemOpFlags.OnlyEquip);
+                            ItemEditorUtils.DrawOpFlagParameter(item, "Unknown parameter", EItemOpFlags.Unknown);
+                            ItemEditorUtils.DrawOpFlagParameter(item, "Only1 (Unknown param)", EItemOpFlags.Only1);
+                            ItemEditorUtils.DrawOpFlagParameter(item, "Only2 (Unknown param)", EItemOpFlags.Only2);
+                            ItemEditorUtils.DrawOpFlagParameter(item, "Only3 (Unknown param)", EItemOpFlags.Only3);
+                            ItemEditorUtils.DrawOpFlagParameter(item, "Only4 (Unknown param)", EItemOpFlags.Only4);
+                            ItemEditorUtils.DrawOpFlagParameter(item, "Only5 (Unknown param)", EItemOpFlags.Only5);
+                            ItemEditorUtils.DrawOpFlagParameter(item, "Only (All) (Unknown param)", EItemOpFlags.Only);
+                            ItemEditorUtils.DrawOpFlagParameter(item, "Replaceable1 (Unknown param)", EItemOpFlags.Replaceable1);
+                            ItemEditorUtils.DrawOpFlagParameter(item, "Replaceable2 (Unknown param)", EItemOpFlags.Replaceable2);
+                            ItemEditorUtils.DrawOpFlagParameter(item, "Replaceable3 (Unknown param)", EItemOpFlags.Replaceable3);
+                            ItemEditorUtils.DrawOpFlagParameter(item, "Replaceable4 (Unknown param)", EItemOpFlags.Replaceable4);
+                            ItemEditorUtils.DrawOpFlagParameter(item, "Replaceable5 (Unknown param)", EItemOpFlags.Replaceable5);
+                            ItemEditorUtils.DrawOpFlagParameter(item, "Replaceable (All) (Unknown param)", EItemOpFlags.Replaceable);
 
                             // If all only or replaceable are selected, remove them and enable all with the only/replaceable flags.
-                            if (item.m_bOpFlagsArray[EItemOpFlags.eIOF_Only1] &&
-                                item.m_bOpFlagsArray[EItemOpFlags.eIOF_Only2] &&
-                                item.m_bOpFlagsArray[EItemOpFlags.eIOF_Only3] &&
-                                item.m_bOpFlagsArray[EItemOpFlags.eIOF_Only4] &&
-                                item.m_bOpFlagsArray[EItemOpFlags.eIOF_Only5])
+                            if (item.m_bOpFlagsArray[EItemOpFlags.Only1] &&
+                                item.m_bOpFlagsArray[EItemOpFlags.Only2] &&
+                                item.m_bOpFlagsArray[EItemOpFlags.Only3] &&
+                                item.m_bOpFlagsArray[EItemOpFlags.Only4] &&
+                                item.m_bOpFlagsArray[EItemOpFlags.Only5])
                             {
-                                item.m_bOpFlagsArray[EItemOpFlags.eIOF_Only1] = false;
-                                item.m_bOpFlagsArray[EItemOpFlags.eIOF_Only2] = false;
-                                item.m_bOpFlagsArray[EItemOpFlags.eIOF_Only3] = false;
-                                item.m_bOpFlagsArray[EItemOpFlags.eIOF_Only4] = false;
-                                item.m_bOpFlagsArray[EItemOpFlags.eIOF_Only5] = false;
-                                item.m_bOpFlagsArray[EItemOpFlags.eIOF_Only] = true;
+                                item.m_bOpFlagsArray[EItemOpFlags.Only1] = false;
+                                item.m_bOpFlagsArray[EItemOpFlags.Only2] = false;
+                                item.m_bOpFlagsArray[EItemOpFlags.Only3] = false;
+                                item.m_bOpFlagsArray[EItemOpFlags.Only4] = false;
+                                item.m_bOpFlagsArray[EItemOpFlags.Only5] = false;
+                                item.m_bOpFlagsArray[EItemOpFlags.Only] = true;
                             }
 
-                            if (item.m_bOpFlagsArray[EItemOpFlags.eIOF_Replaceable1] &&
-                                item.m_bOpFlagsArray[EItemOpFlags.eIOF_Replaceable2] &&
-                                item.m_bOpFlagsArray[EItemOpFlags.eIOF_Replaceable3] &&
-                                item.m_bOpFlagsArray[EItemOpFlags.eIOF_Replaceable4] &&
-                                item.m_bOpFlagsArray[EItemOpFlags.eIOF_Replaceable5])
+                            if (item.m_bOpFlagsArray[EItemOpFlags.Replaceable1] &&
+                                item.m_bOpFlagsArray[EItemOpFlags.Replaceable2] &&
+                                item.m_bOpFlagsArray[EItemOpFlags.Replaceable3] &&
+                                item.m_bOpFlagsArray[EItemOpFlags.Replaceable4] &&
+                                item.m_bOpFlagsArray[EItemOpFlags.Replaceable5])
                             {
-                                item.m_bOpFlagsArray[EItemOpFlags.eIOF_Replaceable1] = false;
-                                item.m_bOpFlagsArray[EItemOpFlags.eIOF_Replaceable2] = false;
-                                item.m_bOpFlagsArray[EItemOpFlags.eIOF_Replaceable3] = false;
-                                item.m_bOpFlagsArray[EItemOpFlags.eIOF_Replaceable4] = false;
-                                item.m_bOpFlagsArray[EItemOpFlags.eIOF_Replaceable5] = false;
-                                item.m_bOpFlagsArray[EItemOpFlags.eIOF_Replaceable] = true;
+                                item.m_bOpFlagsArray[EItemOpFlags.Replaceable1] = false;
+                                item.m_bOpFlagsArray[EItemOpFlags.Replaceable2] = false;
+                                item.m_bOpFlagsArray[EItemOpFlags.Replaceable3] = false;
+                                item.m_bOpFlagsArray[EItemOpFlags.Replaceable4] = false;
+                                item.m_bOpFlagsArray[EItemOpFlags.Replaceable5] = false;
+                                item.m_bOpFlagsArray[EItemOpFlags.Replaceable] = true;
                             }
                         }
 
                         ImGuiUtils.SetOffsetPos(new Vector2(15f, 0f));
                         if (ImGui.CollapsingHeader(m_Translate.OpFlagsPlus))
                         {
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "IK Combineable ?", EItemOpFlagsPlus.eIOFP_IKCombine);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "GK Combineable ?", EItemOpFlagsPlus.eIOFP_GKCombine);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Show equipment ?", EItemOpFlagsPlus.eIOFP_EquipShow);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Purple WLimit ?", EItemOpFlagsPlus.eIOFP_PurpleWLimit);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Purple ALimit ?", EItemOpFlagsPlus.eIOFP_PurpleALimit);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Bind on use ?", EItemOpFlagsPlus.eIOFP_UseBind);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Stack limited to 1 ?", EItemOpFlagsPlus.eIOFP_OneStack);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Is ride IK combineable ?", EItemOpFlagsPlus.eIOFP_RideCombineIK);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Is ride GK combineable ?", EItemOpFlagsPlus.eIOFP_RideCombineGK);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Is ride combineable ?", EItemOpFlagsPlus.eIOFP_ISRideCombine);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Is item VIP ?", EItemOpFlagsPlus.eIOFP_VIP);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Is chair IK combineable ?", EItemOpFlagsPlus.eIOFP_ChairCombineIK);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Is chair GK combineable ?", EItemOpFlagsPlus.eIOFP_ChairCombineGK);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Is chair combineable ?", EItemOpFlagsPlus.eIOFP_ISChairCombine);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Red WLimit ?", EItemOpFlagsPlus.eIOFP_RedWLimit);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Red ALimit ?", EItemOpFlagsPlus.eIOFP_RedALimit);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Is crystal combo ?", EItemOpFlagsPlus.eIOFP_CrystalCombo);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Is souvenir combo ?", EItemOpFlagsPlus.eIOFP_SouvenirCombo);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Is godarea combo ?", EItemOpFlagsPlus.eIOFP_GodAreaCombo);
+                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "IK Combineable ?", EItemOpFlagsPlus.IKCombine);
+                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "GK Combineable ?", EItemOpFlagsPlus.GKCombine);
+                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Show equipment ?", EItemOpFlagsPlus.EquipShow);
+                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Purple WLimit ?", EItemOpFlagsPlus.PurpleWLimit);
+                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Purple ALimit ?", EItemOpFlagsPlus.PurpleALimit);
+                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Bind on use ?", EItemOpFlagsPlus.UseBind);
+                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Stack limited to 1 ?", EItemOpFlagsPlus.OneStack);
+                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Is ride IK combineable ?", EItemOpFlagsPlus.RideCombineIK);
+                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Is ride GK combineable ?", EItemOpFlagsPlus.RideCombineGK);
+                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Is ride combineable ?", EItemOpFlagsPlus.ISRideCombine);
+                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Is item VIP ?", EItemOpFlagsPlus.VIP);
+                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Is chair IK combineable ?", EItemOpFlagsPlus.ChairCombineIK);
+                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Is chair GK combineable ?", EItemOpFlagsPlus.ChairCombineGK);
+                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Is chair combineable ?", EItemOpFlagsPlus.ISChairCombine);
+                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Red WLimit ?", EItemOpFlagsPlus.RedWLimit);
+                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Red ALimit ?", EItemOpFlagsPlus.RedALimit);
+                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Is crystal combo ?", EItemOpFlagsPlus.CrystalCombo);
+                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Is souvenir combo ?", EItemOpFlagsPlus.SouvenirCombo);
+                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Is godarea combo ?", EItemOpFlagsPlus.GodAreaCombo);
                         }
                     }
 
                     if (ImGui.CollapsingHeader(m_Translate.HeaderItemReputation))
                     {
-                        ImGuiUtils.EnumBox("Restriction", ref _AlignementIndex, out item.m_eRestrictAlign, EAlignement.eA_End, EAlignement.eA_GroupEnd);
-                        ImGuiUtils.InputULong("Value", ref item.m_nRestrictPrestige);
+                        ImGuiUtils.ComboBoxEnum("Reputation Type", ref _AlignementIndex, out item.m_eRestrictAlign, EAlignement.End, EAlignement.GroupEnd);
+                        ImGuiUtils.InputULong("Reputation Value", ref item.m_nRestrictPrestige);
                     }
 
                     if (ImGui.CollapsingHeader(m_Translate.HeaderItemStats))
@@ -311,18 +306,18 @@ namespace GFEditor.Editor
 
                     if (ImGui.CollapsingHeader(m_Translate.HeaderItemAttribute))
                     {
-                        ImGuiUtils.EnumBox("Attribute Type", ref _AttributeIndex, out item.m_eAttribute, EAttrResist.eAR_Max);
-                        ImGuiUtils.InputULong("Damage", ref item.m_nAttributeDamage);
-                        ImGuiUtils.InputShort("Rate", ref item.m_nAttributeRate);
-                        ImGuiUtils.InputULong("Resistance", ref item.m_nAttributeResist);
+                        ImGuiUtils.ComboBoxEnum("Attribute Type", ref _AttributeIndex, out item.m_eAttribute, EAttrResist.Max);
+                        ImGuiUtils.InputULong("Attribute Damage", ref item.m_nAttributeDamage);
+                        ImGuiUtils.InputShort("Attribute Rate", ref item.m_nAttributeRate);
+                        ImGuiUtils.InputULong("Attribute Resistance", ref item.m_nAttributeResist);
                     }
 
                     if (ImGui.CollapsingHeader(m_Translate.HeaderItemEnchantments))
                     {
-                        ImGuiUtils.EnumBox("Enchant Type", ref _EnchantTypeIndex, out item.m_eEnchantType, EBuffIconType.eBT_Max);
-                        ImGuiUtils.InputInt("Index", ref item.m_nEnchantId);
-                        ImGuiUtils.EnumBox("Time Type", ref _EnchantTimeTypeIndex, out item.m_eEnchantTimeType, ETimeType.eTIT_Max);
-                        ImGuiUtils.InputLong("Duration", ref item.m_nEnchantDuration);
+                        ImGuiUtils.ComboBoxEnum("Enchant Type", ref _EnchantTypeIndex, out item.m_eEnchantType, EBuffIconType.Max);
+                        ImGuiUtils.InputInt("Enchant Index", ref item.m_nEnchantId);
+                        ImGuiUtils.ComboBoxEnum("Enchant Time Type", ref _EnchantTimeTypeIndex, out item.m_eEnchantTimeType, ETimeType.Max);
+                        ImGuiUtils.InputLong("Enchant Duration", ref item.m_nEnchantDuration);
                     }
 
                     if (ImGui.CollapsingHeader(m_Translate.HeaderItemCooldown))
@@ -338,14 +333,14 @@ namespace GFEditor.Editor
 
                     if (ImGui.CollapsingHeader(m_Translate.HeaderItemSpecial))
                     {
-                        ImGuiUtils.EnumBox("Monster Type", ref _SpecialIndex, out item.m_eSpecialType, EMonsterType.eET_Size);
-                        ImGuiUtils.InputULong("Damage", ref item.m_nSpecialDamage);
-                        ImGuiUtils.InputShort("Rate", ref item.m_nSpecialRate);
+                        ImGuiUtils.ComboBoxEnum("Special Type", ref _SpecialIndex, out item.m_eSpecialType);
+                        ImGuiUtils.InputULong("Special Damage", ref item.m_nSpecialDamage);
+                        ImGuiUtils.InputShort("Special Rate", ref item.m_nSpecialRate);
                     }
 
                     if (ImGui.CollapsingHeader(m_Translate.HeaderItemPrice))
                     {
-                        ImGuiUtils.EnumBox("Price Type", ref _PriceIndex, out item.m_nShopPriceType);
+                        ImGuiUtils.ComboBoxEnum("Price Type", ref _PriceIndex, out item.m_nShopPriceType);
                         ImGuiUtils.InputULong("Price", ref item.m_nSysPrice);
                     }
 
@@ -377,7 +372,7 @@ namespace GFEditor.Editor
                     
                     if (ImGui.CollapsingHeader(m_Translate.HeaderItemAuction))
                     {
-                        ImGuiUtils.EnumBox("Auction Type", ref _AuctionTypeIndex, out item.m_eAuctionType, EAuctionType.eAT_Max);
+                        ImGuiUtils.ComboBoxEnum("Auction Type", ref _AuctionTypeIndex, out item.m_eAuctionType, EAuctionType.Max);
                     }
 
                     if (ImGui.CollapsingHeader(m_Translate.HeaderItemExperience))
@@ -425,6 +420,7 @@ namespace GFEditor.Editor
         private void OnListRemove()
         {
             GuiNotify.Show(ImGuiToastType.Warning, "Item Editor", "Remove item from the list is not implemented yet !");
+            ResetStringList(); // Reset the list !
         }
 
         private Texture2D? GetIconByName(string name)
@@ -436,12 +432,12 @@ namespace GFEditor.Editor
                 return value;
 
             // Else add it !
-            if (m_itemIconPath.FolderExist())
+            var imagePath = ConfigUtils.GetPath("UI\\itemicon\\" + name + ".dds");
+            if (imagePath.FileExist())
             {
-                var filePath = Path.Combine(m_itemIconPath, name + ".png");
-                var fileName = Path.GetFileNameWithoutExtension(filePath).ToLower();
+                var fileName = Path.GetFileNameWithoutExtension(imagePath).ToLower();
                 if (fileName != name) return null;
-                if (m_iconsImages.TryAdd(fileName, TextureUtils.LoadTextureFromFile(filePath)))
+                if (m_iconsImages.TryAdd(fileName, TextureUtils.LoadTextureFromFile(imagePath)))
                     return m_iconsImages[fileName];
             }
 
@@ -449,6 +445,7 @@ namespace GFEditor.Editor
             return null;
         }
 
+        private const string m_dropPath = "textures\\chest";
         private Texture2D? GetChestByName(string name)
         {
             if (m_dropImages == null) return null;
@@ -458,12 +455,12 @@ namespace GFEditor.Editor
                 return value;
 
             // Else add it !
-            if (m_dropPath.FolderExist())
+            var dropPath = ConfigUtils.GetRelativePath(Path.Combine(m_dropPath, name + ".png"));
+            if (dropPath.FileExist())
             {
-                var filePath = Path.Combine(m_dropPath, name + ".png");
-                var fileName = Path.GetFileNameWithoutExtension(filePath);
+                var fileName = Path.GetFileNameWithoutExtension(dropPath);
                 if (fileName != name) return null;
-                if (m_dropImages.TryAdd(name, TextureUtils.LoadTextureFromFile(filePath)))
+                if (m_dropImages.TryAdd(name, TextureUtils.LoadTextureFromFile(dropPath)))
                     return m_dropImages[name];
             }
 
@@ -475,17 +472,18 @@ namespace GFEditor.Editor
         {
             return name switch
             {
-                "G00001" => EChestType.eCT_G1,
-                "G00002" => EChestType.eCT_G2,
-                "G00003" => EChestType.eCT_G3,
-                "G00004" => EChestType.eCT_G4,
-                "G00005" => EChestType.eCT_G5,
-                "G00006" => EChestType.eCT_G6,
-                "G00007" => EChestType.eCT_G7,
-                "G00008" => EChestType.eCT_G8,
-                "G00009" => EChestType.eCT_G9,
-                "G00010" => EChestType.eCT_G10,
-                _ => EChestType.eCT_None,
+                "G00000" => EChestType.None,
+                "G00001" => EChestType.Equipment,
+                "G00002" => EChestType.Quest,
+                "G00003" => EChestType.Basic,
+                "G00004" => EChestType.Cursed,
+                "G00005" => EChestType.Special,
+                "G00006" => EChestType.Green,
+                "G00007" => EChestType.Legendary,
+                "G00008" => EChestType.Blue,
+                "G00009" => EChestType.EquipmentGlowing,
+                "G00010" => EChestType.GreenGlowing,
+                _ => EChestType.None,
             };
         }
 
@@ -493,16 +491,17 @@ namespace GFEditor.Editor
         {
             return type switch
             {
-                EChestType.eCT_G1 => "G00001",
-                EChestType.eCT_G2 => "G00002",
-                EChestType.eCT_G3 => "G00003",
-                EChestType.eCT_G4 => "G00004",
-                EChestType.eCT_G5 => "G00005",
-                EChestType.eCT_G6 => "G00006",
-                EChestType.eCT_G7 => "G00007",
-                EChestType.eCT_G8 => "G00008",
-                EChestType.eCT_G9 => "G00009",
-                EChestType.eCT_G10 => "G00010",
+                EChestType.None => "G00000",
+                EChestType.Equipment => "G00001",
+                EChestType.Quest => "G00002",
+                EChestType.Basic => "G00003",
+                EChestType.Cursed => "G00004",
+                EChestType.Special => "G00005",
+                EChestType.Green => "G00006",
+                EChestType.Legendary => "G00007",
+                EChestType.Blue => "G00008",
+                EChestType.EquipmentGlowing => "G00009",
+                EChestType.GreenGlowing => "G00010",
                 _ => string.Empty,
             };
         }
@@ -511,24 +510,32 @@ namespace GFEditor.Editor
         {
             foreach (var item in m_iconsImages)
                 TextureUtils.DisposeTexture(item.Value);
-            m_iconsImages.Clear();
-            m_ClassImages.Dispose();
+            ItemEditorUtils.DisposeClassesTextures();
         }
 
         public void Save()
         {
-            var filePath = ConfigUtils.Configs.Path.Client + "\\C_Item.ini";
-            var filePathServer = ConfigUtils.Configs.Path.Server + "\\S_Item.ini";
-            var str = new StringBuilder();
-            str.AppendLine($"|{m_ItemList.GetVersionStr()}|{m_ItemList.GetColumnCount()}|");
+            var filePath = ConfigUtils.GetPath("Data\\DB\\C_Item.ini");
+            var filePathServer = ConfigUtils.GetPath("Data\\DB\\S_Item.ini");
+
+            var client = new StringBuilder();
+            client.AppendLine($"|{m_ItemList.GetVersionStr()}|{m_ItemList.GetColumnCount()}|");
             foreach (var item in m_ItemList.GetAllItems())
             {
-                str.AppendLine(item.GetSerializedString());
+                client.AppendLine(item.GetClientString());
             }
+
+            var server = new StringBuilder();
+            server.AppendLine($"|{m_ItemList.GetVersionStr()}|{m_ItemList.GetColumnCount()}|");
+            foreach (var item in m_ItemList.GetAllItems())
+            {
+                server.AppendLine(item.GetServerString());
+            }
+
             try
             {
-                File.WriteAllText(filePath, str.ToString(), Encoding.GetEncoding("Big5"));
-                File.WriteAllText(filePathServer, str.ToString(), Encoding.GetEncoding("Big5"));
+                File.WriteAllText(filePath, client.ToString(), Encoding.GetEncoding("Big5"));
+                File.WriteAllText(filePathServer, server.ToString(), Encoding.GetEncoding("Big5"));
                 GuiNotify.Show(ImGuiToastType.Success, "Item Editor", "C/S_Item saved successfully !");
             }
             catch (Exception ex)

@@ -1,47 +1,40 @@
-﻿namespace GFEditor.Utils
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace GFEditor.Utils
 {
     public class CConfigPath
     {
-        [JsonProperty]
-        public string Client = string.Empty;
-
-        [JsonProperty]
-        public string Server = string.Empty;
-
-        [JsonProperty]
-        public string Translate = string.Empty;
-
-        [JsonProperty]
-        public string Icons = string.Empty;
+        [JsonProperty("Game")]
+        public string Game = string.Empty;
     }
 
     public class CConfigUbuntu
     {
-        [JsonProperty]
+        [JsonProperty("Host")]
         public string Host = string.Empty;
 
-        [JsonProperty]
+        [JsonProperty("HostKey")]
         public string HostKey = string.Empty;
 
-        [JsonProperty]
+        [JsonProperty("Username")]
         public string Username = string.Empty;
 
-        [JsonProperty]
+        [JsonProperty("Password")]
         public string Password = string.Empty;
 
-        [JsonProperty]
+        [JsonProperty("Port")]
         public int Port;
 
-        [JsonProperty]
+        [JsonProperty("AutoConnect")]
         public bool AutoConnect;
     }
 
     public class CConfigValues
     {
-        [JsonProperty]
+        [JsonProperty("Path")]
         public CConfigPath Path = new();
 
-        [JsonProperty]
+        [JsonProperty("Ubuntu")]
         public CConfigUbuntu Ubuntu = new();
     }
 
@@ -50,8 +43,15 @@
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
         private const string m_Filename = "GFEditor.configs.json";
 
-        [JsonProperty]
+        [JsonProperty("Configs")]
+        [SuppressMessage("Usage", "CA2211:Non-constant fields should not be visible", Justification = "<Pending>")]
         public static CConfigValues Configs = new();
+
+        public static string GetGamePath() => Configs.Path.Game;
+        public static string GetPath(string path) => Path.Combine(Configs.Path.Game, path);
+        public static string GetObjectPath(string path, string obj) => Path.Combine(Path.Combine(Configs.Path.Game, path), obj);
+
+        public static string GetRelativePath(string filePath) => Path.Combine(Directory.GetCurrentDirectory(), filePath);
 
         public static void Load()
         {

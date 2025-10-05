@@ -129,7 +129,7 @@
         public static StringBuilder AppendGF(this StringBuilder sb, EItemTarget value)
         {
             ArgumentNullException.ThrowIfNull(sb);
-            if (value != EItemTarget.eIT_None)
+            if (value != EItemTarget.None)
                 sb.Append((int)value);
             else
                 sb.Append("");
@@ -139,7 +139,7 @@
         public static StringBuilder AppendGF(this StringBuilder sb, EItemType value)
         {
             ArgumentNullException.ThrowIfNull(sb);
-            if (value != EItemType.eIIT_None)
+            if (value != EItemType.None)
                 sb.Append((int)value);
             else
                 sb.Append("");
@@ -149,7 +149,7 @@
         public static StringBuilder AppendGF(this StringBuilder sb, EEquipType value)
         {
             ArgumentNullException.ThrowIfNull(sb);
-            if (value != EEquipType.eEPT_None && value != EEquipType.eEPT_Max)
+            if (value != EEquipType.None && value != EEquipType.Max)
                 sb.Append((int)value);
             else
                 sb.Append("");
@@ -159,7 +159,7 @@
         public static StringBuilder AppendGF(this StringBuilder sb, EItemQuality value)
         {
             ArgumentNullException.ThrowIfNull(sb);
-            if (value != EItemQuality.eIQ_Max && value != EItemQuality.eIQ_White) // By default, white is the base quality !
+            if (value != EItemQuality.Max && value != EItemQuality.White) // By default, white is the base quality !
                 sb.Append((int)value);
             else
                 sb.Append("");
@@ -169,7 +169,7 @@
         public static StringBuilder AppendGF(this StringBuilder sb, EAlignement value)
         {
             ArgumentNullException.ThrowIfNull(sb);
-            if (value != EAlignement.eA_None)
+            if (value != EAlignement.None)
                 sb.Append((int)value);
             else
                 sb.Append("");
@@ -189,7 +189,7 @@
         public static StringBuilder AppendGF(this StringBuilder sb, EAttrResist value)
         {
             ArgumentNullException.ThrowIfNull(sb);
-            if (value != EAttrResist.eAR_None && value != EAttrResist.eAR_Max) // By default, female is the default !
+            if (value != EAttrResist.None && value != EAttrResist.Max) // By default, female is the default !
                 sb.Append((int)value);
             else
                 sb.Append("");
@@ -199,7 +199,7 @@
         public static StringBuilder AppendGF(this StringBuilder sb, EMonsterType value)
         {
             ArgumentNullException.ThrowIfNull(sb);
-            if (value != EMonsterType.eET_None) // By default, none is the default !
+            if (value != EMonsterType.None) // By default, none is the default !
                 sb.Append((int)value);
             else
                 sb.Append("");
@@ -209,7 +209,7 @@
         public static StringBuilder AppendGF(this StringBuilder sb, EEnchantType value)
         {
             ArgumentNullException.ThrowIfNull(sb);
-            if (value != EEnchantType.eENT_None && value != EEnchantType.eENT_Max) // By default, none is the default !
+            if (value != EEnchantType.None && value != EEnchantType.Max) // By default, none is the default !
                 sb.Append((int)value);
             else
                 sb.Append("");
@@ -219,7 +219,7 @@
         public static StringBuilder AppendGF(this StringBuilder sb, ETimeType value)
         {
             ArgumentNullException.ThrowIfNull(sb);
-            if (value != ETimeType.eTIT_None) // By default, none is the default !
+            if (value != ETimeType.None) // By default, none is the default !
                 sb.Append((int)value);
             else
                 sb.Append("");
@@ -229,7 +229,7 @@
         public static StringBuilder AppendGF(this StringBuilder sb, EShopPriceType value)
         {
             ArgumentNullException.ThrowIfNull(sb);
-            if (value != EShopPriceType.eSPT_None) // By default, none is the default !
+            if (value != EShopPriceType.None) // By default, none is the default !
                 sb.Append((int)value);
             else
                 sb.Append("");
@@ -239,7 +239,7 @@
         public static StringBuilder AppendGF(this StringBuilder sb, EAuctionType value)
         {
             ArgumentNullException.ThrowIfNull(sb);
-            if (value != EAuctionType.eAT_None && value != EAuctionType.eAT_Max) // By default, none is the default !
+            if (value != EAuctionType.None && value != EAuctionType.Max) // By default, none is the default !
                 sb.Append((int)value);
             else
                 sb.Append("");
@@ -249,7 +249,7 @@
         public static StringBuilder AppendGF(this StringBuilder sb, EBuffIconType value)
         {
             ArgumentNullException.ThrowIfNull(sb);
-            if (value != EBuffIconType.eBT_None) // By default, none is the default !
+            if (value != EBuffIconType.None) // By default, none is the default !
                 sb.Append((int)value);
             else
                 sb.Append("");
@@ -259,7 +259,7 @@
         public static StringBuilder AppendGF(this StringBuilder sb, ELimitTimeType value)
         {
             ArgumentNullException.ThrowIfNull(sb);
-            if (value != ELimitTimeType.eLTT_None && value != ELimitTimeType.eLTT_Max) // By default, none is the default !
+            if (value != ELimitTimeType.None && value != ELimitTimeType.Max) // By default, none is the default !
                 sb.Append((int)value);
             else
                 sb.Append("");
