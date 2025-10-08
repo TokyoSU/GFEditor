@@ -9,4 +9,4 @@ SDK Required:
 
 ## Item Editor
 <img width="2559" height="1389" alt="Capture d'écran 2025-10-02 190305" src="https://github.com/user-attachments/assets/480ba3f3-0431-44b7-9b77-9ebd36a2f9f5" />
-Warning: This tool dont backup before saving the change yet !
+Warning: This tool dont backup before saving the change yet ! you can still make a backup using file->backup.
