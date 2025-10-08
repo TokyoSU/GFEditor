@@ -1,13 +1,11 @@
 ﻿namespace GFEditor.Editor.Window
 {
-    public class MainWindow
+    public static class MainWindow
     {
         private static readonly TranslatedValues m_Translate = TranslateUtils.Json.TranslatedValues;
-        private readonly OpenFolderDialog m_GameFolderDialog = new() { AllowMultipleSelection = false };
-        private readonly ItemEditor m_ItemEditor = new();
-        private readonly UbuntuWindow m_UbuntuWindow = new();
+        private static readonly OpenFolderDialog m_GameFolderDialog = new() { AllowMultipleSelection = false };
 
-        private void DrawMainBar()
+        private static void DrawMainBar()
         {
             if (ImGui.BeginMainMenuBar())
             {
@@ -16,7 +14,7 @@
                     // Edit menu...
                     if (ImGui.Selectable("Save All"))
                     {
-                        m_ItemEditor.Save();
+                        ItemEditor.Save();
                     }
                     ImGui.EndMenu();
                 }
@@ -36,12 +34,7 @@
                 {
                     // Show item editor...
                     if (ImGui.Selectable(m_Translate.ItemEditor))
-                    {
-                        if (!m_ItemEditor.IsOpen)
-                            m_ItemEditor.Show();
-                        else
-                            m_ItemEditor.Hide();
-                    }
+                        ItemEditor.Show();
                     ImGui.EndMenu();
                 }
 
@@ -49,37 +42,27 @@
                 if (ImGui.BeginMenu(m_Translate.UbuntuName))
                 {
                     if (ImGui.Selectable(m_Translate.Connect))
-                    {
-                        if (!m_UbuntuWindow.IsOpen)
-                        {
-                            m_UbuntuWindow.Initialize();
-                            m_UbuntuWindow.Show();
-                        }
-                        else
-                        {
-                            m_UbuntuWindow.Hide();
-                        }
-                    }
+                        UbuntuWindow.Show();
                     if (ImGui.Selectable("List Directory"))
-                        m_UbuntuWindow.ListDirectory("/root/gf_server");
+                        UbuntuWindow.ListDirectory("/root/gf_server");
                     ImGui.EndMenu();
                 }
                 ImGui.EndMainMenuBar();
             }
         }
 
-        private void DrawDialogs()
+        private static void DrawDialogs()
         {
             m_GameFolderDialog.Draw(ImGuiWindowFlags.NoDocking);
         }
 
-        private void DrawEditor()
+        private static void DrawEditor()
         {
-            m_ItemEditor.DrawContent();
-            m_UbuntuWindow.DrawContent();
+            ItemEditor.DrawContent();
+            UbuntuWindow.DrawContent();
         }
 
-        public void DrawContent()
+        public static void DrawContent()
         {
             DrawMainBar();
             DrawEditor();
@@ -113,15 +96,15 @@
             }
         }
 
-        private void FolderGameCallback(object? sender, DialogResult result)
+        private static void FolderGameCallback(object? sender, DialogResult result)
         {
             ConfigUtils.Configs.Path.Game = m_GameFolderDialog.SelectedFolder;
             PrintResult(m_Translate.ClientName, result, 0);
         }
 
-        public void Dispose()
+        public static void Dispose()
         {
-            m_ItemEditor.Dispose();
+            ItemEditor.Dispose();
         }
     }
 }

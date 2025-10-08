@@ -1,4 +1,6 @@
-﻿namespace GFEditor.Utils
+﻿using GFEditor.Renderer;
+
+namespace GFEditor.Utils
 {
     /// <summary>
     /// Contains many functions helper for ImGui !
@@ -248,6 +250,18 @@
                 fixed (float* v = &value)
                 {
                     ImGui.InputScalar("##" + label, ImGuiDataType.Float, v);
+                }
+            }
+        }
+
+        public static void InputDouble(string label, ref double value)
+        {
+            Label(label);
+            unsafe
+            {
+                fixed (double* v = &value)
+                {
+                    ImGui.InputScalar("##" + label, ImGuiDataType.Double, v);
                 }
             }
         }

@@ -4,10 +4,8 @@
     {
         private static readonly Logger m_Log = LogManager.GetCurrentClassLogger();
         private const string m_ImGuiVersionGlsl = "#version 150";
-        private GL? GL;
         private GLFWwindowPtr m_Window;
         private GLFWimage m_ImageIcon;
-        private readonly MainWindow m_mainWindow = new();
         private bool m_Failed = false;
 
         private void ThrowGLFWError(string message)
@@ -68,10 +66,8 @@
             if (!ImGuiImplOpenGL3.Init(m_ImGuiVersionGlsl))
                 throw new Exception("Failed to associate ImGui and OpenGL3 !");
 
-            GL = new(new BindingsContext(m_Window));
-            if (GL == null)
-                throw new Exception("Failed to create GL class !");
-            TextureUtils.SetGLContext(GL);
+            OpenGL.SetGLContext(new(new BindingsContext(m_Window)));
+
         }
 
         private static void InitImGuiNotify()
@@ -102,13 +98,12 @@
             // Initialize other thinks...
             TranslateUtils.Load();
             ConfigUtils.Load();
-            ItemEditorUtils.LoadClassesTextures();
+            IconClass.Initialize();
         }
 
         public void Run()
         {
-            if (m_Failed || GL == null) return;
-
+            if (m_Failed) return;
             try
             {
                 var io = ImGui.GetIO();
@@ -123,15 +118,14 @@
                         continue;
                     }
 
-                    GL.ClearColor(0f, 0f, 0f, 1f);
-                    GL.Clear(GLClearBufferMask.ColorBufferBit);
+                    OpenGL.Ptr.ClearColor(0f, 0f, 0f, 1f);
+                    OpenGL.Ptr.Clear(GLClearBufferMask.ColorBufferBit);
 
                     ImGuiImplOpenGL3.NewFrame();
                     ImGuiImplGLFW.NewFrame();
                     ImGui.NewFrame();
                     ImGui.DockSpaceOverViewport();
-
-                    m_mainWindow.DrawContent();
+                    MainWindow.DrawContent();
                     ImGuiNotify.RenderNotifications();
 
                     ImGui.Render();
@@ -156,11 +150,12 @@
 
         public void Dispose()
         {
-            m_mainWindow.Dispose();
+            MainWindow.Dispose();
+            IconClass.Dispose();
             ImGuiImplOpenGL3.Shutdown();
             ImGuiImplGLFW.Shutdown();
             ImGui.DestroyContext();
-            GL?.Dispose();
+            OpenGL.Ptr.Dispose();
             unsafe
             {
                 if (m_ImageIcon.Pixels != null)

@@ -1,4 +1,6 @@
-﻿namespace GFEditor.Editor
+﻿using GFEditor.Renderer;
+
+namespace GFEditor.Editor
 {
     public enum BasicClassType
     {
@@ -14,7 +16,6 @@
     {
         private static readonly Logger m_Log = LogManager.GetCurrentClassLogger();
         private static readonly TranslatedValues m_Translate = TranslateUtils.Json.TranslatedValues;
-        private static readonly Dictionary<ERestrictClass, Texture2D> m_ClassTextures = [];
 
         private static readonly List<ERestrictClass> FighterClassSections = 
         [
@@ -100,36 +101,7 @@
             ERestrictClass.Phantom
         ];
 
-        public static void DisposeClassesTextures()
-        {
-            foreach (var texture in m_ClassTextures.Values)
-                TextureUtils.DisposeTexture(texture);
-            m_ClassTextures.Clear();
-        }
-
-
-        public static void LoadClassesTextures()
-        {
-            var values = Enum.GetValues<ERestrictClass>();
-            foreach (var value in values)
-            {
-                if (value == ERestrictClass.None) continue;
-                string filePath = string.Format("textures/classes/{0}.png", value.ToString().ToLower());
-                if (filePath.FileExist())
-                    m_ClassTextures.TryAdd(value, TextureUtils.LoadTextureFromFile(filePath));
-                else
-                    m_Log.Warn("Failed to load class image " + value.ToString() + ", file not found !");
-            }
-        }
-
-        public static Texture2D GetClassesTextureByEnum(ERestrictClass value) => m_ClassTextures[value];
-
-        public static void DrawClassTexture(ERestrictClass value)
-        {
-            ImGuiUtils.Image(GetClassesTextureByEnum(value));
-        }
-
-        public static void DrawOpFlagParameter(Item item, string label, EItemOpFlags flags, float offsetX = 30f)
+        public static void DrawOpFlagParameter(ItemData item, string label, EItemOpFlags flags, float offsetX = 30f)
         {
             ImGuiUtils.SetOffsetPos(new Vector2(offsetX, 0f));
             bool value = item.m_bOpFlagsArray[flags];
@@ -160,7 +132,7 @@
             ImGui.Text(label);
         }
 
-        public static void DrawOpFlagPlusParameter(Item item, string label, EItemOpFlagsPlus flags, float offsetX = 30f)
+        public static void DrawOpFlagPlusParameter(ItemData item, string label, EItemOpFlagsPlus flags, float offsetX = 30f)
         {
             ImGuiUtils.SetOffsetPos(new Vector2(offsetX, 0f));
             bool value = item.m_bOpFlagsPlusArray[flags];
@@ -170,10 +142,17 @@
             ImGui.Text(label);
         }
 
-        public static void DrawClassCheckbox(Item item, ERestrictClass eRestrictClass, float offsetX)
+        public static void DrawClassCheckbox(ItemData item, ERestrictClass eRestrictClass, float offsetX)
         {
+            var texture = IconClass.GetByEnum(eRestrictClass);
+            if (texture == null)
+            {
+                m_Log.Warn("Failed to draw class checkbox for " + eRestrictClass + ", texture is null !");
+                return;
+            }
+
             ImGuiUtils.SetOffsetPos(new Vector2(offsetX, 0f));
-            ImGuiUtils.Image(ItemEditorUtils.GetClassesTextureByEnum(eRestrictClass));
+            ImGuiUtils.Image(texture);
 
             string label = m_Translate.GetClassName(eRestrictClass);
             bool value = item.m_bClassRestrictionArray[eRestrictClass]; // Update value of checkbox if changed...
@@ -185,8 +164,15 @@
             ImGui.Text(label);
         }
 
-        public static void DrawClassSection(Item item, string sectionName, float xOffset, ERestrictClass headerIcon, BasicClassType classType)
+        public static void DrawClassSection(ItemData item, string sectionName, float xOffset, ERestrictClass headerIcon, BasicClassType classType)
         {
+            var texture = IconClass.GetByEnum(headerIcon);
+            if (texture == null)
+            {
+                m_Log.Warn("Failed to draw class checkbox for " + headerIcon + ", texture is null !");
+                return;
+            }
+
             var eRestrictClasses = classType switch
             {
                 BasicClassType.Fighter => FighterClassSections,
@@ -209,7 +195,7 @@
             }
 
             ImGuiUtils.SetOffsetPos(new Vector2(15f * xOffset, 0f));
-            if (ImGuiUtils.CollapsingHeaderWithTexture(ItemEditorUtils.GetClassesTextureByEnum(headerIcon), sectionName))
+            if (ImGuiUtils.CollapsingHeaderWithTexture(texture, sectionName))
             {
                 DrawClassCheckbox(item, eRestrictClasses[0], 15f * xOffset + 25f);
                 DrawClassCheckbox(item, eRestrictClasses[1], 15f * xOffset + 25f);

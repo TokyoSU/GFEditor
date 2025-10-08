@@ -1,11 +1,11 @@
 ﻿namespace GFEditor.Editor.Window
 {
-    public class UbuntuWindow
+    public static class UbuntuWindow
     {
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
         private static readonly TranslatedValues m_Translate = TranslateUtils.Json.TranslatedValues;
         private static readonly CConfigUbuntu m_Ubuntu = ConfigUtils.Configs.Ubuntu;
-        private SessionOptions SessionOptions
+        private static SessionOptions SessionOptions
         {
             get
             {
@@ -25,17 +25,27 @@
                 return sessionOptions;
             }
         }
-        private string m_Hostname = string.Empty;
-        private string m_Hostkey = string.Empty;
-        private string m_Username = string.Empty;
-        private string m_Password = string.Empty;
-        private int m_Port = 0;
-        private bool m_Shown = false;
-        public bool IsOpen => m_Shown;
-        public void Show() => m_Shown = true;
-        public void Hide() => m_Shown = false;
+        private static string m_Hostname = string.Empty;
+        private static string m_Hostkey = string.Empty;
+        private static string m_Username = string.Empty;
+        private static string m_Password = string.Empty;
+        private static int m_Port = 0;
+        private static bool m_Shown = false;
+        public static bool IsOpen => m_Shown;
+        public static void Show()
+        {
+            if (!m_Shown)
+            {
+                Initialize();
+                m_Shown = true;
+            }
+            else
+            {
+                m_Shown = false;
+            }
+        }
 
-        public void Initialize()
+        public static void Initialize()
         {
             if (m_Ubuntu.Host.IsValid()) m_Hostname = m_Ubuntu.Host;
             if (m_Ubuntu.HostKey.IsValid()) m_Hostkey = m_Ubuntu.HostKey;
@@ -44,7 +54,7 @@
             if (m_Ubuntu.Port != 0) m_Port = m_Ubuntu.Port;
         }
 
-        private void UpdateConfig()
+        private static void UpdateConfig()
         {
             // Also handle if the host has changed values...
             if (!m_Ubuntu.Host.IsValid() || m_Ubuntu.Host != m_Hostname) m_Ubuntu.Host = m_Hostname;
@@ -54,7 +64,7 @@
             if (m_Ubuntu.Port == 0 || m_Ubuntu.Port != m_Port) m_Ubuntu.Port = m_Port;
         }
 
-        public void ListDirectory(string localPath)
+        public static void ListDirectory(string localPath)
         {
             UpdateConfig();
             Task.Run(() =>
@@ -96,7 +106,7 @@
             });
         }
 
-        public void DrawContent()
+        public static void DrawContent()
         {
             if (m_Shown)
             {

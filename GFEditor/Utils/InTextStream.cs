@@ -7,9 +7,9 @@
         private bool m_IsOpen = false;
 
         public InTextStream() {}
-        public InTextStream(string filePath, bool removeFirstLine = true, bool isChineseFile = false) => LoadFile(filePath, removeFirstLine, isChineseFile);
+        public InTextStream(string filePath, bool isChineseFile = false) => LoadFile(filePath, isChineseFile);
 
-        public void LoadFile(string filePath, bool removeFirstLine = true, bool isChineseFile = false)
+        public void LoadFile(string filePath, bool isChineseFile = false)
         {
             try
             {

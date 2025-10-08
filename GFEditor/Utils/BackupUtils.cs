@@ -27,6 +27,7 @@
                             m_Log.Error(ex, $"MakeBackup: Failed to backup file: {filepath} to: {newpath}.");
                         }
                     });
+                    GuiNotify.Show(ImGuiToastType.Success, "Backup done.");
                 }
                 else
                 {

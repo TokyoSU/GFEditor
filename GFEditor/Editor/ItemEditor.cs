@@ -1,30 +1,29 @@
-﻿
+﻿using GFEditor.Structs.Query;
+
 namespace GFEditor.Editor
 {
-    public class ItemEditor
+    public static class ItemEditor
     {
         private static readonly TranslatedValues m_Translate = TranslateUtils.Json.TranslatedValues;
-        private readonly ItemQuery m_ItemList = new();
-        private readonly Dictionary<string, Texture2D> m_iconsImages = [];
-        private readonly Dictionary<string, Texture2D> m_dropImages = [];
-        private Action<int>? m_OnItemSelected;
-        private string[] _ItemsStringList = [];
-        private int _SelectedListIndex = 0;
-        private int _DropTypeIndex = 0;
-        private int _AlignementIndex = 0;
-        private int _AttributeIndex = 0;
-        private int _PriceIndex = 0;
-        private int _SpecialIndex = 0;
-        private int _EnchantTimeTypeIndex = 0;
-        private int _EnchantTypeIndex = 0;
-        private int _AuctionTypeIndex = 0;
-        private int _QualityIndex = 0;
-        private int _ItemTypeIndex = 0;
-        private int _EquipTypeIndex = 0;
-        private int _TimeLimitTypeIndex = 0;
-        public bool IsOpen = false;
+        private static readonly ItemQuery m_ItemList = new();
+        private static Action<int>? m_OnItemSelected;
+        private static string[] _ItemsStringList = [];
+        private static int _SelectedListIndex = 0;
+        private static int _DropTypeIndex = 0;
+        private static int _AlignementIndex = 0;
+        private static int _AttributeIndex = 0;
+        private static int _PriceIndex = 0;
+        private static int _SpecialIndex = 0;
+        private static int _EnchantTimeTypeIndex = 0;
+        private static int _EnchantTypeIndex = 0;
+        private static int _AuctionTypeIndex = 0;
+        private static int _QualityIndex = 0;
+        private static int _ItemTypeIndex = 0;
+        private static int _EquipTypeIndex = 0;
+        private static int _TimeLimitTypeIndex = 0;
+        private static bool _IsOpen = false;
 
-        public void Init()
+        private static void Initialize()
         {
             if (m_ItemList.HasValues()) // Avoid loading item each time the editor open...
                 return;
@@ -40,11 +39,11 @@ namespace GFEditor.Editor
             GuiNotify.Show(ImGuiToastType.Error, "Item Editor", "Failed to load item list, file probably not found !");
         }
 
-        private void OnItemSelectedCallback(int listIndex)
+        private static void OnItemSelectedCallback(int listIndex)
         {
             // Initialize value when it's selected !
             var strIndex = _ItemsStringList[_SelectedListIndex].AsUInt();
-            if (m_ItemList.GetItem(strIndex, out var item))
+            if (m_ItemList.Get(strIndex, out var item))
             {
                 _TimeLimitTypeIndex = (int)item.m_nLimitType;
                 _EquipTypeIndex = (int)item.m_eEquipType;
@@ -61,18 +60,19 @@ namespace GFEditor.Editor
             }
         }
 
-        public void DrawContent()
+        public static void DrawContent()
         {
-            if (!IsOpen) return;
+            if (!_IsOpen) return;
 
             // Now that the item is loaded, update the item list !
-            if (_ItemsStringList.Length <= 0 && m_ItemList.IsLoaded()) ResetStringList();
+            if (_ItemsStringList.Length <= 0 && m_ItemList.IsLoaded())
+                ResetStringList();
 
             DrawItemList();
             DrawItemProperties();
         }
 
-        private void DrawItemList()
+        private static void DrawItemList()
         {
             if (ImGui.Begin(m_Translate.ItemListName, ImGuiWindowFlags.AlwaysAutoResize))
             {
@@ -81,6 +81,7 @@ namespace GFEditor.Editor
                 ImGui.SetNextWindowSize(new Vector2(regionSize.X - 1f, regionSize.Y - 40f));
                 if (ImGuiUtils.ListBox("##ItemList", ref _SelectedListIndex, _ItemsStringList))
                     m_OnItemSelected?.Invoke(_SelectedListIndex);
+
                 ImGui.Separator();
                 if (ImGuiUtils.DoubleButton(m_Translate.AddBtnName, m_Translate.RemoveBtnName, out var add, out var remove))
                 {
@@ -91,19 +92,19 @@ namespace GFEditor.Editor
             ImGui.End();
         }
 
-        private void DrawItemProperties()
+        private static void DrawItemProperties()
         {
-            if (ImGui.Begin(m_Translate.ItemEditorName, ref IsOpen, ImGuiWindowFlags.AlwaysAutoResize) && _ItemsStringList.Length > 0)
+            if (ImGui.Begin(m_Translate.ItemEditorName, ref _IsOpen, ImGuiWindowFlags.AlwaysAutoResize) && _ItemsStringList.Length > 0)
             {
                 var strIndex = _ItemsStringList[_SelectedListIndex].AsUInt();
-                if (m_ItemList.GetItem(strIndex, out var item))
+                if (m_ItemList.Get(strIndex, out var item))
                 {
                     ImGuiUtils.Label(m_Translate.HeaderItemIndex + ": " + item.m_nId, false);
                     ImGuiUtils.InputText(m_Translate.HeaderItemName + ": ", ref item.m_kName);
                     ImGuiUtils.InputText(m_Translate.HeaderItemModel + ": ", ref item.m_nModelFilename);
                     ImGuiUtils.InputText(m_Translate.HeaderItemIcon + ":", ref item.m_kIconFilename);
 
-                    var image = GetIconByName(item.m_kIconFilename);
+                    var image = IconItem.GetByName(item.m_kIconFilename);
                     if (image != null)
                     {
                         ImGui.SameLine();
@@ -123,11 +124,9 @@ namespace GFEditor.Editor
                         ImGuiUtils.InputChar(m_Translate.DropRateName, ref item.m_nDropRate);
                         ImGuiUtils.InputText(m_Translate.HeaderDropName, ref item.m_nDropFilename);
                         ImGuiUtils.ComboBoxEnum(m_Translate.DropTypeName, ref _DropTypeIndex, out EChestType dropType, EChestType.Max);
-
-                        item.m_nDropFilename = GetChestNameByType(dropType);
                         if (item.m_nDropFilename.IsValid())
                         {
-                            var drop = GetChestByName(item.m_nDropFilename);
+                            var drop = ImageChest.GetByName(item.m_nDropFilename);
                             if (drop != null)
                             {
                                 ImGui.SameLine();
@@ -176,92 +175,24 @@ namespace GFEditor.Editor
                         ImGuiUtils.SetOffsetPos(new Vector2(15f, 0f));
                         if (ImGui.CollapsingHeader(m_Translate.OpFlags))
                         {
-                            ItemEditorUtils.DrawOpFlagParameter(item, m_Translate.OpFlagsDesc.CanUse, EItemOpFlags.CanUse);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Disappear when used ?", EItemOpFlags.NoDecrease);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't be traded ?", EItemOpFlags.NoTrade);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't be discarded ?", EItemOpFlags.NoDiscard);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't be enchanced ?", EItemOpFlags.NoEnhance);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Can be combined ?", EItemOpFlags.Combineable);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Bind on equiped ?", EItemOpFlags.BindOnEquip);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Allow time accumulation when used ?", EItemOpFlags.AccumTime);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Disallow using if same buff is already in use ?", EItemOpFlags.NoSameBuff);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't be used in battle ?", EItemOpFlags.NoInBattle);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't be used in town ?", EItemOpFlags.NoInTown);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't be used in cave ?", EItemOpFlags.NoInCave);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't be used in instance ?", EItemOpFlags.NoInInstance);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Does this item is linked to a quest ?", EItemOpFlags.LinkToQuest);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Used for dead people ?", EItemOpFlags.ForDead);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't be used in battefield ?", EItemOpFlags.NoInBattlefield);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't be used in fields ?", EItemOpFlags.NoInField);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't be used for teleport ?", EItemOpFlags.NoTransNode);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Allow this item to unbind other items ?", EItemOpFlags.UnBindItem);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Can't equip the same item ?", EItemOpFlags.OnlyEquip);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Unknown parameter", EItemOpFlags.Unknown);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Only1 (Unknown param)", EItemOpFlags.Only1);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Only2 (Unknown param)", EItemOpFlags.Only2);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Only3 (Unknown param)", EItemOpFlags.Only3);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Only4 (Unknown param)", EItemOpFlags.Only4);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Only5 (Unknown param)", EItemOpFlags.Only5);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Only (All) (Unknown param)", EItemOpFlags.Only);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Replaceable1 (Unknown param)", EItemOpFlags.Replaceable1);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Replaceable2 (Unknown param)", EItemOpFlags.Replaceable2);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Replaceable3 (Unknown param)", EItemOpFlags.Replaceable3);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Replaceable4 (Unknown param)", EItemOpFlags.Replaceable4);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Replaceable5 (Unknown param)", EItemOpFlags.Replaceable5);
-                            ItemEditorUtils.DrawOpFlagParameter(item, "Replaceable (All) (Unknown param)", EItemOpFlags.Replaceable);
-
-                            // If all only or replaceable are selected, remove them and enable all with the only/replaceable flags.
-                            if (item.m_bOpFlagsArray[EItemOpFlags.Only1] &&
-                                item.m_bOpFlagsArray[EItemOpFlags.Only2] &&
-                                item.m_bOpFlagsArray[EItemOpFlags.Only3] &&
-                                item.m_bOpFlagsArray[EItemOpFlags.Only4] &&
-                                item.m_bOpFlagsArray[EItemOpFlags.Only5])
+                            var opFlags = Enum.GetValues<EItemOpFlags>();
+                            foreach (var opFlag in opFlags)
                             {
-                                item.m_bOpFlagsArray[EItemOpFlags.Only1] = false;
-                                item.m_bOpFlagsArray[EItemOpFlags.Only2] = false;
-                                item.m_bOpFlagsArray[EItemOpFlags.Only3] = false;
-                                item.m_bOpFlagsArray[EItemOpFlags.Only4] = false;
-                                item.m_bOpFlagsArray[EItemOpFlags.Only5] = false;
-                                item.m_bOpFlagsArray[EItemOpFlags.Only] = true;
+                                if (opFlag == EItemOpFlags.None) continue;
+                                ItemEditorUtils.DrawOpFlagParameter(item, opFlag.ToString(), opFlag);
                             }
-
-                            if (item.m_bOpFlagsArray[EItemOpFlags.Replaceable1] &&
-                                item.m_bOpFlagsArray[EItemOpFlags.Replaceable2] &&
-                                item.m_bOpFlagsArray[EItemOpFlags.Replaceable3] &&
-                                item.m_bOpFlagsArray[EItemOpFlags.Replaceable4] &&
-                                item.m_bOpFlagsArray[EItemOpFlags.Replaceable5])
-                            {
-                                item.m_bOpFlagsArray[EItemOpFlags.Replaceable1] = false;
-                                item.m_bOpFlagsArray[EItemOpFlags.Replaceable2] = false;
-                                item.m_bOpFlagsArray[EItemOpFlags.Replaceable3] = false;
-                                item.m_bOpFlagsArray[EItemOpFlags.Replaceable4] = false;
-                                item.m_bOpFlagsArray[EItemOpFlags.Replaceable5] = false;
-                                item.m_bOpFlagsArray[EItemOpFlags.Replaceable] = true;
-                            }
+                            item.ProcessOnlyAndReplaceableFlags();
                         }
 
                         ImGuiUtils.SetOffsetPos(new Vector2(15f, 0f));
                         if (ImGui.CollapsingHeader(m_Translate.OpFlagsPlus))
                         {
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "IK Combineable ?", EItemOpFlagsPlus.IKCombine);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "GK Combineable ?", EItemOpFlagsPlus.GKCombine);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Show equipment ?", EItemOpFlagsPlus.EquipShow);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Purple WLimit ?", EItemOpFlagsPlus.PurpleWLimit);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Purple ALimit ?", EItemOpFlagsPlus.PurpleALimit);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Bind on use ?", EItemOpFlagsPlus.UseBind);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Stack limited to 1 ?", EItemOpFlagsPlus.OneStack);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Is ride IK combineable ?", EItemOpFlagsPlus.RideCombineIK);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Is ride GK combineable ?", EItemOpFlagsPlus.RideCombineGK);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Is ride combineable ?", EItemOpFlagsPlus.ISRideCombine);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Is item VIP ?", EItemOpFlagsPlus.VIP);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Is chair IK combineable ?", EItemOpFlagsPlus.ChairCombineIK);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Is chair GK combineable ?", EItemOpFlagsPlus.ChairCombineGK);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Is chair combineable ?", EItemOpFlagsPlus.ISChairCombine);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Red WLimit ?", EItemOpFlagsPlus.RedWLimit);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Red ALimit ?", EItemOpFlagsPlus.RedALimit);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Is crystal combo ?", EItemOpFlagsPlus.CrystalCombo);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Is souvenir combo ?", EItemOpFlagsPlus.SouvenirCombo);
-                            ItemEditorUtils.DrawOpFlagPlusParameter(item, "Is godarea combo ?", EItemOpFlagsPlus.GodAreaCombo);
+                            var opFlagsPlus = Enum.GetValues<EItemOpFlagsPlus>();
+                            foreach (var opFlagPlus in opFlagsPlus)
+                            {
+                                if (opFlagPlus == EItemOpFlagsPlus.None) continue;
+                                ItemEditorUtils.DrawOpFlagPlusParameter(item, opFlagPlus.ToString(), opFlagPlus);
+                            }
                         }
                     }
 
@@ -293,6 +224,8 @@ namespace GFEditor.Editor
                         ImGuiUtils.InputShort("Physical Penetration Defence", ref item.m_nPhysicalPenetrationDefence);
                         ImGuiUtils.InputShort("Magical Penetration Defence", ref item.m_nMagicalPenetrationDefence);
                         ImGuiUtils.InputUShort("Attack Range", ref item.m_nAttackRange);
+                        if (item.m_nAttackSpeed < 8) // Can't be less than 0.8 or the server crash !
+                            item.m_nAttackSpeed = 8;
                         ImGuiUtils.InputUShort("Attack Speed", ref item.m_nAttackSpeed);
                         ImGuiUtils.InputChar("Hit Rate", ref item.m_nHitRate);
                         ImGuiUtils.InputChar("Dodge Rate", ref item.m_nDodgeRate);
@@ -346,8 +279,8 @@ namespace GFEditor.Editor
 
                     if (ImGui.CollapsingHeader(m_Translate.HeaderItemSockets))
                     {
-                        ImGuiUtils.InputByte("Max", ref item.m_nMaxSocket);
-                        ImGuiUtils.InputChar("Rate", ref item.m_nSocketRate);
+                        ImGuiUtils.InputByte("Socket Max", ref item.m_nMaxSocket);
+                        ImGuiUtils.InputChar("Socket Rate", ref item.m_nSocketRate);
                     }
 
                     if (ImGui.CollapsingHeader(m_Translate.HeaderItemRebirth))
@@ -377,8 +310,8 @@ namespace GFEditor.Editor
 
                     if (ImGui.CollapsingHeader(m_Translate.HeaderItemExperience))
                     {
-                        ImGuiUtils.InputShort("Max Level", ref item.m_nExpertLevel);
-                        ImGuiUtils.InputInt("Enchant Index", ref item.m_nExpertEnchantId);
+                        ImGuiUtils.InputShort("Expert Max Level", ref item.m_nExpertLevel);
+                        ImGuiUtils.InputInt("Expert Enchant Index", ref item.m_nExpertEnchantId);
                     }
 
                     if (ImGui.CollapsingHeader(m_Translate.HeaderItemMissionAndEvents))
@@ -395,77 +328,33 @@ namespace GFEditor.Editor
             ImGui.End();
         }
 
-        public void Show()
+        public static void Show()
         {
-            IsOpen = true;
-            Init();
-        }
-
-        public void Hide()
-        {
-            IsOpen = false;
-        }
-
-        private void ResetStringList()
-        {
-            _ItemsStringList = m_ItemList.GetAllItems().Select(e => e.m_nId).ToStringArray();
-        }
-
-        private void OnListAdd()
-        {
-            m_ItemList.AddNewItem();
-            ResetStringList(); // Reset the list !
-        }
-
-        private void OnListRemove()
-        {
-            GuiNotify.Show(ImGuiToastType.Warning, "Item Editor", "Remove item from the list is not implemented yet !");
-            ResetStringList(); // Reset the list !
-        }
-
-        private Texture2D? GetIconByName(string name)
-        {
-            if (m_iconsImages == null) return null;
-
-            // if exist check it..
-            if (m_iconsImages.TryGetValue(name, out Texture2D? value))
-                return value;
-
-            // Else add it !
-            var imagePath = ConfigUtils.GetPath("UI\\itemicon\\" + name + ".dds");
-            if (imagePath.FileExist())
+            if (!_IsOpen)
             {
-                var fileName = Path.GetFileNameWithoutExtension(imagePath).ToLower();
-                if (fileName != name) return null;
-                if (m_iconsImages.TryAdd(fileName, TextureUtils.LoadTextureFromFile(imagePath)))
-                    return m_iconsImages[fileName];
+                Initialize();
+                _IsOpen = true;
             }
-
-            // If either not added or found return null !
-            return null;
+            else
+            {
+                Dispose();
+                _IsOpen = false;
+            }
         }
 
-        private const string m_dropPath = "textures\\chest";
-        private Texture2D? GetChestByName(string name)
+        private static void ResetStringList()
         {
-            if (m_dropImages == null) return null;
+            _ItemsStringList = m_ItemList.GetAllValues().Select(e => e.m_nId).ToStringArray();
+        }
 
-            // if exist check it..
-            if (m_dropImages.TryGetValue(name, out Texture2D? value))
-                return value;
+        private static void OnListAdd()
+        {
+            GuiNotify.Show(ImGuiToastType.Warning, "ItemEditor", "Add item is not implemented yet !");
+        }
 
-            // Else add it !
-            var dropPath = ConfigUtils.GetRelativePath(Path.Combine(m_dropPath, name + ".png"));
-            if (dropPath.FileExist())
-            {
-                var fileName = Path.GetFileNameWithoutExtension(dropPath);
-                if (fileName != name) return null;
-                if (m_dropImages.TryAdd(name, TextureUtils.LoadTextureFromFile(dropPath)))
-                    return m_dropImages[name];
-            }
-
-            // If either not added or found return null !
-            return null;
+        private static void OnListRemove()
+        {
+            GuiNotify.Show(ImGuiToastType.Warning, "ItemEditor", "Remove item is not implemented yet !");
         }
 
         private static EChestType GetChestTypeByName(string name)
@@ -487,55 +376,28 @@ namespace GFEditor.Editor
             };
         }
 
-        private static string GetChestNameByType(EChestType type)
+        public static void Dispose()
         {
-            return type switch
-            {
-                EChestType.None => "G00000",
-                EChestType.Equipment => "G00001",
-                EChestType.Quest => "G00002",
-                EChestType.Basic => "G00003",
-                EChestType.Cursed => "G00004",
-                EChestType.Special => "G00005",
-                EChestType.Green => "G00006",
-                EChestType.Legendary => "G00007",
-                EChestType.Blue => "G00008",
-                EChestType.EquipmentGlowing => "G00009",
-                EChestType.GreenGlowing => "G00010",
-                _ => string.Empty,
-            };
+            ImageChest.Dispose();
+            IconItem.Dispose();
+            m_OnItemSelected = null;
+            _ItemsStringList = [];
+            _SelectedListIndex = 0;
         }
 
-        public void Dispose()
+        public static void Save()
         {
-            foreach (var item in m_iconsImages)
-                TextureUtils.DisposeTexture(item.Value);
-            ItemEditorUtils.DisposeClassesTextures();
-        }
-
-        public void Save()
-        {
-            var filePath = ConfigUtils.GetPath("Data\\DB\\C_Item.ini");
-            var filePathServer = ConfigUtils.GetPath("Data\\DB\\S_Item.ini");
-
-            var client = new StringBuilder();
-            client.AppendLine($"|{m_ItemList.GetVersionStr()}|{m_ItemList.GetColumnCount()}|");
-            foreach (var item in m_ItemList.GetAllItems())
+            var str = new StringBuilder();
+            str.AppendLine($"|{m_ItemList.GetVersionStr()}|{m_ItemList.GetColumnCount()}|");
+            foreach (var item in m_ItemList.GetAllValues())
             {
-                client.AppendLine(item.GetClientString());
-            }
-
-            var server = new StringBuilder();
-            server.AppendLine($"|{m_ItemList.GetVersionStr()}|{m_ItemList.GetColumnCount()}|");
-            foreach (var item in m_ItemList.GetAllItems())
-            {
-                server.AppendLine(item.GetServerString());
+                str.AppendLine(item.GetString());
             }
 
             try
             {
-                File.WriteAllText(filePath, client.ToString(), Encoding.GetEncoding("Big5"));
-                File.WriteAllText(filePathServer, server.ToString(), Encoding.GetEncoding("Big5"));
+                File.WriteAllText(ConfigUtils.GetPath("Data\\DB\\C_Item.ini"), str.ToString(), Encoding.GetEncoding("Big5"));
+                File.WriteAllText(ConfigUtils.GetPath("Data\\DB\\S_Item.ini"), str.ToString(), Encoding.GetEncoding("Big5"));
                 GuiNotify.Show(ImGuiToastType.Success, "Item Editor", "C/S_Item saved successfully !");
             }
             catch (Exception ex)
