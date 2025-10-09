@@ -80,9 +80,9 @@
             for (int i = 0; i < m_kTransitionCmd.Count; i++)
             {
                 if (i == m_kTransitionCmd.Count - 1)
-                    sb.AppendGF(m_kTransitionCmd[i]);
+                    sb.AppendGF(m_kTransitionCmd[i]).Append(delimiter); // last one is delimiter.
                 else
-                    sb.AppendGF(m_kTransitionCmd[i]).Append(';');
+                    sb.AppendGF(m_kTransitionCmd[i]).Append(';'); // others inside are semicolon.
             }
             sb.AppendGF((int)m_eEEnchantTransition).Append(delimiter);
             sb.AppendGF(m_nTransitionRate).Append(delimiter);
