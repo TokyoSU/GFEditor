@@ -2,11 +2,9 @@
 
 namespace GFEditor.Structs.Query
 {
-    public class LevelQuery : BaseQuery<LevelType, LevelData>
+    public class LevelQuery(Action onReadFinished) : BaseQuery<LevelType, LevelData>("LevelQuery")
     {
-        public LevelQuery() : base("LevelQuery")
-        {
-        }
+        private readonly Action OnReadFinished = onReadFinished;
 
         public override bool Get(LevelType index, out LevelData result)
         {
@@ -111,6 +109,7 @@ namespace GFEditor.Structs.Query
             }
 
             GuiNotify.Show(ImGuiToastType.Success, "LevelQuery", $"Loaded {m_kMap.Count} levels from {m_fileName}");
+            OnReadFinished.Invoke();
         }
     }
 }

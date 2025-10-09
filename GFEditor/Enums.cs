@@ -100,6 +100,17 @@
         eAppRarity_Max = 11
     };
 
+    public enum EEnchantCategory
+    {
+        None,
+        Sickness,
+        Poison,
+        WitchCraft,
+        Curse,
+        Physical,
+        Magic
+    }
+
     public enum EAttr2AttrType
     {
         eA2A_None = 0,
@@ -614,12 +625,11 @@
 
     public enum EEnchantTransition
     {
-        eETT_None = 0,
-        eETT_AttackToSelf = 1,
-        eETT_AttackToOpponent = 2,
-        eETT_HurtToSelf = 3,
-        eETT_HurtToOpponent = 4,
-        eETT_Max = 5
+        None = 0,
+        AttackToSelf = 1,
+        AttackToOpponent = 2,
+        HurtToSelf = 3,
+        HurtToOpponent = 4
     };
 
     public enum EEnchantType

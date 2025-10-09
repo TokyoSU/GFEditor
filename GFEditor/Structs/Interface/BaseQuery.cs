@@ -27,7 +27,7 @@
 
         private void Read()
         {
-            var strm = new InTextStream(m_fileName, true);
+            var strm = new InTextStream(m_fileName, true, true);
             if (!strm.IsOpen())
                 return;
 
@@ -36,7 +36,7 @@
             headerString = headerString[1..^1]; // Remove first | and last |.
             var splittedHeader = headerString.Split(m_Delimiter);
             m_VerStr = splittedHeader[0];
-            m_nVer = m_VerStr.At(1, m_Delimiter).AsLong();
+            m_nVer = m_VerStr.At(1, '.').AsLong();
             m_nColumnCount = splittedHeader[1].AsLong();
 
             var splittedValues = strm.SplitByColumns(m_nColumnCount, m_Delimiter);

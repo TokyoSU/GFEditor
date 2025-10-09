@@ -266,10 +266,16 @@ namespace GFEditor.Utils
             }
         }
 
-        public static bool InputText(string label, ref string result)
+        public static bool InputText(string label, ref string result, bool readOnly = false)
         {
             Label(label);
-            return ImGui.InputText("##" + label, ref result, 256);
+            return ImGui.InputText("##" + label, ref result, 512, readOnly ? ImGuiInputTextFlags.ReadOnly : ImGuiInputTextFlags.None);
+        }
+
+        public static bool InputTextMultiline(string label, ref string result, Vector2 size, bool readOnly = false, bool noLabel = true)
+        {
+            if (!noLabel) Label(label);
+            return ImGui.InputTextMultiline("##" + label, ref result, 8192, size, ImGuiInputTextFlags.NoHorizontalScroll | (readOnly ? ImGuiInputTextFlags.ReadOnly : ImGuiInputTextFlags.None));
         }
 
         public static void Image(Texture2D texture, bool isSameLine = true)

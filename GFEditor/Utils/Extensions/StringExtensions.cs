@@ -44,6 +44,8 @@ namespace GFEditor.Extensions
 
         public static byte AsByte(this string str) => byte.TryParse(str, out var value) ? value : (byte)0;
 
+        public static sbyte AsSByte(this string str) => sbyte.TryParse(str, out var value) ? value : (sbyte)0;
+
         public static short AsShort(this string str) => short.TryParse(str, out var value) ? value : (short)0;
 
         public static ushort AsUShort(this string str) => ushort.TryParse(str, out var value) ? value : (ushort)0;

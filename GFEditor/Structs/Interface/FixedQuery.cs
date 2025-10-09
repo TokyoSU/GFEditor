@@ -23,7 +23,7 @@
 
         private void Read()
         {
-            var strm = new InTextStream(m_fileName, true);
+            var strm = new InTextStream(m_fileName, false, true);
             if (!strm.IsOpen())
                 return;
 

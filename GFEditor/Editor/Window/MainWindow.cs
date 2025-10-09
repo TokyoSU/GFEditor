@@ -35,6 +35,10 @@
                     // Show item editor...
                     if (ImGui.Selectable(m_Translate.ItemEditor))
                         ItemEditor.Show();
+                    if (ImGui.Selectable("Enchants"))
+                        EnchantEditor.Show();
+                    //if (ImGui.Selectable("Level"))
+                    //    LevelEditor.Show();
                     ImGui.EndMenu();
                 }
 
@@ -59,6 +63,7 @@
         private static void DrawEditor()
         {
             ItemEditor.DrawContent();
+            EnchantEditor.DrawContent();
             UbuntuWindow.DrawContent();
         }
 
@@ -105,6 +110,7 @@
         public static void Dispose()
         {
             ItemEditor.Dispose();
+            EnchantEditor.Dispose();
         }
     }
 }

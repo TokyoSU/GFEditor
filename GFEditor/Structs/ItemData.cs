@@ -1,4 +1,6 @@
-﻿namespace GFEditor.Structs
+﻿using System;
+
+namespace GFEditor.Structs
 {
     public class ItemData
     {
@@ -204,7 +206,7 @@
         /// fields. Each value is serialized in a specific order and format, which is consistent across calls. This
         /// method is typically used for exporting or logging the object's state.</remarks>
         /// <returns>A <see cref="string"/> containing the serialized representation of the object's data.</returns>
-        public string GetString(char delimiter = '|')
+        public string GetString(long version, char delimiter = '|')
         {
             var sb = new StringBuilder();
             sb.AppendGF(m_nId).Append(delimiter);
@@ -220,14 +222,17 @@
             sb.AppendGF(m_eItemType).Append(delimiter);
             sb.AppendGF(m_eEquipType).Append(delimiter);
             sb.AppendGF(m_nOpFlags).Append(delimiter);
-            sb.AppendGF(m_nOpFlagsPlus).Append(delimiter);
+            if (version >= 12) sb.AppendGF(m_nOpFlagsPlus).Append(delimiter);
             sb.AppendGF(m_eTarget).Append(delimiter);
             sb.AppendGF(m_eRestrictGender).Append(delimiter);
             sb.AppendGF(m_nRestrictLevel).Append(delimiter);
-            sb.AppendGF(m_nRestrictMaxLevel).Append(delimiter);
-            sb.AppendGF(m_nRebirthCount).Append(delimiter);
-            sb.AppendGF(m_nRebirthScore).Append(delimiter);
-            sb.AppendGF(m_nRebirthMaxScore).Append(delimiter);
+            if (version >= 9) sb.AppendGF(m_nRestrictMaxLevel).Append(delimiter);
+            if (version >= 14)
+            {
+                sb.AppendGF(m_nRebirthCount).Append(delimiter);
+                sb.AppendGF(m_nRebirthScore).Append(delimiter);
+                sb.AppendGF(m_nRebirthMaxScore).Append(delimiter);
+            }
             sb.AppendGF(m_eRestrictAlign).Append(delimiter);
             sb.AppendGF(m_nRestrictPrestige).Append(delimiter);
             sb.AppendGF(m_nRestrictClass).Append(delimiter);
@@ -258,10 +263,13 @@
             sb.AppendGF(m_nPhysicalCriticalDamage).Append(delimiter);
             sb.AppendGF(m_nMagicCriticalRate).Append(delimiter);
             sb.AppendGF(m_nMagicCriticalDamage).Append(delimiter);
-            sb.AppendGF(m_nPhysicalPenetration).Append(delimiter);
-            sb.AppendGF(m_nMagicalPenetration).Append(delimiter);
-            sb.AppendGF(m_nPhysicalPenetrationDefence).Append(delimiter);
-            sb.AppendGF(m_nMagicalPenetrationDefence).Append(delimiter);
+            if (version >= 15)
+            {
+                sb.AppendGF(m_nPhysicalPenetration).Append(delimiter);
+                sb.AppendGF(m_nMagicalPenetration).Append(delimiter);
+                sb.AppendGF(m_nPhysicalPenetrationDefence).Append(delimiter);
+                sb.AppendGF(m_nMagicalPenetrationDefence).Append(delimiter);
+            }
             sb.AppendGF(m_eAttribute).Append(delimiter);
             sb.AppendGF(m_nAttributeRate).Append(delimiter);
             sb.AppendGF(m_nAttributeDamage).Append(delimiter);
@@ -277,9 +285,13 @@
             sb.AppendGF(m_kTreasureBuffs4).Append(delimiter);
             sb.AppendGF(m_eEnchantType).Append(delimiter);
             sb.AppendGF(m_nEnchantId).Append(delimiter);
-            sb.AppendGF(m_nExpertLevel).Append(delimiter);
-            sb.AppendGF(m_nExpertEnchantId).Append(delimiter);
-            sb.AppendGF(m_nElfSkillId).Append(delimiter);
+            if (version >= 16)
+            {
+                sb.AppendGF(m_nExpertLevel).Append(delimiter);
+                sb.AppendGF(m_nExpertEnchantId).Append(delimiter);
+            }
+            if (version >= 11)
+                sb.AppendGF(m_nElfSkillId).Append(delimiter);
             sb.AppendGF(m_eEnchantTimeType).Append(delimiter);
             sb.AppendGF(m_nEnchantDuration).Append(delimiter);
             sb.AppendGF(m_nLimitType).Append(delimiter);
@@ -289,19 +301,283 @@
             sb.AppendGF(m_nSocketRate).Append(delimiter);
             sb.AppendGF(m_nMaxDurability).Append(delimiter);
             sb.AppendGF(m_nMaxStack).Append(delimiter);
-            sb.AppendGF(m_nShopPriceType).Append(delimiter);
+            if (version >= 9)
+                sb.AppendGF(m_nShopPriceType).Append(delimiter);
             sb.AppendGF(m_nSysPrice).Append(delimiter);
             sb.AppendGF(m_nRestrictEventPosId).Append(delimiter);
             sb.AppendGF(m_nMissionPosId).Append(delimiter);
             sb.AppendGF(m_nBlockRate).Append(delimiter);
             sb.AppendGF(m_nLogLevel).Append(delimiter);
             sb.AppendGF(m_eAuctionType).Append(delimiter);
-            sb.AppendGF(m_kExtraData1).Append(delimiter);
-            sb.AppendGF(m_kExtraData2).Append(delimiter);
-            sb.AppendGF(m_kExtraData3).Append(delimiter);
+            if (version >= 13)
+            {
+                sb.AppendGF(m_kExtraData1).Append(delimiter);
+                sb.AppendGF(m_kExtraData2).Append(delimiter);
+                sb.AppendGF(m_kExtraData3).Append(delimiter);
+            }
             sb.AppendGF(m_kTip).Append(delimiter); // Placeholder for m_kTip, only required if you don't have editor support xD (also reduce the size of the file by a lot !)
             return sb.ToString();
         }
+
+        public void DrawProperties(TranslatedValues translate, ItemDataTranslated itemTranslate, long version)
+        {
+            string emptyStr = string.Empty;
+
+            ImGuiUtils.Label(translate.HeaderItemIndex + ": " + m_nId, false);
+            ImGuiUtils.InputText(translate.HeaderItemName + ": ", ref m_kName);
+            if (itemTranslate != null) ImGuiUtils.InputText("Translated Name: ", ref itemTranslate.m_kName);
+            else ImGuiUtils.InputText("Translated Name: ", ref emptyStr, true);
+
+            ImGuiUtils.InputText(translate.HeaderItemModel + ": ", ref m_nModelFilename);
+            ImGuiUtils.InputText(translate.HeaderItemIcon + ":", ref m_kIconFilename);
+            var image = IconItem.GetByName(m_kIconFilename);
+            if (image != null)
+            {
+                ImGui.SameLine();
+                ImGuiUtils.Image(image, false);
+            }
+
+            if (ImGui.CollapsingHeader("Description"))
+            {
+                ImGuiUtils.InputTextMultiline("TI1", ref m_kTip, new Vector2(1024, 512));
+                if (itemTranslate != null) ImGuiUtils.InputTextMultiline("TI2", ref itemTranslate.m_kTip, new Vector2(1024, 512));
+                else ImGuiUtils.InputTextMultiline("TI2", ref emptyStr, new Vector2(1024, 512), true);
+            }
+
+            if (ImGui.CollapsingHeader(translate.HeaderItemBasics))
+            {
+                ImGuiUtils.ComboBoxEnum(translate.ItemQualityName, ref Constants.QualityIndex, out m_eItemQuality, EItemQuality.Max);
+                ImGuiUtils.ComboBoxEnum(translate.ItemTypeName, ref Constants.ItemTypeIndex, out m_eItemType, EItemType.OpenUIStart, EItemType.OpenUIEnd, EItemType.Max);
+                ImGuiUtils.ComboBoxEnum(translate.EquipTypeName, ref Constants.EquipTypeIndex, out m_eEquipType, EEquipType.Unknown, EEquipType.Max);
+            }
+
+            if (ImGui.CollapsingHeader(translate.HeaderItemDrop))
+            {
+                ImGuiUtils.InputUInt(translate.DropIndexName, ref m_nDropIndex);
+                ImGuiUtils.InputChar(translate.DropRateName, ref m_nDropRate);
+                ImGuiUtils.InputText(translate.HeaderDropName, ref m_nDropFilename);
+                ImGuiUtils.ComboBoxEnum(translate.DropTypeName, ref Constants.DropTypeIndex, out EChestType dropType, EChestType.Max);
+                if (m_nDropFilename.IsValid())
+                {
+                    var drop = ImageChest.GetByName(m_nDropFilename);
+                    if (drop != null)
+                    {
+                        ImGui.SameLine();
+                        ImGuiUtils.ImageSized(drop, new Vector2(128, 128));
+                    }
+                }
+            }
+
+            if (ImGui.CollapsingHeader(translate.HeaderItemEffects))
+            {
+                ImGuiUtils.InputUInt("Weapon effect", ref m_nWeaponEffectId);
+                ImGuiUtils.InputUInt("Fly effect", ref m_nFlyEffectId);
+                ImGuiUtils.InputUInt("Used effect", ref m_nUsedEffectId);
+                ImGuiUtils.InputUInt("Enchanced effect", ref m_nEnhanceEffectId);
+            }
+
+            if (ImGui.CollapsingHeader(translate.HeaderItemRestriction))
+            {
+                ImGuiUtils.InputUShort("Item Group", ref m_nItemGroup);
+                ImGuiUtils.InputByte("Minimum Level", ref m_nRestrictLevel);
+                if (version >= 9)
+                    ImGuiUtils.InputByte("Maximum Level", ref m_nRestrictMaxLevel);
+                ImGuiUtils.InputUShort("Stack Size", ref m_nMaxStack);
+
+                ImGuiUtils.SetOffsetPos(new Vector2(15f, 0f));
+                if (ImGui.CollapsingHeader(translate.HeaderItemRestrictionTime))
+                {
+                    ImGuiUtils.ComboBoxEnum("Time Limit Type", ref Constants.TimeLimitTypeIndex, out m_nLimitType, ELimitTimeType.Max);
+                    ImGuiUtils.InputULong("Time Limit", ref m_nDueDateTime);
+                }
+
+                ImGuiUtils.SetOffsetPos(new Vector2(15f, 0f));
+                if (ImGui.CollapsingHeader(translate.HeaderItemClass))
+                {
+                    ItemEditorUtils.DrawClassCheckbox(this, ERestrictClass.Novice, 30f);
+                    ItemEditorUtils.DrawClassSection(this, translate.FighterSection, 2f, ERestrictClass.Fighter, BasicClassType.Fighter);
+                    ItemEditorUtils.DrawClassSection(this, translate.HunterSection, 2f, ERestrictClass.Hunter, BasicClassType.Hunter);
+                    ItemEditorUtils.DrawClassSection(this, translate.AcolyteSection, 2f, ERestrictClass.Acolyte, BasicClassType.Acolyte);
+                    ItemEditorUtils.DrawClassSection(this, translate.SpellcasterSection, 2f, ERestrictClass.Spellcaster, BasicClassType.Spellcaster);
+                    ItemEditorUtils.DrawClassSection(this, translate.MechanicSection, 2f, ERestrictClass.Mechanic, BasicClassType.Mechanic);
+                    ItemEditorUtils.DrawClassSection(this, translate.WandererSection, 2f, ERestrictClass.Wanderer, BasicClassType.Wanderer);
+                }
+            }
+
+            if (ImGui.CollapsingHeader(translate.HeaderItemFlags))
+            {
+                ImGuiUtils.SetOffsetPos(new Vector2(15f, 0f));
+                if (ImGui.CollapsingHeader(translate.OpFlags))
+                {
+                    var opFlags = Enum.GetValues<EItemOpFlags>();
+                    foreach (var opFlag in opFlags)
+                    {
+                        if (opFlag == EItemOpFlags.None) continue;
+                        ItemEditorUtils.DrawOpFlagParameter(this, opFlag.ToString(), opFlag);
+                    }
+                    ProcessOnlyAndReplaceableFlags();
+                }
+
+                if (version >= 12)
+                {
+                    ImGuiUtils.SetOffsetPos(new Vector2(15f, 0f));
+                    if (ImGui.CollapsingHeader(translate.OpFlagsPlus))
+                    {
+                        var opFlagsPlus = Enum.GetValues<EItemOpFlagsPlus>();
+                        foreach (var opFlagPlus in opFlagsPlus)
+                        {
+                            if (opFlagPlus == EItemOpFlagsPlus.None) continue;
+                            ItemEditorUtils.DrawOpFlagPlusParameter(this, opFlagPlus.ToString(), opFlagPlus);
+                        }
+                    }
+                }
+            }
+
+            if (ImGui.CollapsingHeader(translate.HeaderItemReputation))
+            {
+                ImGuiUtils.ComboBoxEnum("Reputation Type", ref Constants.AlignementIndex, out m_eRestrictAlign, EAlignement.End, EAlignement.GroupEnd);
+                ImGuiUtils.InputULong("Reputation Value", ref m_nRestrictPrestige);
+            }
+
+            if (ImGui.CollapsingHeader(translate.HeaderItemStats))
+            {
+                ImGuiUtils.InputULong("Health", ref m_nMaxHp);
+                ImGuiUtils.InputULong("Mana", ref m_nMaxMp);
+                ImGuiUtils.InputShort("Str", ref m_nStr);
+                ImGuiUtils.InputShort("Vit", ref m_nVit);
+                ImGuiUtils.InputShort("Int", ref m_nInt);
+                ImGuiUtils.InputShort("Wil", ref m_nWil);
+                ImGuiUtils.InputShort("Agi", ref m_nDex);
+                ImGuiUtils.InputLong("Casting Time", ref m_nCastingTime);
+                ImGuiUtils.InputULong("Physical Attack", ref m_nAttack);
+                ImGuiUtils.InputULong("Ranged Attack", ref m_nRangeDamage);
+                ImGuiUtils.InputULong("Magical Attack", ref m_nMagicDamage);
+                ImGuiUtils.InputULong("Physical Attack (Average)", ref m_nAvgPhysicalDamage);
+                ImGuiUtils.InputULong("Physical Attack (Random)", ref m_nRandPhysicalDamage);
+                ImGuiUtils.InputULong("Physical Defence", ref m_nPhysicalDefence);
+                ImGuiUtils.InputULong("Magical Defence", ref m_nMagicDefence);
+                if (version >= 15)
+                {
+                    ImGuiUtils.InputShort("Physical Penetration", ref m_nPhysicalPenetration);
+                    ImGuiUtils.InputShort("Magical Penetration", ref m_nMagicalPenetration);
+                    ImGuiUtils.InputShort("Physical Penetration Defence", ref m_nPhysicalPenetrationDefence);
+                    ImGuiUtils.InputShort("Magical Penetration Defence", ref m_nMagicalPenetrationDefence);
+                }
+                ImGuiUtils.InputUShort("Attack Range", ref m_nAttackRange);
+                if (m_nAttackSpeed < 8) // Can't be less than 0.8 or the server crash !
+                    m_nAttackSpeed = 8;
+                ImGuiUtils.InputUShort("Attack Speed", ref m_nAttackSpeed);
+                ImGuiUtils.InputChar("Hit Rate", ref m_nHitRate);
+                ImGuiUtils.InputChar("Dodge Rate", ref m_nDodgeRate);
+                ImGuiUtils.InputChar("Block Rate", ref m_nBlockRate);
+                ImGuiUtils.InputShort("Physical Critical Rate", ref m_nPhysicalCriticalRate);
+                ImGuiUtils.InputShort("Magical Critical Rate", ref m_nMagicCriticalRate);
+                ImGuiUtils.InputULong("Physical Critical Damage", ref m_nPhysicalCriticalDamage);
+                ImGuiUtils.InputULong("Magical Critical Damage", ref m_nMagicCriticalDamage);
+                ImGuiUtils.InputUShort("Durability", ref m_nMaxDurability);
+            }
+
+            if (ImGui.CollapsingHeader(translate.HeaderItemAttribute))
+            {
+                ImGuiUtils.ComboBoxEnum("Attribute Type", ref Constants.AttributeIndex, out m_eAttribute, EAttrResist.Max);
+                ImGuiUtils.InputULong("Attribute Damage", ref m_nAttributeDamage);
+                ImGuiUtils.InputShort("Attribute Rate", ref m_nAttributeRate);
+                ImGuiUtils.InputULong("Attribute Resistance", ref m_nAttributeResist);
+            }
+
+            if (ImGui.CollapsingHeader(translate.HeaderItemEnchantments))
+            {
+                ImGuiUtils.ComboBoxEnum("Enchant Type", ref Constants.EnchantTypeIndex, out m_eEnchantType, EBuffIconType.Max);
+                ImGuiUtils.InputInt("Enchant Index", ref m_nEnchantId);
+                ImGuiUtils.ComboBoxEnum("Enchant Time Type", ref Constants.EnchantTimeTypeIndex, out m_eEnchantTimeType, ETimeType.Max);
+                ImGuiUtils.InputLong("Enchant Duration", ref m_nEnchantDuration);
+            }
+
+            if (ImGui.CollapsingHeader(translate.HeaderItemCooldown))
+            {
+                ImGuiUtils.InputLong("Cooldown Time", ref m_nCoolDownTime);
+                ImGuiUtils.InputUShort("Cooldown Group", ref m_nCoolDownGroup);
+            }
+
+            if (version >= 11)
+            {
+                if (ImGui.CollapsingHeader(translate.HeaderItemElf))
+                {
+                    ImGuiUtils.InputUShort("Elf Skill", ref m_nElfSkillId);
+                }
+            }
+
+            if (ImGui.CollapsingHeader(translate.HeaderItemSpecial))
+            {
+                ImGuiUtils.ComboBoxEnum("Special Type", ref Constants.SpecialIndex, out m_eSpecialType);
+                ImGuiUtils.InputULong("Special Damage", ref m_nSpecialDamage);
+                ImGuiUtils.InputShort("Special Rate", ref m_nSpecialRate);
+            }
+
+            if (ImGui.CollapsingHeader(translate.HeaderItemPrice))
+            {
+                if (version >= 9) ImGuiUtils.ComboBoxEnum("Price Type", ref Constants.PriceIndex, out m_nShopPriceType);
+                ImGuiUtils.InputULong("Price", ref m_nSysPrice);
+            }
+
+            if (ImGui.CollapsingHeader(translate.HeaderItemSockets))
+            {
+                ImGuiUtils.InputByte("Socket Max", ref m_nMaxSocket);
+                ImGuiUtils.InputChar("Socket Rate", ref m_nSocketRate);
+            }
+
+            if (version >= 14)
+            {
+                if (ImGui.CollapsingHeader(translate.HeaderItemRebirth))
+                {
+                    ImGuiUtils.InputShort("Minimum Required", ref m_nRebirthCount);
+                    ImGuiUtils.InputShort("Max Score", ref m_nRebirthMaxScore);
+                    ImGuiUtils.InputShort("Score", ref m_nRebirthScore);
+                }
+            }
+
+            if (ImGui.CollapsingHeader(translate.HeaderItemMiscellaneous))
+            {
+                ImGuiUtils.InputByte("Backpack Size", ref m_nBackpackSize);
+                ImGuiUtils.InputInt("Treasure Buffs 1", ref m_kTreasureBuffs1);
+                ImGuiUtils.InputInt("Treasure Buffs 2", ref m_kTreasureBuffs2);
+                ImGuiUtils.InputInt("Treasure Buffs 3", ref m_kTreasureBuffs3);
+                ImGuiUtils.InputInt("Treasure Buffs 4", ref m_kTreasureBuffs4);
+                if (version >= 13)
+                {
+                    ImGuiUtils.InputLong("Extra Data 1", ref m_kExtraData1);
+                    ImGuiUtils.InputLong("Extra Data 2", ref m_kExtraData2);
+                    ImGuiUtils.InputLong("Extra Data 3", ref m_kExtraData3);
+                }
+                ImGuiUtils.InputByte("Log Level", ref m_nLogLevel);
+            }
+
+            if (ImGui.CollapsingHeader(translate.HeaderItemAuction))
+            {
+                ImGuiUtils.ComboBoxEnum("Auction Type", ref Constants.AuctionTypeIndex, out m_eAuctionType, EAuctionType.Max);
+            }
+
+            if (version >= 16)
+            {
+                if (ImGui.CollapsingHeader(translate.HeaderItemExperience))
+                {
+                    ImGuiUtils.InputShort("Expert Max Level", ref m_nExpertLevel);
+                    ImGuiUtils.InputInt("Expert Enchant Index", ref m_nExpertEnchantId);
+                }
+            }
+
+            if (ImGui.CollapsingHeader(translate.HeaderItemMissionAndEvents))
+            {
+                ImGuiUtils.InputUInt("Mission Position ID", ref m_nMissionPosId);
+                ImGuiUtils.InputText("Restrict Event Position IDs", ref m_nRestrictEventPosId);
+            }
+
+            ProcessClassRestriction();
+            ProcessOpFlags();
+            ProcessOpFlagsPlus();
+        }
+
+        #region Utilities
 
         public void Initialize()
         {
@@ -402,5 +678,7 @@
         {
             return $"{m_nId}";
         }
+
+        #endregion
     }
 }

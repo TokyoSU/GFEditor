@@ -2,11 +2,9 @@
 
 namespace GFEditor.Structs.Query
 {
-    public class ClassQuery : BaseQuery<LevelType, ClassData>
+    public class ClassQuery(Action onReadFinished) : BaseQuery<LevelType, ClassData>("ClassQuery")
     {
-        public ClassQuery() : base("ClassQuery")
-        {
-        }
+        private readonly Action OnReadFinished = onReadFinished;
 
         public override bool Get(LevelType index, out ClassData result)
         {
@@ -65,6 +63,7 @@ namespace GFEditor.Structs.Query
             }
 
             GuiNotify.Show(ImGuiToastType.Success, "ClassQuery", "Loaded {0} class entries.", m_kMap.Count);
+            OnReadFinished.Invoke();
         }
     }
 }

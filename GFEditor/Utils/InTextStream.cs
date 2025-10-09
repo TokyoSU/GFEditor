@@ -7,20 +7,20 @@
         private bool m_IsOpen = false;
 
         public InTextStream() {}
-        public InTextStream(string filePath, bool isChineseFile = false) => LoadFile(filePath, isChineseFile);
+        public InTextStream(string filePath, bool removeFirstLine = true, bool isChineseFile = false) => LoadFile(filePath, removeFirstLine, isChineseFile);
 
-        public void LoadFile(string filePath, bool isChineseFile = false)
+        public void LoadFile(string filePath, bool removeFirstLine = true, bool isChineseFile = false)
         {
             try
             {
                 // Read file, using chinese as encoding if required.
                 var encoding = isChineseFile ? Encoding.GetEncoding("Big5") : Encoding.UTF8;
-                m_FirstLine = File.ReadLines(filePath, encoding).First();
+                m_FirstLine = File.ReadLines(filePath, encoding).FirstOrDefault();
                 m_Text = File.ReadAllText(filePath, encoding);
 
                 // Remove first line in the text, since we get it manually !
                 // The first line is usually the header.
-                if (!string.IsNullOrEmpty(m_Text) && !string.IsNullOrEmpty(m_FirstLine))
+                if (removeFirstLine && !string.IsNullOrEmpty(m_Text) && !string.IsNullOrEmpty(m_FirstLine))
                     m_Text = m_Text.Replace(m_FirstLine, string.Empty);
                 
                 m_IsOpen = true;
