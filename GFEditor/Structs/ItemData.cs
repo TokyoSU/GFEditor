@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GFEditor.Specific;
+using System;
 
 namespace GFEditor.Structs
 {
@@ -335,6 +336,13 @@ namespace GFEditor.Structs
             {
                 ImGui.SameLine();
                 ImGuiUtils.Image(image, false);
+            }
+
+            ImGuiUtils.InputText("Used sound name: ", ref m_nUsedSoundName);
+            ImGui.SameLine();
+            if (ImGui.Button("Play Sound") && m_nUsedSoundName.IsValid())
+            {
+                AudioDevice.Play(m_nUsedSoundName);
             }
 
             if (ImGui.CollapsingHeader("Description"))

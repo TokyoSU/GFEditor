@@ -1,4 +1,6 @@
-﻿namespace GFEditor.Renderer
+﻿using GFEditor.Specific;
+
+namespace GFEditor.Renderer
 {
 #pragma warning disable CA1822 // Mark members as static
     public class Texture2D

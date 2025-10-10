@@ -1,16 +1,14 @@
 ﻿using System.Globalization;
 
-namespace GFEditor.Extensions
+namespace GFEditor.Utils.Extensions
 {
     public static class StringExtensions
     {
-        /// BASICS
-
         public static bool IsValid(this string value) => !string.IsNullOrEmpty(value) && !string.IsNullOrWhiteSpace(value);
 
-        public static bool FileExist(this string value) => IsValid(value) && File.Exists(value);
+        public static bool FileExist(this string value) => value.IsValid() && File.Exists(value);
 
-        public static bool FolderExist(this string path) => IsValid(path) && Directory.Exists(path);
+        public static bool FolderExist(this string path) => path.IsValid() && Directory.Exists(path);
 
         private static bool IsDigitsOnly(string input)
         {
@@ -26,7 +24,7 @@ namespace GFEditor.Extensions
             for (int i = 0; i < input.Length; i++)
             {
                 char c = input[i];
-                if (!(char.IsDigit(c) || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f')))
+                if (!(char.IsDigit(c) || c >= 'A' && c <= 'F' || c >= 'a' && c <= 'f'))
                     return false;
             }
             return true;

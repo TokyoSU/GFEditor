@@ -19,7 +19,6 @@ global using GFEditor.Editor;
 global using GFEditor.Editor.Window;
 global using GFEditor.Widgets;
 global using GFEditor.Widgets.Notify;
-global using GFEditor.Extensions;
 global using GFEditor.Utils;
 global using GFEditor.Utils.Extensions;
 

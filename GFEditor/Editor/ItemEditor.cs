@@ -145,8 +145,6 @@ namespace GFEditor.Editor
 
         public static void Dispose()
         {
-            ImageChest.Dispose();
-            IconItem.Dispose();
             m_OnItemSelected = null;
             _ItemsStringList = [];
             _SelectedListIndex = 0;

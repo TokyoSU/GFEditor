@@ -44,13 +44,11 @@ namespace GFEditor.Utils
         private const string m_Filename = "GFEditor.configs.json";
 
         [JsonProperty("Configs")]
-        [SuppressMessage("Usage", "CA2211:Non-constant fields should not be visible", Justification = "<Pending>")]
         public static CConfigValues Configs = new();
 
         public static string GetGamePath() => Configs.Path.Game;
         public static string GetPath(string path) => Path.Combine(Configs.Path.Game, path);
         public static string GetObjectPath(string path, string obj) => Path.Combine(Path.Combine(Configs.Path.Game, path), obj);
-
         public static string GetRelativePath(string filePath) => Path.Combine(Directory.GetCurrentDirectory(), filePath);
 
         public static void Load()

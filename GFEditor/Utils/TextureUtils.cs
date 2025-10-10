@@ -1,6 +1,7 @@
 ﻿using BCnEncoder.Decoder;
 using BCnEncoder.ImageSharp;
 using GFEditor.Renderer;
+using GFEditor.Specific;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 

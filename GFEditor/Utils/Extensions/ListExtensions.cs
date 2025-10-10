@@ -1,4 +1,4 @@
-﻿namespace GFEditor.Extensions
+﻿namespace GFEditor.Utils.Extensions
 {
     public static class ListExtensions
     {

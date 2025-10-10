@@ -1,4 +1,4 @@
-﻿namespace GFEditor.Utils
+﻿namespace GFEditor.Specific
 {
     public static class OpenGL
     {
