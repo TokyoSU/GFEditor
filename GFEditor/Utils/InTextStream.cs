@@ -2,20 +2,22 @@
 {
     public class InTextStream
     {
+        private static readonly Logger m_Log = LogManager.GetCurrentClassLogger();
         private string m_Text = string.Empty;
         private string m_FirstLine = string.Empty;
         private bool m_IsOpen = false;
 
         public InTextStream() {}
-        public InTextStream(string filePath, bool removeFirstLine = true, bool isChineseFile = false) => LoadFile(filePath, removeFirstLine, isChineseFile);
+        public InTextStream(string filePath, bool removeFirstLine = true, bool isChineseFile = true) => LoadFile(filePath, removeFirstLine, isChineseFile);
 
-        public void LoadFile(string filePath, bool removeFirstLine = true, bool isChineseFile = false)
+        public void LoadFile(string filePath, bool removeFirstLine = true, bool isChineseFile = true)
         {
             try
             {
                 // Read file, using chinese as encoding if required.
                 var encoding = isChineseFile ? Encoding.GetEncoding("Big5") : Encoding.UTF8;
-                m_FirstLine = File.ReadLines(filePath, encoding).FirstOrDefault();
+
+                if (removeFirstLine) m_FirstLine = File.ReadLines(filePath, encoding).FirstOrDefault();
                 m_Text = File.ReadAllText(filePath, encoding);
 
                 // Remove first line in the text, since we get it manually !

@@ -35,6 +35,7 @@ namespace GFEditor.Renderer
 
         public void WrapAndFilter(GLTextureWrapMode wrapMode, GLTextureMinFilter minFilter, GLTextureMagFilter magFilter)
         {
+            if (OpenGL.Ptr == null) return;
             OpenGL.Ptr.TexParameteri(GLTextureTarget.Texture2D, GLTextureParameterName.WrapS, (int)wrapMode);
             OpenGL.Ptr.TexParameteri(GLTextureTarget.Texture2D, GLTextureParameterName.WrapT, (int)wrapMode);
             OpenGL.Ptr.TexParameteri(GLTextureTarget.Texture2D, GLTextureParameterName.MinFilter, (int)minFilter);

@@ -14,6 +14,11 @@
 
         public abstract bool Get(KEY index, out VALUE result);
         public abstract IOrderedEnumerable<VALUE> GetAllValues();
+
+        /// <summary>
+        /// Handles the processing of data after a file has been read and parsed into a list of string lists.
+        /// </summary>
+        /// <remarks>This contains a lists of columns lists. example list[0][0] are the first line column 0.</remarks>
         protected abstract void OnFileRead(List<List<string>> listOfStrings);
 
         public long GetColumnCount() => m_nColumnCount;
@@ -23,7 +28,7 @@
 
         private void Read()
         {
-            var strm = new InTextStream(m_fileName, false, true);
+            var strm = new InTextStream(m_fileName, false, false);
             if (!strm.IsOpen())
                 return;
 

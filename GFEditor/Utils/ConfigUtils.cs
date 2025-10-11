@@ -50,6 +50,11 @@ namespace GFEditor.Utils
         public static string GetPath(string path) => Path.Combine(Configs.Path.Game, path);
         public static string GetObjectPath(string path, string obj) => Path.Combine(Path.Combine(Configs.Path.Game, path), obj);
         public static string GetRelativePath(string filePath) => Path.Combine(Directory.GetCurrentDirectory(), filePath);
+        public static void SetGamePath([NotNull] string path)
+        {
+            if (path.IsValid())
+                Configs.Path.Game = path;
+        }
 
         public static void Load()
         {

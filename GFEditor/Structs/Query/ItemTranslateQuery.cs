@@ -4,6 +4,8 @@ namespace GFEditor.Structs.Query
 {
     public class ItemTranslateQuery : FixedQuery<IdType, ItemDataTranslated>
     {
+        private static readonly Logger m_Log = LogManager.GetCurrentClassLogger();
+
         public ItemTranslateQuery() : base("ItemTranslateQuery", 3)
         {
         }
@@ -24,14 +26,14 @@ namespace GFEditor.Structs.Query
             {
                 if (value == null)
                 {
-                    GuiNotify.Show(ImGuiToastType.Warning, "ItemTranslateQuery", "Found null value in splitted values, column count: {0}", m_nColumnCount);
+                    m_Log.Warn("Found null value in splitted values, column count: {0}", m_nColumnCount);
                     continue;
                 }
 
-                var index = (IdType)value[0].AsULong();
+                var index = (IdType)value[0].AsUInt();
                 if (m_kMap.ContainsKey(index))
                 {
-                    GuiNotify.Show(ImGuiToastType.Warning, "ItemTranslateQuery", "Duplicate item ID found: {0}, skipping.", index);
+                    m_Log.Warn("Duplicate item translation id {0} found, skipping...", index);
                     continue;
                 }
 
@@ -43,7 +45,7 @@ namespace GFEditor.Structs.Query
                 });
             }
 
-            GuiNotify.Show(ImGuiToastType.Success, "ItemTranslateQuery", $"Loaded {m_kMap.Count} item translations from {m_fileName}");
+            GuiNotify.Show(ImGuiToastType.Success, m_queryName, $"Loaded {m_kMap.Count} item translations from {m_fileName}");
         }
     }
 }
