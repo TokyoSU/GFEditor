@@ -4,8 +4,9 @@ namespace GFEditor.Editor
 {
     public static class EnchantEditor
     {
-        private static readonly TranslatedValues m_Translate = TranslateUtils.Json.TranslatedValues;
+        private static readonly EditorTranslate m_Translate = TranslateUtils.Json.TranslatedValues;
         private static readonly EnchantQuery m_EnchantList = new(ResetStringList);
+        private static readonly EnchantTranslateQuery m_EnchantTranslateList = new();
         private static Action<int>? m_OnEnchantSelected;
         private static string[] _EnchantStringList = [];
         private static int _SelectedListIndex = 0;
@@ -16,9 +17,9 @@ namespace GFEditor.Editor
             if (m_EnchantList.HasValues()) // Avoid loading item each time the editor open...
                 return;
 
-            //var translatePath = ConfigUtils.GetPath("Data\\Translate\\T_Item.ini");
-            //if (translatePath.FileExist())
-            //    m_ItemTranslateQuery.ReadFile(translatePath);
+            var translatePath = ConfigUtils.GetPath("Data\\Translate\\T_Enchant.ini");
+            if (translatePath.FileExist())
+                m_EnchantTranslateList.ReadFile(translatePath);
 
             var filePath = ConfigUtils.GetPath("Data\\DB\\C_Enchant.ini");
             if (filePath.FileExist())
@@ -33,7 +34,14 @@ namespace GFEditor.Editor
 
         private static void OnEnchantSelectedCallback(int listIndex)
         {
-
+            var strIndex = _EnchantStringList[_SelectedListIndex].AsUInt();
+            if (m_EnchantList.Get(strIndex, out var enchant))
+            {
+                Constants.EnchantCategoryIndex = (int)enchant.m_eEnchantCategory;
+                Constants.EnchantType2Index = (int)enchant.m_eEnchantType;
+                Constants.EnchantTransitionCategoryIndex = (int)enchant.m_eTransitionEnchantCategory;
+                Constants.EnchantTransitionType = (int)enchant.m_eTransitionEnchantType;
+            }
         }
 
         public static void DrawContent()
@@ -69,10 +77,10 @@ namespace GFEditor.Editor
             {
                 var version = m_EnchantList.GetVersion();
                 var strIndex = _EnchantStringList[_SelectedListIndex].AsUInt();
-                var emptyStr = string.Empty;
                 if (m_EnchantList.Get(strIndex, out var enchant))
                 {
-                    ImGuiUtils.Label(m_Translate.HeaderItemIndex + ": " + enchant.m_nId, false);
+                    m_EnchantTranslateList.Get(strIndex, out var enchantT);
+                    enchant.DrawParameters(m_Translate, enchantT, version);
                 }
             }
             ImGui.End();
@@ -104,12 +112,34 @@ namespace GFEditor.Editor
 
         public static void Dispose()
         {
-
+            IconSkill.Dispose();
         }
 
         private static void ResetStringList()
         {
             _EnchantStringList = m_EnchantList.GetAllValues().Select(e => e.m_nId).ToStringArray();
+        }
+
+        public static void Save()
+        {
+            if (!m_EnchantList.IsLoaded()) return;
+            var str = new StringBuilder();
+            str.AppendLine($"|{m_EnchantList.GetVersionStr()}|{m_EnchantList.GetColumnCount()}|");
+            foreach (var enchant in m_EnchantList.GetAllValues())
+            {
+                str.AppendLine(enchant.GetString(m_EnchantList.GetVersion()));
+            }
+
+            try
+            {
+                File.WriteAllText(ConfigUtils.GetPath("Data\\DB\\C_Enchant.ini"), str.ToString(), Encoding.GetEncoding("Big5"));
+                File.WriteAllText(ConfigUtils.GetPath("Data\\DB\\S_Enchant.ini"), str.ToString(), Encoding.GetEncoding("Big5"));
+                GuiNotify.Show(ImGuiToastType.Success, "Enchant Editor", "C/S_Enchant saved successfully !");
+            }
+            catch (Exception ex)
+            {
+                GuiNotify.Show(ImGuiToastType.Error, "Enchant Editor", "Failed to save C/S_Enchant: {0}", ex.Message);
+            }
         }
     }
 }

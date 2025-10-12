@@ -15,7 +15,7 @@ namespace GFEditor.Editor
     public static class ItemEditorUtils
     {
         private static readonly Logger m_Log = LogManager.GetCurrentClassLogger();
-        private static readonly TranslatedValues m_Translate = TranslateUtils.Json.TranslatedValues;
+        private static readonly EditorTranslate m_Translate = TranslateUtils.Json.TranslatedValues;
 
         private static readonly List<ERestrictClass> FighterClassSections = 
         [

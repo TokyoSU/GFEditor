@@ -58,10 +58,10 @@ namespace GFEditor.Utils
     public partial class JsonTranslate
     {
         [JsonProperty("TranslatedValues")]
-        public TranslatedValues TranslatedValues = new();
+        public EditorTranslate TranslatedValues = new();
     }
 
-    public partial class TranslatedValues
+    public partial class EditorTranslate
     {
         [JsonProperty("FileBtnName")]
         public string FileBtnName = string.Empty;

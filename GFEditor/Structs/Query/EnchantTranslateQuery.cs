@@ -2,27 +2,27 @@
 
 namespace GFEditor.Structs.Query
 {
-    public class ItemTranslateQuery : FixedQuery<IdType, ItemDataTranslated>
+    public class EnchantTranslateQuery : FixedQuery<IdType, EnchantDataTranslate>
     {
         private static readonly Logger m_Log = LogManager.GetCurrentClassLogger();
 
-        public ItemTranslateQuery() : base("ItemTranslateQuery", 3)
+        public EnchantTranslateQuery() : base("EnchantTranslateQuery", 5)
         {
         }
 
-        public override bool Get(IdType index, out ItemDataTranslated result)
+        public override bool Get(IdType index, out EnchantDataTranslate result)
         {
             return m_kMap.TryGetValue(index, out result);
         }
 
-        public override IOrderedEnumerable<ItemDataTranslated> GetAllValues()
+        public override IOrderedEnumerable<EnchantDataTranslate> GetAllValues()
         {
-            return m_kMap.Values.OrderBy(e => e.m_nId);
+            return m_kMap.Values.OrderBy(x => x.m_nId);
         }
 
         protected override void OnFileRead(List<List<string>> listOfStrings)
         {
-            for (int rowId = 0; rowId < m_nColumnCount; rowId++)
+            for (int rowId = 0; rowId < listOfStrings.Count; rowId++)
             {
                 var value = listOfStrings[rowId];
                 if (value == null)
@@ -34,19 +34,21 @@ namespace GFEditor.Structs.Query
                 var index = (IdType)value[0].AsUInt();
                 if (m_kMap.ContainsKey(index))
                 {
-                    m_Log.Warn("Duplicate id {0} found, skipping...", index);
+                    m_Log.Warn("Duplicate enchant translation id {0} found, skipping...", index);
                     continue;
                 }
 
-                m_kMap.Add(index, new ItemDataTranslated
+                m_kMap.Add(index, new EnchantDataTranslate
                 {
                     m_nId = index,
                     m_kName = value[1],
-                    m_kTip = value[2]
+                    m_kDescription = value[2],
+                    m_kTransitionName = value[3],
+                    m_kTransitionDescription = value[4]
                 });
             }
 
-            GuiNotify.Show(ImGuiToastType.Success, m_queryName, $"Loaded {m_kMap.Count} items translations from {m_fileName}");
+            GuiNotify.Show(ImGuiToastType.Success, m_queryName, $"Loaded {m_kMap.Count} enchants translations from {m_fileName}");
         }
     }
 }

@@ -145,6 +145,7 @@ namespace GFEditor.Structs.Query
                     item.m_kExtraData3 = rb.ReadLong();
                 }
                 item.m_kTip = rb.ReadString();
+                item.Initialize();
 
                 m_kMap.TryAdd(index, item);
             }

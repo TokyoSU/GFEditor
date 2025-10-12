@@ -192,13 +192,12 @@ namespace GFEditor.Structs
         [JsonProperty("tip")]
         public string m_kTip = string.Empty;
 
-        public ItemData() => Initialize();
-
         // Editor only:
 
         public Dictionary<EItemOpFlags, bool> m_bOpFlagsArray = [];
         public Dictionary<EItemOpFlagsPlus, bool> m_bOpFlagsPlusArray = [];
         public Dictionary<ERestrictClass, bool> m_bClassRestrictionArray = [];
+        private static readonly Logger m_Log = LogManager.GetCurrentClassLogger();
 
         /// <summary>
         /// Generates a serialized string representation of the object's data.
@@ -220,12 +219,12 @@ namespace GFEditor.Structs
             sb.AppendGF(m_nUsedSoundName).Append(delimiter);
             sb.AppendGF(m_nEnhanceEffectId).Append(delimiter);
             sb.AppendGF(m_kName).Append(delimiter); // Placeholder for m_kName, only required if you don't have editor support xD (also reduce the size of the file by a lot !)
-            sb.AppendGF(m_eItemType).Append(delimiter);
-            sb.AppendGF(m_eEquipType).Append(delimiter);
+            sb.AppendGF((int)m_eItemType).Append(delimiter);
+            sb.AppendGF((int)m_eEquipType).Append(delimiter);
             sb.AppendGF(m_nOpFlags).Append(delimiter);
             if (version >= 12) sb.AppendGF(m_nOpFlagsPlus).Append(delimiter);
-            sb.AppendGF(m_eTarget).Append(delimiter);
-            sb.AppendGF(m_eRestrictGender).Append(delimiter);
+            sb.AppendGF((int)m_eTarget).Append(delimiter);
+            sb.AppendGF((int)m_eRestrictGender).Append(delimiter);
             sb.AppendGF(m_nRestrictLevel).Append(delimiter);
             if (version >= 9) sb.AppendGF(m_nRestrictMaxLevel).Append(delimiter);
             if (version >= 14)
@@ -234,10 +233,10 @@ namespace GFEditor.Structs
                 sb.AppendGF(m_nRebirthScore).Append(delimiter);
                 sb.AppendGF(m_nRebirthMaxScore).Append(delimiter);
             }
-            sb.AppendGF(m_eRestrictAlign).Append(delimiter);
+            sb.AppendGF((int)m_eRestrictAlign).Append(delimiter);
             sb.AppendGF(m_nRestrictPrestige).Append(delimiter);
             sb.AppendGF(m_nRestrictClass).Append(delimiter);
-            sb.AppendGF(m_eItemQuality).Append(delimiter);
+            sb.AppendGF((int)m_eItemQuality).Append(delimiter);
             sb.AppendGF(m_nItemGroup).Append(delimiter);
             sb.AppendGF(m_nCastingTime).Append(delimiter);
             sb.AppendGF(m_nCoolDownTime).Append(delimiter);
@@ -271,11 +270,11 @@ namespace GFEditor.Structs
                 sb.AppendGF(m_nPhysicalPenetrationDefence).Append(delimiter);
                 sb.AppendGF(m_nMagicalPenetrationDefence).Append(delimiter);
             }
-            sb.AppendGF(m_eAttribute).Append(delimiter);
+            sb.AppendGF((int)m_eAttribute).Append(delimiter);
             sb.AppendGF(m_nAttributeRate).Append(delimiter);
             sb.AppendGF(m_nAttributeDamage).Append(delimiter);
             sb.AppendGF(m_nAttributeResist).Append(delimiter);
-            sb.AppendGF(m_eSpecialType).Append(delimiter);
+            sb.AppendGF((int)m_eSpecialType).Append(delimiter);
             sb.AppendGF(m_nSpecialRate).Append(delimiter);
             sb.AppendGF(m_nSpecialDamage).Append(delimiter);
             sb.AppendGF(m_nDropRate).Append(delimiter);
@@ -284,7 +283,7 @@ namespace GFEditor.Structs
             sb.AppendGF(m_kTreasureBuffs2).Append(delimiter);
             sb.AppendGF(m_kTreasureBuffs3).Append(delimiter);
             sb.AppendGF(m_kTreasureBuffs4).Append(delimiter);
-            sb.AppendGF(m_eEnchantType).Append(delimiter);
+            sb.AppendGF((int)m_eEnchantType).Append(delimiter);
             sb.AppendGF(m_nEnchantId).Append(delimiter);
             if (version >= 16)
             {
@@ -293,9 +292,9 @@ namespace GFEditor.Structs
             }
             if (version >= 11)
                 sb.AppendGF(m_nElfSkillId).Append(delimiter);
-            sb.AppendGF(m_eEnchantTimeType).Append(delimiter);
+            sb.AppendGF((int)m_eEnchantTimeType).Append(delimiter);
             sb.AppendGF(m_nEnchantDuration).Append(delimiter);
-            sb.AppendGF(m_nLimitType).Append(delimiter);
+            sb.AppendGF((int)m_nLimitType).Append(delimiter);
             sb.AppendGF(m_nDueDateTime).Append(delimiter);
             sb.AppendGF(m_nBackpackSize).Append(delimiter);
             sb.AppendGF(m_nMaxSocket).Append(delimiter);
@@ -303,13 +302,13 @@ namespace GFEditor.Structs
             sb.AppendGF(m_nMaxDurability).Append(delimiter);
             sb.AppendGF(m_nMaxStack).Append(delimiter);
             if (version >= 9)
-                sb.AppendGF(m_nShopPriceType).Append(delimiter);
+                sb.AppendGF((int)m_nShopPriceType).Append(delimiter);
             sb.AppendGF(m_nSysPrice).Append(delimiter);
             sb.AppendGF(m_nRestrictEventPosId).Append(delimiter);
             sb.AppendGF(m_nMissionPosId).Append(delimiter);
             sb.AppendGF(m_nBlockRate).Append(delimiter);
             sb.AppendGF(m_nLogLevel).Append(delimiter);
-            sb.AppendGF(m_eAuctionType).Append(delimiter);
+            sb.AppendGF((int)m_eAuctionType).Append(delimiter);
             if (version >= 13)
             {
                 sb.AppendGF(m_kExtraData1).Append(delimiter);
@@ -317,10 +316,17 @@ namespace GFEditor.Structs
                 sb.AppendGF(m_kExtraData3).Append(delimiter);
             }
             sb.AppendGF(m_kTip).Append(delimiter); // Placeholder for m_kTip, only required if you don't have editor support xD (also reduce the size of the file by a lot !)
-            return sb.ToString();
+            var result = sb.ToString();
+#if DEBUG
+            var expected = GetExpectedSerializedParameterCount(version);
+            var actual = CountChars(result, delimiter);
+            if (actual != expected)
+                m_Log.Error($"ItemData.GetString: Expected {expected} parameters for version {version}, but produced {actual}.");
+#endif
+            return result;
         }
 
-        public void DrawProperties(TranslatedValues translate, ItemDataTranslated itemTranslate, long version)
+        public void DrawProperties(EditorTranslate translate, ItemDataTranslated itemTranslate, long version)
         {
             string emptyStr = string.Empty;
 
@@ -586,6 +592,114 @@ namespace GFEditor.Structs
         }
 
         #region Utilities
+
+#if DEBUG
+        // Helpers to validate parameter counts per version.
+        public static int GetExpectedSerializedParameterCount(long version)
+        {
+            int n = 0;
+            n += 1; // m_nId
+            n += 1; // m_kIconFilename
+            n += 1; // m_nModelFilename
+            n += 1; // m_nDropFilename
+            n += 1; // m_nWeaponEffectId
+            n += 1; // m_nFlyEffectId
+            n += 1; // m_nUsedEffectId
+            n += 1; // m_nUsedSoundName
+            n += 1; // m_nEnhanceEffectId
+            n += 1; // m_kName
+            n += 1; // m_eItemType
+            n += 1; // m_eEquipType
+            n += 1; // m_nOpFlags
+            if (version >= 12) n += 1; // m_nOpFlagsPlus
+            n += 1; // m_eTarget
+            n += 1; // m_eRestrictGender
+            n += 1; // m_nRestrictLevel
+            if (version >= 9) n += 1; // m_nRestrictMaxLevel
+            if (version >= 14) n += 3; // m_nRebirthCount, m_nRebirthScore, m_nRebirthMaxScore
+            n += 1; // m_eRestrictAlign
+            n += 1; // m_nRestrictPrestige
+            n += 1; // m_nRestrictClass
+            n += 1; // m_eItemQuality
+            n += 1; // m_nItemGroup
+            n += 1; // m_nCastingTime
+            n += 1; // m_nCoolDownTime
+            n += 1; // m_nCoolDownGroup
+            n += 1; // m_nMaxHp
+            n += 1; // m_nMaxMp
+            n += 1; // m_nStr
+            n += 1; // m_nVit
+            n += 1; // m_nInt
+            n += 1; // m_nWil
+            n += 1; // m_nDex
+            n += 1; // m_nAvgPhysicalDamage
+            n += 1; // m_nRandPhysicalDamage
+            n += 1; // m_nAttackRange
+            n += 1; // m_nAttackSpeed
+            n += 1; // m_nAttack
+            n += 1; // m_nRangeDamage
+            n += 1; // m_nPhysicalDefence
+            n += 1; // m_nMagicDamage
+            n += 1; // m_nMagicDefence
+            n += 1; // m_nHitRate
+            n += 1; // m_nDodgeRate
+            n += 1; // m_nPhysicalCriticalRate
+            n += 1; // m_nPhysicalCriticalDamage
+            n += 1; // m_nMagicCriticalRate
+            n += 1; // m_nMagicCriticalDamage
+            if (version >= 15) n += 4; // penetration stats
+            n += 1; // m_eAttribute
+            n += 1; // m_nAttributeRate
+            n += 1; // m_nAttributeDamage
+            n += 1; // m_nAttributeResist
+            n += 1; // m_eSpecialType
+            n += 1; // m_nSpecialRate
+            n += 1; // m_nSpecialDamage
+            n += 1; // m_nDropRate
+            n += 1; // m_nDropIndex
+            n += 1; // m_kTreasureBuffs1
+            n += 1; // m_kTreasureBuffs2
+            n += 1; // m_kTreasureBuffs3
+            n += 1; // m_kTreasureBuffs4
+            n += 1; // m_eEnchantType
+            n += 1; // m_nEnchantId
+            if (version >= 16) n += 2; // m_nExpertLevel, m_nExpertEnchantId
+            if (version >= 11) n += 1; // m_nElfSkillId
+            n += 1; // m_eEnchantTimeType
+            n += 1; // m_nEnchantDuration
+            n += 1; // m_nLimitType
+            n += 1; // m_nDueDateTime
+            n += 1; // m_nBackpackSize
+            n += 1; // m_nMaxSocket
+            n += 1; // m_nSocketRate
+            n += 1; // m_nMaxDurability
+            n += 1; // m_nMaxStack
+            if (version >= 9) n += 1; // m_nShopPriceType
+            n += 1; // m_nSysPrice
+            n += 1; // m_nRestrictEventPosId
+            n += 1; // m_nMissionPosId
+            n += 1; // m_nBlockRate
+            n += 1; // m_nLogLevel
+            n += 1; // m_eAuctionType
+            if (version >= 13) n += 3; // m_kExtraData1..3
+            n += 1; // m_kTip
+            return n;
+        }
+
+        public int GetActualSerializedParameterCount(long version, char delimiter = '|')
+        {
+            var s = GetString(version, delimiter);
+            return CountChars(s, delimiter);
+        }
+
+        private static int CountChars(string s, char target)
+        {
+            int count = 0;
+            for (int i = 0; i < s.Length; i++)
+                if (s[i] == target) count++;
+            return count;
+        }
+#endif
 
         public void Initialize()
         {

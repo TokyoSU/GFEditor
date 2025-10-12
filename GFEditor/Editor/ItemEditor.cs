@@ -4,7 +4,7 @@ namespace GFEditor.Editor
 {
     public static class ItemEditor
     {
-        private static readonly TranslatedValues m_Translate = TranslateUtils.Json.TranslatedValues;
+        private static readonly EditorTranslate m_Translate = TranslateUtils.Json.TranslatedValues;
         private static readonly ItemQuery m_ItemList = new(ResetStringList);
         private static readonly ItemTranslateQuery m_ItemTranslateQuery = new();
         private static Action<int>? m_OnItemSelected;
@@ -152,6 +152,7 @@ namespace GFEditor.Editor
 
         public static void Save()
         {
+            if (!m_ItemList.IsLoaded()) return;
             var str = new StringBuilder();
             str.AppendLine($"|{m_ItemList.GetVersionStr()}|{m_ItemList.GetColumnCount()}|");
             foreach (var item in m_ItemList.GetAllValues())

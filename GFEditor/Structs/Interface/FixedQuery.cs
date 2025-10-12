@@ -1,6 +1,6 @@
 ﻿namespace GFEditor.Structs.Interface
 {
-    public abstract class FixedQuery<KEY, VALUE>(string queryName, long columnCount, char delimiter = '|')
+    public abstract class FixedQuery<KEY, VALUE>(string queryName, long columnCount, bool chineseFile = false, char delimiter = '|')
         where KEY : notnull
         where VALUE : class
     {
@@ -10,6 +10,7 @@
         protected string m_fileName = string.Empty;
         protected long m_nColumnCount = columnCount;
         protected char m_Delimiter = delimiter;
+        protected bool m_ChineseFile = chineseFile;
         protected Action<List<List<string>>>? m_OnFileRead = null;
 
         public abstract bool Get(KEY index, out VALUE result);
@@ -28,7 +29,7 @@
 
         private void Read()
         {
-            var strm = new InTextStream(m_fileName, false, false);
+            var strm = new InTextStream(m_fileName, false, m_ChineseFile);
             if (!strm.IsOpen())
                 return;
 

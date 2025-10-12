@@ -3,7 +3,7 @@
     public static class UbuntuWindow
     {
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
-        private static readonly TranslatedValues m_Translate = TranslateUtils.Json.TranslatedValues;
+        private static readonly EditorTranslate m_Translate = TranslateUtils.Json.TranslatedValues;
         private static readonly CConfigUbuntu m_Ubuntu = ConfigUtils.Configs.Ubuntu;
         private static SessionOptions SessionOptions
         {

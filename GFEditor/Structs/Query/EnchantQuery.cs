@@ -27,7 +27,6 @@ namespace GFEditor.Structs.Query
                 }
 
                 var rb = new GFStringReader(value);
-
                 var index = (IdType)rb.ReadUInt();
                 if (m_kMap.ContainsKey(index))
                 {
@@ -60,8 +59,7 @@ namespace GFEditor.Structs.Query
                         m_nParam5 = rb.ReadString(),
                         m_nParam6 = rb.ReadString()
                     };
-                    if (cmd.m_nId != 0)
-                        enchantData.m_kEnchantCommands.Add(cmd);
+                    enchantData.m_kEnchantCommands.Add(cmd);
                 }
 
                 enchantData.m_nPeriod = rb.ReadUInt();

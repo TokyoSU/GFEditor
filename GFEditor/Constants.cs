@@ -14,5 +14,9 @@
         public static int ItemTypeIndex = 0;
         public static int EquipTypeIndex = 0;
         public static int TimeLimitTypeIndex = 0;
+        public static int EnchantType2Index = 0;
+        public static int EnchantTransitionType = 0;
+        public static int EnchantCategoryIndex = 0;
+        public static int EnchantTransitionCategoryIndex = 0;
     }
 }

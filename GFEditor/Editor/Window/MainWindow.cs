@@ -3,7 +3,7 @@
     public static class MainWindow
     {
         private static readonly Logger m_Log = LogManager.GetCurrentClassLogger();
-        private static readonly TranslatedValues m_Translate = TranslateUtils.Json.TranslatedValues;
+        private static readonly EditorTranslate m_Translate = TranslateUtils.Json.TranslatedValues;
         private static readonly OpenFolderDialog m_GameFolderDialog = new() { AllowMultipleSelection = false };
 
         private static void DrawMainBar()
@@ -31,6 +31,7 @@
                     {
                         BackupUtils.MakeBackup();
                         ItemEditor.Save();
+                        EnchantEditor.Save();
                     }
 
                     // Make backup...
