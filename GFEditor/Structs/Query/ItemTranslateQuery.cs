@@ -22,7 +22,7 @@ namespace GFEditor.Structs.Query
 
         protected override void OnFileRead(List<List<string>> listOfStrings)
         {
-            for (int rowId = 0; rowId < m_nColumnCount; rowId++)
+            for (int rowId = 0; rowId < listOfStrings.Count; rowId++)
             {
                 var value = listOfStrings[rowId];
                 if (value == null)

@@ -1,5 +1,4 @@
 ﻿using GFEditor.Specific;
-using System;
 
 namespace GFEditor.Structs
 {
