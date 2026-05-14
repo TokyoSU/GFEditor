@@ -1,3 +1,5 @@
+### This project is abandonned.
+
 This project only have the item editor, but later on, i'm planning to do every files like S_DropItem or S_Monster and have a full editor (except map editor/maker).
 Compatible with 076 and 751.
 
